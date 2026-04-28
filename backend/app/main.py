@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.websockets import WebSocketDisconnect
 
-from .schemas import Player
+from .schemas.base import Player
 
 app = FastAPI()
 templates = Jinja2Templates(directory='templates')
@@ -11,6 +11,7 @@ templates = Jinja2Templates(directory='templates')
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
 players = []
+
 
 @app.get('/')
 async def get_index(request: Request):
