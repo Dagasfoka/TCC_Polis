@@ -1,0 +1,2 @@
+Camada para validação de lógica de negócio, ou seja, tudo que for dar um "raise"
+num erro.

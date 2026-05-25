@@ -1,0 +1,1 @@
+# Schemas do status da partida.
