@@ -1,0 +1,1 @@
+# Hash de senha, validação de senha, tokens.
