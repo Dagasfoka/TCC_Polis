@@ -1,1 +1,0 @@
-# Busca/salva sessões temporárias no Redis.
