@@ -1,0 +1,1 @@
+# Rotas HTTP auxiliares da partida.
