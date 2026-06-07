@@ -15,7 +15,7 @@ def find_your_mission(match: dict, player_id: str):
     missions = match.get("missions", [])
 
     for mission in missions:
-        if mission.get("player_id") == player_id:
+        if mission.get("owner_id") == player_id:
             return mission.get("mission") or mission
 
     return None
