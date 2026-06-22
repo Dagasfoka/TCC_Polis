@@ -329,7 +329,7 @@ def execute_attack_roll(
 
 def get_next_question_for_player(player: dict):
     questions = player.get("questions", [])
-
+    print(player)
     if not questions:
         raise ValueError("Esse jogador não possui mais perguntas disponíveis")
 

@@ -1,37 +1,32 @@
+from sqlalchemy import delete
+
 from backend.app.db.base import Base
 from backend.app.db.database import SessionLocal, engine
 from backend.app.models.mission import Mission
 
 MISSIONS = [
-{
-    "mission_id": 1,
-    "type": "destruction",
-    "content": {
-        "destruction": None,
-        "state": ["SP", "RJ", "MG", "BA", "PE", "CE"],
+    {
+        "mission_id": 1,
+        "type": "destruction",
+        "content": {
+            "destruction": None,
+
+            # Missão alternativa caso a destruição seja convertida.
+            "state": ["AM", "PA"],
+        },
     },
-},
-{
-    "mission_id": 2,
-    "type": "state",
-    "content": {
-        "state": ["PR", "SC", "RS", "SP", "RJ", "MG"],
+    {
+        "mission_id": 2,
+        "type": "state",
+        "content": {
+            "state": ["SP", "RJ"],
+        },
     },
-},
     {
         "mission_id": 3,
-        "type": "region",
+        "type": "state",
         "content": {
-            "region": [
-                {
-                    "region": "Nordeste",
-                    "quantity": 3,
-                },
-                {
-                    "region": "Sul",
-                    "quantity": 1,
-                },
-            ],
+            "state": ["AC", "RO"],
         },
     },
     {
@@ -40,11 +35,7 @@ MISSIONS = [
         "content": {
             "region": [
                 {
-                    "region": "Centro-Oeste",
-                    "quantity": 2,
-                },
-                {
-                    "region": "Sudeste",
+                    "region": "Sul",
                     "quantity": 2,
                 },
             ],
@@ -52,20 +43,23 @@ MISSIONS = [
     },
 ]
 
-
 def seed_missions():
     Base.metadata.create_all(bind=engine)
 
-    with SessionLocal() as db:
-        for mission_data in MISSIONS:
-            mission = Mission(**mission_data)
-            db.merge(mission)
+    with SessionLocal.begin() as db:
+        # Apaga todas as missões antigas.
+        db.execute(delete(Mission))
 
-        db.commit()
+        missions = [
+            Mission(**mission_data)
+            for mission_data in MISSIONS
+        ]
 
-    print("Missões criadas/atualizadas com sucesso.")
+        db.add_all(missions)
+
+    print("Missões antigas apagadas.")
+    print("Missões de demonstração criadas com sucesso.")
 
 
 if __name__ == "__main__":
     seed_missions()
-    
