@@ -1,3 +1,5 @@
+Foi utilizada a plataforma Docker para padronização do ambiente de desenvolvimento. Permitindo que qualquer integrante da equipe execute o sistema com um único comando (docker compose up --build), sem a necessidade de instalar manualmente Python, Node.js, Redis ou demais dependências do projeto. Caso tenha parado a aplicação, para rodar novamente basta dar "docker compose up". OBS: Para esses comandos darem certo é necessario ter o Docker Desktop aberto.
+
 <Arquivo de Versionamento do código
  Enzo - 16/06 | 19:19
  Começo da correção da lógica de ação:
