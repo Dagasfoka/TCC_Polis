@@ -1,4 +1,4 @@
-from backend.app.models.room import Room
+from backend.app.models.redis.room import Room
 from backend.app.utils.ids import generate_room_code
 
 

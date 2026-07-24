@@ -1,7 +1,7 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from backend.app.repositories.match_repo import get_match_state
-from backend.app.services.action_service import (
+from backend.app.repositories.redis.match_repo import get_match_state
+from backend.app.services.db.action_service import (
     get_attack_options,
     resolve_attack_option,
     resolve_attack_question,

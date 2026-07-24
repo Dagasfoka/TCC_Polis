@@ -4,9 +4,9 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from backend.app.api.deps import get_db
-from backend.app.schemas.player import PlayerRoom
-from backend.app.schemas.room import StartRoomRequest
-from backend.app.services.room_service import create_room, join_room, start_game
+from backend.app.schemas.redis.player import PlayerRoom
+from backend.app.schemas.redis.room import StartRoomRequest
+from backend.app.services.redis.room_service import create_room, join_room, start_game
 
 router_room = APIRouter()
 templates = Jinja2Templates(directory='templates')

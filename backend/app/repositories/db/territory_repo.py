@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.app.models.territory import Territory
+from backend.app.models.db.territory import Territory
 
 
 def get_all_territories(db: Session) -> list[Territory]:

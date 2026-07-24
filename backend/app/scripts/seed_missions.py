@@ -2,7 +2,7 @@ from sqlalchemy import delete
 
 from backend.app.db.base import Base
 from backend.app.db.database import SessionLocal, engine
-from backend.app.models.mission import Mission
+from backend.app.models.db.mission import Mission
 
 MISSIONS = [
     {

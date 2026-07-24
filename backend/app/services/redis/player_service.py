@@ -1,6 +1,6 @@
 # Criar jogador, nickname, recursos.
 # Busca/salva salas temporárias no Redis.
-from backend.app.repositories.player_repo import get_player_repo, save_player
+from backend.app.repositories.redis.player_repo import get_player_repo, save_player
 
 
 def create_player(username=None, party_id=None):

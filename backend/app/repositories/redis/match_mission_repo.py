@@ -1,4 +1,4 @@
-from backend.app.repositories.match_repo import get_match_state, save_match_state
+from backend.app.repositories.redis.match_repo import get_match_state, save_match_state
 
 
 def get_all_match_missions(match_id):

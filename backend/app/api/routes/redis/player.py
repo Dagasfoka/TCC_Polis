@@ -2,8 +2,8 @@
 from fastapi import APIRouter
 from fastapi.templating import Jinja2Templates
 
-from backend.app.schemas.player import PlayerCreate
-from backend.app.services.player_service import create_player, get_player
+from backend.app.schemas.redis.player import PlayerCreate
+from backend.app.services.redis.player_service import create_player, get_player
 
 router_player = APIRouter()
 templates = Jinja2Templates(directory='templates')

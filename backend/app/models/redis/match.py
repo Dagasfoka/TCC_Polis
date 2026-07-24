@@ -1,6 +1,6 @@
 # Status geral da partida.
-from backend.app.models.match_territory import MatchTerritory
-from backend.app.models.player import Player
+from backend.app.models.redis.match_territory import MatchTerritory
+from backend.app.models.redis.player import Player
 
 
 class Match:

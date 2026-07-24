@@ -1,11 +1,11 @@
 import random
 
-from backend.app.models.match_mission import MatchMission
-from backend.app.repositories.match_mission_repo import (
+from backend.app.models.redis.match_mission import MatchMission
+from backend.app.repositories.redis.match_mission_repo import (
     get_match_mission_by_owner_id,
     update_match_mission,
 )
-from backend.app.services.factories.match_verify_factory import (
+from backend.app.factories.redis.match_verify_factory import (
     is_alive,
     verify_region,
     verify_state,

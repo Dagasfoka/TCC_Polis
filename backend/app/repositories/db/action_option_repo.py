@@ -1,4 +1,4 @@
-from backend.app.models.action_option import ActionOption
+from backend.app.models.db.action_option import ActionOption
 
 ATTACK_OPTIONS = [
     ActionOption(

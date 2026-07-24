@@ -1,12 +1,12 @@
 import random
 
-from backend.app.models.match import Match
-from backend.app.models.match_territory import MatchTerritory
-from backend.app.repositories.match_repo import generate_match_id
-from backend.app.repositories.mission_repo import get_all_missions
-from backend.app.repositories.question_repo import list_questions
-from backend.app.repositories.territory_repo import get_all_territories
-from backend.app.services.factories.match_mission_factory import (
+from backend.app.models.redis.match import Match
+from backend.app.models.redis.match_territory import MatchTerritory
+from backend.app.repositories.redis.match_repo import generate_match_id
+from backend.app.repositories.db.mission_repo import get_all_missions
+from backend.app.repositories.db.question_repo import list_questions
+from backend.app.repositories.db.territory_repo import get_all_territories
+from backend.app.factories.redis.match_mission_factory import (
     choose_missions,
     distribute_match_missions,
 )

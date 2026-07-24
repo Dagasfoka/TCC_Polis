@@ -1,6 +1,6 @@
 from backend.app.db.database import SessionLocal
-from backend.app.repositories.room_repo import save_room
-from backend.app.services.match_service import create_match
+from backend.app.repositories.redis.room_repo import save_room
+from backend.app.services.redis.match_service import create_match
 
 DEMO_ROOM_CODE = "DEMO1"
 

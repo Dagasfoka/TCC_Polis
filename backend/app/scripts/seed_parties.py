@@ -1,6 +1,6 @@
 from backend.app.db.base import Base
 from backend.app.db.database import SessionLocal, engine
-from backend.app.models.party import Party
+from backend.app.models.db.party import Party
 
 PARTIES = [
     {

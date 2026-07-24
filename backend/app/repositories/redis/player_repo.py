@@ -2,7 +2,7 @@
 from json import dumps, loads
 
 from backend.app.db.redis import redis_client
-from backend.app.models.player import Player
+from backend.app.models.redis.player import Player
 from backend.app.utils.ids import generate_player_id
 
 

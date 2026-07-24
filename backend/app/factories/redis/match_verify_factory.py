@@ -1,4 +1,4 @@
-from backend.app.repositories.match_repo import (
+from backend.app.repositories.redis.match_repo import (
     get_match_state,
     get_territory_by_id,
     get_territory_by_region,

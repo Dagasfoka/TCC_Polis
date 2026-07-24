@@ -1,5 +1,5 @@
-from backend.app.repositories.match_mission_repo import get_match_mission_by_owner_id
-from backend.app.services.action_service import get_attack_options
+from backend.app.repositories.redis.match_mission_repo import get_match_mission_by_owner_id
+from backend.app.services.db.action_service import get_attack_options
 
 
 def build_personal_match_state(match_dict: dict, player_id: str):

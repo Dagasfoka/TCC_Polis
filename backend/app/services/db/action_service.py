@@ -1,14 +1,14 @@
 import random
 
-from backend.app.repositories.action_option_repo import (
+from backend.app.repositories.db.action_option_repo import (
     get_option_by_id,
     list_options_by_action,
 )
-from backend.app.repositories.match_repo import (
+from backend.app.repositories.redis.match_repo import (
     get_match_state,
     save_match_state,
 )
-from backend.app.services.match_mission_service import (
+from backend.app.services.redis.match_mission_service import (
     final_round_verify,
     start_round_verify,
 )

@@ -1,4 +1,4 @@
-from backend.app.services.action_service import resolve_attack_option
+from backend.app.services.db.action_service import resolve_attack_option
 
 
 async def handle_match_message(match_id: int, player_id: str, data: dict):

@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.app.models.mission import Mission
+from backend.app.models.db.mission import Mission
 
 
 def get_all_missions(db: Session) -> list[Mission]:
