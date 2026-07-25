@@ -54,6 +54,8 @@ pre_test = "task lint"
 test = "pytest -s -x --cov=backend/app -vv"
 post_test = "coverage html"
 
+demo_match = "python -m backend.app.scripts.create_db && python -m backend.app.scripts.seed_parties && python -m backend.app.scripts.seed_missions && python -m backend.app.scripts.seed_territories && python -m backend.app.scripts.create_demo_match"
+
 check = "ruff check ."
 lint = "ruff check . && ruff check . --diff"
 format = "ruff check . --fix && ruff format ."

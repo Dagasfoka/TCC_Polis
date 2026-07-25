@@ -1,7 +1,7 @@
 # Ataque, defesa, turno, vitória, mapa.
 from backend.app.repositories.redis.match_repo import get_match_state, save_match_state
 from backend.app.repositories.redis.room_repo import get_room_repo
-from backend.app.factories.redis.match_factory import (
+from backend.app.factories.create_match_factory import (
     build_initial_match_state,
     distribute_initial_territories_missions_questions,
 )

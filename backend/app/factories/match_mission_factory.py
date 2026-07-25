@@ -5,7 +5,7 @@ from backend.app.repositories.redis.match_mission_repo import (
     get_match_mission_by_owner_id,
     update_match_mission,
 )
-from backend.app.factories.redis.match_verify_factory import (
+from backend.app.factories.match_verify_factory import (
     is_alive,
     verify_region,
     verify_state,

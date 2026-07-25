@@ -6,7 +6,7 @@ Models:
 Repositories:
 “Como o dado é buscado, criado, alterado ou removido da persistência?”
 
-Getters:
+Gateways:
 “Qual dado eu preciso consultar?”
 
 Factories:

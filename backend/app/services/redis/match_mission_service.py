@@ -1,4 +1,4 @@
-from backend.app.factories.redis.match_mission_factory import (
+from backend.app.factories.match_mission_factory import (
     final_verify_match_mission,
     start_verify_match_mission,
 )
