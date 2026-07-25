@@ -2,9 +2,9 @@ Foi utilizada a plataforma Docker para padronização do ambiente de desenvolvim
 
 Para rodar corretamente uma partida demo, além dos passos acima é necessário rodar os seguintes comandos no terminal da raiz do projeto enquanto o docker estiver rodando:
 docker compose exec api python -m backend.app.scripts.create_db
-docker compose exec api python -m backend.app.scripts.seed_territories
 docker compose exec api python -m backend.app.scripts.seed_parties
 docker compose exec api python -m backend.app.scripts.seed_missions
+docker compose exec api python -m backend.app.scripts.seed_territories
 docker compose exec api python -m backend.app.scripts.create_demo_match
 Assim, terá a primeira partida fake de id 1.
 
