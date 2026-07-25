@@ -1,0 +1,35 @@
+Responsabilidade>
+Fluxo principal:
+Models:
+“Como o dado é representado?”
+
+Repositories:
+“Como o dado é buscado, criado, alterado ou removido da persistência?”
+
+Getters:
+“Qual dado eu preciso consultar?”
+
+Factories:
+“Qual alteração precisa ser feita?”
+
+Rules:
+“Qual cálculo ou processamento precisa ocorrer?”
+
+Validators:
+“Essa operação ou situação é válida?”
+
+Services:
+“Em qual ordem essas ações devem acontecer?”
+
+API (Routes)/WebSocket:
+“Como essa funcionalidade é acessada externamente?”
+
+Outras camadas:
+DB:
+"Como se dá as conexões de persistência?"
+
+Core:
+"Qual a porta das conexões externas?"
+
+Utils:
+"Onde se cria utilitários?"
