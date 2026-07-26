@@ -1,7 +1,7 @@
 # Criar sala, entrar, sair, iniciar partida.]
+from backend.app.factories.room_factory import build_room
 from backend.app.repositories.redis.player_repo import get_player_repo
 from backend.app.repositories.redis.room_repo import get_room_repo, save_room
-from backend.app.factories.room_factory import build_room
 from backend.app.services.redis.match_service import create_match
 
 

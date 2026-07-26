@@ -1,5 +1,7 @@
-from backend.app.repositories.db.mission_repo import MissionsRepository
 from sqlalchemy.orm import Session
+
+from backend.app.repositories.db.mission_repo import MissionsRepository
+
 #from backend.app.validators.missions_validators import *
 
 class MissionsGateway:

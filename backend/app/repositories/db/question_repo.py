@@ -1,4 +1,3 @@
-from backend.app.models.db.action_option import ActionOption
 
 QUESTIONS_OPTIONS = [
     {

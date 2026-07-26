@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.models.db.mission import Mission
 
+
 class MissionsRepository:
     def __init__(self, db:Session):
         self.db = db

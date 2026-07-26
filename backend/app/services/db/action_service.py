@@ -13,7 +13,6 @@ from backend.app.services.redis.match_mission_service import (
     start_round_verify,
 )
 
-
 QUESTION_CORRECT_BONUS = 20
 QUESTION_WRONG_PENALTY = 20
 

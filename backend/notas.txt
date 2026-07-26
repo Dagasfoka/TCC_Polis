@@ -1,0 +1,12 @@
+A maneira como eu estou fazendo agora é criar classes de repositories e gateways e pretendo ir subindo provavelmente
+até o routes porque o codigo fica clean e tem aquela questão de economizar ficar chamando coisa porque estaria tudo
+no contratutor da instancia da class, ou seja, viraria um atributo. 
+Para usar de exemplo, olhe o *missions_gateways* na pasta gateways, porque ele foi um modelo que eu consegui 
+implementar com sucesso e o gateway funcionou na função "distribute_initial_territories_missions_questions missions" dentro de create_match_factory 
+na linha que diz "missions=missions_gateway.get_all_missions()".
+*****Atenção, exite o gateway de match, mas ta dando bo ent nao consegui implementar ele, dava dando uns erros falando que as funcoes tinha que ser async
+mas tinhas muitos arquivos encadeados então voltei pro estado onde a partida ainda estava rodando pelo menos. Acredito que de pra fazer sem ser async
+mas foi o que o chat tava me orientando. 
+
+Basicamente é isso: entender o fluxo das coisas -> missions_gateway; toamr cuidado com match_gateway. Mais detalhes acredito que só consegui responder numa
+futura call

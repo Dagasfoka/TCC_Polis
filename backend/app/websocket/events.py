@@ -1,4 +1,6 @@
-from backend.app.repositories.redis.match_mission_repo import get_match_mission_by_owner_id
+from backend.app.repositories.redis.match_mission_repo import (
+    get_match_mission_by_owner_id,
+)
 from backend.app.services.db.action_service import get_attack_options
 
 

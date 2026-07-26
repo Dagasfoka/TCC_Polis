@@ -1,13 +1,13 @@
 # Ataque, defesa, turno, vitória, mapa.
-from backend.app.repositories.redis.match_repo import get_match_state, save_match_state
-from backend.app.repositories.redis.room_repo import get_room_repo
 from backend.app.factories.create_match_factory import (
     build_initial_match_state,
     distribute_initial_territories_missions_questions,
 )
+from backend.app.repositories.redis.match_repo import get_match_state, save_match_state
+from backend.app.repositories.redis.room_repo import get_room_repo
 
 
-def create_match(db,room_code):
+def create_match(db,redis_client,room_code):
     room_dict=get_room_repo(room_code)
     
     if room_dict is None:
@@ -20,7 +20,7 @@ def create_match(db,room_code):
     
     match_state=build_initial_match_state(db,room_dict)
     match_state_dict = match_state.to_dict()
-    match_state_dict=distribute_initial_territories_missions_questions(db, match_state_dict)
+    match_state_dict=distribute_initial_territories_missions_questions(db,redis_client, match_state_dict)
     save_match_state(match_state_dict)
     return match_state_dict
 

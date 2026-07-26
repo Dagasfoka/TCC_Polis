@@ -1,7 +1,8 @@
 import random
 
 from backend.app.gateways.missions_gateways import MissionsGateway
-from backend.app.gateways.match_gateways import get_all_players
+from backend.app.gateways.match_gateways import MatchGateway
+
 from backend.app.gateways.questions_gateways import get_all_questions
 
 from backend.app.models.redis.match import Match
@@ -43,7 +44,7 @@ def build_initial_match_state(db, room_dict) -> Match:
     return match_state
 
 
-def distribute_initial_territories_missions_questions(db, match_state_dict):
+def distribute_initial_territories_missions_questions(db, redis_client,match_state_dict):
     #Gateways
     missions_gateway=MissionsGateway(db)
  
