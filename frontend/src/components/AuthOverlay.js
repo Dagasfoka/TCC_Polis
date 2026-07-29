@@ -48,7 +48,7 @@ function AuthOverlay({ mode, onSuccess, onClose, flash }) {
     }
 
     try {
-      const res = await fetch('http://localhost:8000/players', {
+      const res = await fetch('https://tcc-polis-4209.onrender.com/players', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: name })
