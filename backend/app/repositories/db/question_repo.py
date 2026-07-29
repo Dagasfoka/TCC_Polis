@@ -50,16 +50,16 @@ QUESTIONS_OPTIONS = [
     },
 ]
 
-
-def list_questions():
-    return [
-        question
-        for question in QUESTIONS_OPTIONS 
-    ]
-
-
-def get_question_by_id(question_id: str):
-    for question in QUESTIONS_OPTIONS:
-        if question.question_id == question_id:
-            return question
-    return None
+class QuestionRepo:
+    def __init__(self) -> None:
+        pass
+    def get_all_questions(self):
+        return [
+            question
+            for question in QUESTIONS_OPTIONS 
+        ]
+    def get_question_by_id(self,question_id):
+        for question in QUESTIONS_OPTIONS:
+            if question['question_id'] == question_id:
+                return question
+        return None

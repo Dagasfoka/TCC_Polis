@@ -64,14 +64,6 @@ def final_verify_match_mission(match_id, player_id):
         case _:
             raise ValueError(f"Tipo de missão inválido: {match_mission['type']}")
 
-
-def choose_missions(missions, quantity_players):
-    if len(missions) < quantity_players:
-        raise ValueError("Não há missões suficientes para todos os jogadores.")
-
-    return random.sample(missions, quantity_players)
-
-
 def distribute_match_missions(match_id, players, chosen_missions):
     if len(players) != len(chosen_missions):
         raise ValueError("A quantidade de players precisa ser igual à quantidade de missões.")
