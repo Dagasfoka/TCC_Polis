@@ -125,7 +125,7 @@
         return;
       }
 
-      ws = new WebSocket(`ws://localhost:8000/ws/match/${matchId}/${playerId}`);
+      ws = new WebSocket(`https://tcc-polis-42o9.onrender.com/ws/match/${matchId}/${playerId}`);
 
       ws.onopen = () => {
         log(`Conectado como ${playerId} na partida ${matchId}`);
