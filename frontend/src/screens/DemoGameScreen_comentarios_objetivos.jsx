@@ -146,7 +146,7 @@ export default function DemoGameScreen() {
     setPendingActionInfo(null);
 
     const ws = new WebSocket(
-      `ws://localhost:8000/ws/match/${matchId.trim()}/${playerId.trim()}`
+      `wss://tcc-polis-42o9.onrender.com/ws/match/${matchId.trim()}/${playerId.trim()}`
     );
 
     wsRef.current = ws;
