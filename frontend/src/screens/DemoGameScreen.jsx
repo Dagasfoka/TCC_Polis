@@ -298,7 +298,7 @@ export default function DemoGameScreen() {
 
         <div className="demo-connect-panel">
           <label>
-            Match ID
+            Match ID1
             <input
               value={matchId}
               onChange={(event) => setMatchId(event.target.value)}
