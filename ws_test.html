@@ -53,6 +53,31 @@
     <button onclick="connect()">Conectar</button>
     <button onclick="disconnect()">Desconectar</button>
   </div>
+  <div class="box">
+  <h2>API</h2>
+
+  <label>Username:</label>
+  <input id="username" value="Enzo" />
+
+  <button onclick="createPlayer()">
+    Criar Jogador
+  </button>
+
+  <button onclick="createRoom()">
+    Criar Sala
+  </button>
+
+  <button onclick="joinRoom()">
+    Entrar na Sala
+  </button>
+
+  <button onclick="startGame()">
+    Iniciar Partida
+  </button>
+
+  <label>Room Code:</label>
+  <input id="roomCode" />
+</div>
 
   <div class="box">
     <h2>Ação teste</h2>
@@ -78,6 +103,132 @@
   </div>
 
   <script>
+    let playerId = null;
+let roomCode = null;
+let matchId = null;
+
+const API =
+  "https://tcc-polis-42o9.onrender.com";
+
+    async function createPlayer() {
+  const username =
+    document.getElementById("username").value;
+
+  const response = await fetch(
+    `${API}/players`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        username,
+      }),
+    }
+  );
+
+  const data =
+    await response.json();
+
+  playerId = data.player_id;
+
+  document.getElementById(
+    "playerId"
+  ).value = playerId;
+
+  log(
+    "PLAYER CRIADO\n" +
+    JSON.stringify(data, null, 2)
+  );
+}
+    async function createRoom() {
+  const response = await fetch(
+    `${API}/rooms`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        host_id: playerId,
+      }),
+    }
+  );
+
+  const data =
+    await response.json();
+
+  roomCode = data.room_code;
+
+  log(
+    "ROOM CRIADA\n" +
+    JSON.stringify(data, null, 2)
+  );
+}
+async function joinRoom() {
+  const code =
+    document.getElementById(
+      "roomCode"
+    ).value;
+
+  const response = await fetch(
+    `${API}/rooms/${code}/join`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        player_id: playerId,
+      }),
+    }
+  );
+
+  const data =
+    await response.json();
+
+  log(
+    "JOIN\n" +
+    JSON.stringify(data, null, 2)
+  );
+}
+
+    async function startGame() {
+  const response = await fetch(
+    `${API}/rooms/${roomCode}/start`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        player_id: playerId,
+      }),
+    }
+  );
+
+  const data =
+    await response.json();
+
+  log(
+    "PARTIDA INICIADA\n" +
+    JSON.stringify(data, null, 2)
+  );
+
+  if (data.match_id) {
+    matchId = data.match_id;
+
+    document.getElementById(
+      "matchId"
+    ).value = matchId;
+  }
+}
+    
+    
     let ws = null;
     let lastState = null;
 
@@ -125,7 +276,7 @@
         return;
       }
 
-      ws = new WebSocket(`https://tcc-polis-42o9.onrender.com/ws/match/${matchId}/${playerId}`);
+      ws = new WebSocket(`wss://tcc-polis-42o9.onrender.com/ws/match/${matchId}/${playerId}`);
 
       ws.onopen = () => {
         log(`Conectado como ${playerId} na partida ${matchId}`);
