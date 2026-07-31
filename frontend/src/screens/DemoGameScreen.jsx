@@ -50,7 +50,8 @@ function getPlayerNameById(playerId, players) {
 
 export default function DemoGameScreen() {
   const [matchId, setMatchId] = useState("");
-  const [playerId, setPlayerId] = useState("p1");
+  const [username, setUsername] = useState("Teste");
+  const API_URL = "https://tcc-polis-42o9.onrender.com";
   const [connected, setConnected] = useState(false);
   const [matchState, setMatchState] = useState(null);
   const [selectedTerritory, setSelectedTerritory] = useState(null);
@@ -113,7 +114,32 @@ export default function DemoGameScreen() {
       alert(`Fim de jogo! Vencedor: ${winnerName}`);
     }
   }
-
+  async function createPlayer() {
+    try {
+      const response = await fetch(
+        `${API_URL}/players`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+          }),
+        }
+      );
+  
+      const data = await response.json();
+  
+      addLog("Jogador criado", data);
+  
+      if (data.player_id) {
+        setPlayerId(data.player_id);
+      }
+    } catch (error) {
+      addLog("Erro ao criar jogador", error);
+    }
+  }
   function connect() {
     if (!matchId.trim() || !playerId.trim()) {
       alert("Preencha match_id e player_id.");
@@ -297,6 +323,19 @@ export default function DemoGameScreen() {
         </div>
 
         <div className="demo-connect-panel">
+          <label>
+            Username
+            <input
+              value={username}
+              onChange={(event) =>
+                setUsername(event.target.value)
+              }
+            />
+          </label>
+          
+          <button onClick={createPlayer}>
+            Criar Jogador
+          </button>
           <label>
             Match ID1
             <input
