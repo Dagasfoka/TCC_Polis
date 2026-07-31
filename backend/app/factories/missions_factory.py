@@ -1,5 +1,5 @@
 import random
-def distribute_missions(match_state_dict,questions):
+def distribute_questions(match_state_dict,questions):
     for player in match_state_dict["players"]:
         player_questions = [question.copy() for question in questions]
         random.shuffle(player_questions)
