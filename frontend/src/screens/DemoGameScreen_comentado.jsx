@@ -635,7 +635,7 @@ export default function DemoGameScreen() {
         <div className="demo-connect-panel">
           {/* Campo controlado pelo estado matchId. */}
           <label>
-            Match ID
+            Match ID2
             <input
               value={matchId}
               // Cada alteração no input atualiza matchId.
