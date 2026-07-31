@@ -50,7 +50,7 @@ function getPlayerNameById(playerId, players) {
 
 export default function DemoGameScreen() {
   const [matchId, setMatchId] = useState("");
-  const [username, setUsername] = useState("Teste");
+  const [username, setUsername] = useState("Enzo");
   const API_URL = "https://tcc-polis-42o9.onrender.com";
   const [connected, setConnected] = useState(false);
   const [matchState, setMatchState] = useState(null);
