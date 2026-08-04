@@ -47,6 +47,12 @@ async function createPlayer() {
     const data = await response.json();
 
     console.log(data);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      setConnected(true);
+      addLog(`Criação :${data}}`);
+    };
 
     setPlayer(data);
   } catch (error) {
