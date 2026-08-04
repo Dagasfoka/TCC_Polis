@@ -352,18 +352,7 @@ export default function DemoGameScreen() {
             Desconectar
           </button>
         </div>
-        <div>
-          <input
-            type="text"
-            placeholder="Nome do jogador"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        
-          <button onClick={createPlayer}>
-            Criar Jogador
-          </button>
-        </div>
+
       </section>
 
       <section className="demo-layout">
