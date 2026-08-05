@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+
 import BrazilMapSvg from "../components/BrazilMapSvg.jsx";
 
 const PARTY_COLORS = {
@@ -8,6 +9,7 @@ const PARTY_COLORS = {
   PV: "#2ECC71",
   PD: "#F1C40F",
 };
+const [username, setUsername] = useState("");
 
 function formatMission(mission) {
   if (!mission) return "Missão não encontrada.";
@@ -350,6 +352,17 @@ export default function DemoGameScreen() {
 
           <button onClick={disconnect} disabled={!connected}>
             Desconectar
+          </button>
+        </div>
+         <div>
+          <input
+            type="text"
+            placeholder="Nome do jogador"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <button onClick={createPlayer}>
+            Criar Jogador
           </button>
         </div>
 
