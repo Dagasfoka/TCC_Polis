@@ -54,6 +54,7 @@ def create_demo_match():
     print("\nUse no HTML:")
     print(f"match_id = {match_dict['match_id']}")
     print("players = p1, p2, p3, p4")
+    return match_dict
 
 
 if __name__ == "__main__":
