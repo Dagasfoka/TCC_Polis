@@ -9,7 +9,7 @@ const PARTY_COLORS = {
   PV: "#2ECC71",
   PD: "#F1C40F",
 };
-const [username, setUsername] = useState("");
+
 
 function formatMission(mission) {
   if (!mission) return "Missão não encontrada.";
@@ -77,6 +77,7 @@ function getPlayerNameById(playerId, players) {
 
 export default function DemoGameScreen() {
   const [matchId, setMatchId] = useState("");
+  const [username, setUsername] = useState("");
   const [playerId, setPlayerId] = useState("p1");
   const [connected, setConnected] = useState(false);
   const [matchState, setMatchState] = useState(null);
