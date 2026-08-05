@@ -31,31 +31,6 @@ function formatMission(mission) {
   return "Tipo de missão desconhecido.";
 }
 
-async function createPlayer() {
-  try {
-    const response = await fetch(
-      "https://tcc-polis-42o9.onrender.com/players",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: username,
-        }),
-      }
-    );
-
-    const data = await response.json();
-
-    console.log(data);
-
-    setPlayer(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
 function summarizeEvent(data) {
   if (!data?.payload) return data;
 
@@ -124,6 +99,35 @@ export default function DemoGameScreen() {
       ...currentLogs,
     ]);
   }
+  async function createPlayer() {
+    try {
+      const response = await fetch(
+        "https://tcc-polis-42o9.onrender.com/players",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+          }),
+        }
+      );
+  
+      const data = await response.json();
+  
+      console.log(data);
+  
+      if (data.player_id) {
+        setPlayerId(data.player_id);
+      }
+  
+      addLog("Jogador criado", data);
+    } catch (error) {
+      console.error(error);
+      addLog("Erro ao criar jogador", error);
+    }
+}
 
   function handleWinnerAlert(newMatchState) {
     if (
