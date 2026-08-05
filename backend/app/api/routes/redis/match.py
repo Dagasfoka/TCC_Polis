@@ -11,7 +11,7 @@ templates = Jinja2Templates(directory='templates')
 async def get_match_route(match_id: str):
     return get_match(match_id)
 
-@router_match.post("/match/create")
+@router_match.get("/match/create")
 async def create_demo_match_route():
     match = create_demo_match()
 
