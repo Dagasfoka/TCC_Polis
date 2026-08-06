@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from fastapi.templating import Jinja2Templates
 
 from backend.app.services.redis.match_service import get_match
+from backend.app.scripts.create_demo_match import create_demo_match
 
 router_match = APIRouter()
 templates = Jinja2Templates(directory='templates')
