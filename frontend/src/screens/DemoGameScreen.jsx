@@ -128,34 +128,36 @@ export default function DemoGameScreen() {
         addLog("Erro ao criar jogador", error);
       }
   }
-  async function createDemoMatch() {
-
+ async function createDemoMatch() {
   try {
-    addLog("Iniciando requisição");
-  
+    addLog("1 - Iniciando requisição");
+
     const response = await fetch(
       "https://tcc-polis-42o9.onrender.com/match/create",
       {
         method: "POST",
       }
     );
-  
-    addLog("Status:", response.status);
-  
+
+    addLog(`2 - Status: ${response.status}`);
+
     const data = await response.json();
-  
-    addLog("Resposta:", data);
-  
+
+    addLog("3 - JSON recebido");
+
+    console.log(data);
+
     if (data.match_id) {
+      addLog(`4 - Match ID: ${data.match_id}`);
       setMatchId(String(data.match_id));
     }
-  
-    addLog("Partida criada", data);
-  
-  } catch (error) {
-    addLog(error);
-  }
 
+    addLog("5 - Finalizado");
+
+  } catch (error) {
+    console.error(error);
+    addLog(`ERRO: ${error.message}`);
+  }
 }
 
   function handleWinnerAlert(newMatchState) {
