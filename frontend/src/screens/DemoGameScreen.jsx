@@ -129,27 +129,33 @@ export default function DemoGameScreen() {
       }
   }
   async function createDemoMatch() {
+
   try {
+    addLog("Iniciando requisição");
+  
     const response = await fetch(
       "https://tcc-polis-42o9.onrender.com/match/create",
       {
         method: "POST",
       }
     );
-
+  
+    addLog("Status:", response.status);
+  
     const data = await response.json();
-
-    console.log("MATCH CRIADA", data);
-
+  
+    addLog("Resposta:", data);
+  
     if (data.match_id) {
       setMatchId(String(data.match_id));
     }
-
+  
     addLog("Partida criada", data);
+  
   } catch (error) {
-    console.error(error);
-    addLog("Erro ao criar partida", error);
+    addLog(error);
   }
+
 }
 
   function handleWinnerAlert(newMatchState) {
