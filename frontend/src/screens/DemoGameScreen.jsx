@@ -100,33 +100,56 @@ export default function DemoGameScreen() {
     ]);
   }
   async function createPlayer() {
-    try {
-      const response = await fetch(
-        "https://tcc-polis-42o9.onrender.com/players",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username,
-          }),
+      try {
+        const response = await fetch(
+          "https://tcc-polis-42o9.onrender.com/players",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username,
+            }),
+          }
+        );
+    
+        const data = await response.json();
+    
+        console.log(data);
+    
+        if (data.player_id) {
+          setPlayerId(data.player_id);
         }
-      );
-  
-      const data = await response.json();
-  
-      console.log(data);
-  
-      if (data.player_id) {
-        setPlayerId(data.player_id);
+    
+        addLog("Jogador criado", data);
+      } catch (error) {
+        console.error(error);
+        addLog("Erro ao criar jogador", error);
       }
-  
-      addLog("Jogador criado", data);
-    } catch (error) {
-      console.error(error);
-      addLog("Erro ao criar jogador", error);
+  }
+  async function createDemoMatch() {
+  try {
+    const response = await fetch(
+      "https://tcc-polis-42o9.onrender.com/match/create",
+      {
+        method: "POST",
+      }
+    );
+
+    const data = await response.json();
+
+    console.log("MATCH CRIADA", data);
+
+    if (data.match_id) {
+      setMatchId(String(data.match_id));
     }
+
+    addLog("Partida criada", data);
+  } catch (error) {
+    console.error(error);
+    addLog("Erro ao criar partida", error);
+  }
 }
 
   function handleWinnerAlert(newMatchState) {
@@ -358,14 +381,19 @@ export default function DemoGameScreen() {
           <button onClick={disconnect} disabled={!connected}>
             Desconectar
           </button>
-        </div>
-         <div>
-          <input
+
+          <button onClick={createDemoMatch}>
+            Criar Partida Demo
+          </button>
+
+           <input
             type="text"
             placeholder="Nome do jogador"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
+
+           
           <button onClick={createPlayer}>
             Criar Jogador
           </button>
