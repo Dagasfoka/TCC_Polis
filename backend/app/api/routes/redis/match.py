@@ -25,8 +25,14 @@ async def create_demo_match_route():
         "match_id": match["match_id"]
     }
 
-@router_match.get("/debug/db")
-async def debug_db():
+@router_match.post("/db/init")
+async def init_database():
+
+    create_database()
+    seed_parties()
+    seed_missions()
+    seed_territories()
+
     return {
-        "database_url": settings.DATABASE_URL
+        "message": "Banco inicializado com sucesso"
     }
