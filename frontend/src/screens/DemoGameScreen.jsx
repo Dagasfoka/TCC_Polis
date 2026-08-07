@@ -128,6 +128,27 @@ export default function DemoGameScreen() {
         addLog("Erro ao criar jogador", error);
       }
   }
+  async function initializeDatabase() {
+  try {
+    addLog("Inicializando banco...");
+
+    const response = await fetch(
+      "https://tcc-polis-42o9.onrender.com/db/init",
+      {
+        method: "POST",
+      }
+    );
+
+    const data = await response.json();
+
+    addLog("Banco inicializado", data);
+
+    alert("Banco criado com sucesso!");
+  } catch (error) {
+    console.error(error);
+    addLog("Erro ao inicializar banco", error);
+  }
+}
  async function createDemoMatch() {
   try {
     addLog("1 - Iniciando requisição");
@@ -404,6 +425,10 @@ export default function DemoGameScreen() {
            
           <button onClick={createPlayer}>
             Criar Jogador
+          </button>
+
+          <button onClick={initializeDatabase}>
+            Inicializar Banco
           </button>
         </div>
 
