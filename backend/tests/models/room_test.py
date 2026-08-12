@@ -1,7 +1,10 @@
+from typing import TypedDict
+
+class RoomPlayer(TypedDict):
+    player: dict
+    ready: bool
+    host: bool
 from dataclasses import dataclass, field
-
-from backend.app.models.redis.room_player import RoomPlayer
-
 
 @dataclass
 class Room:

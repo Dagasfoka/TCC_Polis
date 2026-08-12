@@ -35,13 +35,14 @@ def join_room(player_id, room_code):
 def get_room(room_code):
     return get_room_repo(room_code)
 
-def start_game(db,room_code, player_id):
+def start_game(db,room_code,redis_client, player_id):
     room_dict = get_room(room_code)
-
+    if room_dict is None:
+        raise Exception("A sala não foi encontrada")
     if player_id != room_dict["host_player_id"]:
         raise Exception("Apenas o host pode iniciar")
 
-    match = create_match(db,room_code)
+    match = create_match(db=db,redis_client=redis_client,room_code=room_code)
 
     room_dict["status"] = "in_game"
     save_room(room_dict)
