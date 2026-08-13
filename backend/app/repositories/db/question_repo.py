@@ -10,6 +10,4 @@ class QuestionRepo:
         self.db = db
 
     def get_all_questions(self):
-        return self.db.scalars(
-            select(Question)
-        ).all()
+        return list(self.db.scalars(select(Question)).all())
