@@ -28,3 +28,11 @@ class Question(Base):
         Boolean,
         nullable=False
     )
+
+    def to_dict(self) -> dict:
+        return {
+            "question_id": self.question_id,
+            "subject": self.subject,
+            "description": self.description,
+            "answer": self.answer
+        }
