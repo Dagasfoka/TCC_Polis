@@ -27,7 +27,7 @@ def distribute_initial_territories_missions_questions(db, redis_client,match_sta
     )
     #Rules (fazer função para:)
     for player in match_state_dict["players"]:
-        player_questions = [question.copy() for question in questions]
+        player_questions = [question.to_dict() for question in questions]
         random.shuffle(player_questions)
         player["questions"] = player_questions
     #Rules (fazer função para:)
