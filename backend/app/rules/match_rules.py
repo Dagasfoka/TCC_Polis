@@ -11,7 +11,7 @@ import random
 def distribute_initial_territories_missions_questions(db, redis_client,match_state_dict):
     #Gateways
     missions_gateway=MissionsGateway(db=db)
-    questions_gateway = QuestionGateways()
+    questions_gateway = QuestionGateways(db=db)
 #____________________
     players = match_state_dict["players"]
     missions = missions_gateway.get_all_missions()
@@ -38,7 +38,7 @@ def distribute_initial_territories_missions_questions(db, redis_client,match_sta
     return match_state_dict
 
 def distribute_questions(match_state_dict):
-    questions_gateway = QuestionGateways()
+    questions_gateway = QuestionGateways(db=db)
     questions=questions_gateway.get_all_questions()
 
     
