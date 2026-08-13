@@ -9,6 +9,7 @@ from backend.app.scripts.create_db import create_database
 from backend.app.scripts.seed_parties import seed_parties
 from backend.app.scripts.seed_missions import seed_missions
 from backend.app.scripts.seed_territories import seed_territories
+from backend.app.scripts.seed_questions import seed_questions
 
 router_match = APIRouter()
 templates = Jinja2Templates(directory='templates')
@@ -32,6 +33,7 @@ async def init_database():
     seed_parties()
     seed_missions()
     seed_territories()
+    seed_questions()
 
     return {
         "message": "Banco inicializado com sucesso"
