@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from backend.app.api.deps import get_db
 from backend.app.schemas.redis.player import PlayerRoom
 from backend.app.schemas.redis.room import StartRoomRequest
-from backend.app.services.redis.room_service import create_room, join_room, start_game
+from backend.app.services.redis.room_service import create_room, join_room, start_game, get_room
 
 router_room = APIRouter()
 templates = Jinja2Templates(directory='templates')
@@ -29,4 +29,10 @@ async def start_game_route(
     db: Session = Depends(get_db)
 ):
     return start_game(db, room_id, data.player_id)
+
+
+@router_room.get("/rooms/{room_id}")
+async def get_room_route(room_id: str):
+    return get_room(room_id)
+
 
