@@ -1,0 +1,160 @@
+[1mdiff --git a/frontend/src/screens/DemoGameScreen.jsx b/frontend/src/screens/DemoGameScreen.jsx[m
+[1mindex b46b5bc..ed3f9e7 100644[m
+[1m--- a/frontend/src/screens/DemoGameScreen.jsx[m
+[1m+++ b/frontend/src/screens/DemoGameScreen.jsx[m
+[36m@@ -1,6 +1,5 @@[m
+ import { useEffect, useMemo, useRef, useState } from "react";[m
+ [m
+[31m-[m
+ import BrazilMapSvg from "../components/BrazilMapSvg.jsx";[m
+ [m
+ const PARTY_COLORS = {[m
+[36m@@ -10,7 +9,6 @@[m [mconst PARTY_COLORS = {[m
+   PD: "#F1C40F",[m
+ };[m
+ [m
+[31m-[m
+ function formatMission(mission) {[m
+   if (!mission) return "Missão não encontrada.";[m
+ [m
+[36m@@ -52,7 +50,6 @@[m [mfunction getPlayerNameById(playerId, players) {[m
+ [m
+ export default function DemoGameScreen() {[m
+   const [matchId, setMatchId] = useState("");[m
+[31m-  const [username, setUsername] = useState("");[m
+   const [playerId, setPlayerId] = useState("p1");[m
+   const [connected, setConnected] = useState(false);[m
+   const [matchState, setMatchState] = useState(null);[m
+[36m@@ -99,87 +96,6 @@[m [mexport default function DemoGameScreen() {[m
+       ...currentLogs,[m
+     ]);[m
+   }[m
+[31m-  async function createPlayer() {[m
+[31m-      try {[m
+[31m-        const response = await fetch([m
+[31m-          "https://tcc-polis-42o9.onrender.com/players",[m
+[31m-          {[m
+[31m-            method: "POST",[m
+[31m-            headers: {[m
+[31m-              "Content-Type": "application/json",[m
+[31m-            },[m
+[31m-            body: JSON.stringify({[m
+[31m-              username,[m
+[31m-            }),[m
+[31m-          }[m
+[31m-        );[m
+[31m-    [m
+[31m-        const data = await response.json();[m
+[31m-    [m
+[31m-        console.log(data);[m
+[31m-    [m
+[31m-        if (data.player_id) {[m
+[31m-          setPlayerId(data.player_id);[m
+[31m-        }[m
+[31m-    [m
+[31m-        addLog("Jogador criado", data);[m
+[31m-      } catch (error) {[m
+[31m-        console.error(error);[m
+[31m-        addLog("Erro ao criar jogador", error);[m
+[31m-      }[m
+[31m-  }[m
+[31m-  async function initializeDatabase() {[m
+[31m-  try {[m
+[31m-    addLog("Inicializando banco...");[m
+[31m-[m
+[31m-    const response = await fetch([m
+[31m-      "https://tcc-polis-42o9.onrender.com/db/init",[m
+[31m-      {[m
+[31m-        method: "POST",[m
+[31m-      }[m
+[31m-    );[m
+[31m-[m
+[31m-    const data = await response.json();[m
+[31m-[m
+[31m-    addLog("Banco inicializado", data);[m
+[31m-[m
+[31m-    alert("Banco criado com sucesso!");[m
+[31m-  } catch (error) {[m
+[31m-    console.error(error);[m
+[31m-    addLog("Erro ao inicializar banco", error);[m
+[31m-  }[m
+[31m-}[m
+[31m- async function createDemoMatch() {[m
+[31m-  try {[m
+[31m-    addLog("1 - Iniciando requisição");[m
+[31m-[m
+[31m-    const response = await fetch([m
+[31m-      "https://tcc-polis-42o9.onrender.com/match/create",[m
+[31m-      {[m
+[31m-        method: "POST",[m
+[31m-      }[m
+[31m-    );[m
+[31m-[m
+[31m-    addLog(`2 - Status: ${response.status}`);[m
+[31m-[m
+[31m-    const data = await response.json();[m
+[31m-[m
+[31m-    addLog("3 - JSON recebido");[m
+[31m-[m
+[31m-    console.log(data);[m
+[31m-[m
+[31m-    if (data.match_id) {[m
+[31m-      addLog(`4 - Match ID: ${data.match_id}`);[m
+[31m-      setMatchId(String(data.match_id));[m
+[31m-    }[m
+[31m-[m
+[31m-    addLog("5 - Finalizado");[m
+[31m-[m
+[31m-  } catch (error) {[m
+[31m-    console.error(error);[m
+[31m-    addLog(`ERRO: ${error.message}`);[m
+[31m-  }[m
+[31m-}[m
+ [m
+   function handleWinnerAlert(newMatchState) {[m
+     if ([m
+[36m@@ -213,7 +129,7 @@[m [mexport default function DemoGameScreen() {[m
+     setPendingActionInfo(null);[m
+ [m
+     const ws = new WebSocket([m
+[31m-      `wss://tcc-polis-42o9.onrender.com/ws/match/${matchId.trim()}/${playerId.trim()}`[m
+[32m+[m[32m      `ws://localhost:8000/ws/match/${matchId.trim()}/${playerId.trim()}`[m
+     );[m
+ [m
+     wsRef.current = ws;[m
+[36m@@ -410,28 +326,7 @@[m [mexport default function DemoGameScreen() {[m
+           <button onClick={disconnect} disabled={!connected}>[m
+             Desconectar[m
+           </button>[m
+[31m-[m
+[31m-          <button onClick={createDemoMatch}>[m
+[31m-            Criar Partida Demo[m
+[31m-          </button>[m
+[31m-[m
+[31m-           <input[m
+[31m-            type="text"[m
+[31m-            placeholder="Nome do jogador"[m
+[31m-            value={username}[m
+[31m-            onChange={(e) => setUsername(e.target.value)}[m
+[31m-          />[m
+[31m-[m
+[31m-           [m
+[31m-          <button onClick={createPlayer}>[m
+[31m-            Criar Jogador[m
+[31m-          </button>[m
+[31m-[m
+[31m-          <button onClick={initializeDatabase}>[m
+[31m-            Inicializar Banco[m
+[31m-          </button>[m
+         </div>[m
+[31m-[m
+       </section>[m
+ [m
+       <section className="demo-layout">[m
+[36m@@ -706,4 +601,4 @@[m [mexport default function DemoGameScreen() {[m
+       )}[m
+     </main>[m
+   );[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m

@@ -7,12 +7,13 @@ from backend.app.api.deps import get_db
 from backend.app.schemas.redis.player import PlayerRoom
 from backend.app.schemas.redis.room import StartRoomRequest
 from backend.app.services.redis.room_service import create_room, join_room, start_game
+from backend.app.db.redis import redis_client
 
 router_room = APIRouter()
 templates = Jinja2Templates(directory='templates')
 
 @router_room.post("/rooms")
-async def post_room(data : PlayerRoom):
+def post_room(data : PlayerRoom):
     return create_room(host_player_id=data.host_id)
 
 @router_room.post("/rooms/{room_code}/join")
@@ -28,5 +29,5 @@ async def start_game_route(
     data:StartRoomRequest,
     db: Session = Depends(get_db)
 ):
-    return start_game(db, room_id, data.player_id)
+    return start_game(db, room_id, redis_client, data.player_id)
 

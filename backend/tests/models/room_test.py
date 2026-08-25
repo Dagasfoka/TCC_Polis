@@ -1,20 +1,18 @@
 from typing import TypedDict
 
 class RoomPlayer(TypedDict):
-    player: dict
+    player_id: str
     ready: bool
     host: bool
+    
 from dataclasses import dataclass, field
 
 @dataclass
 class Room:
-    lobby_id: str
-    players: dict[str, RoomPlayer] = field(default_factory=dict)
+    room_code: str
+    players: dict = field(default_factory=dict)
     def to_dict(self):
         return {
-            "lobby_id": self.lobby_id,
-            "players": [
-                room_player["player"]["player_id"]
-                for room_player in self.players.values()
-            ]
+            "room_code": self.room_code,
+            "players": self.players
         }

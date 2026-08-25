@@ -21,7 +21,7 @@ function AuthOverlay({ mode, onSuccess, onClose, flash }) {
 
       const username = name || email.split('@')[0];
 
-      const res = await fetch('https://tcc-polis-4209.onrender.com/players', {
+      const res = await fetch('http://localhost:8000/players', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username })
@@ -48,7 +48,7 @@ function AuthOverlay({ mode, onSuccess, onClose, flash }) {
     }
 
     try {
-      const res = await fetch('https://tcc-polis-4209.onrender.com/players', {
+      const res = await fetch('http://localhost:8000/players', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: name })

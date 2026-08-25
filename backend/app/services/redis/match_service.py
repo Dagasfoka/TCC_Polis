@@ -6,11 +6,11 @@ from backend.app.factories.create_match_factory import (
     build_initial_match_state,
 )
 from backend.app.repositories.redis.match_repo import get_match_state, save_match_state
-from backend.app.repositories.redis.room_repo import get_room_repo
-
+from backend.app.gateways.room_gateways import RoomGateway
 
 def create_match(db,redis_client,room_code):
-    room_dict=get_room_repo(room_code)
+    room_gateway=RoomGateway()
+    room_dict=room_gateway.get_room(room_code)
     
     if room_dict is None:
         raise ValueError("Sala não encontrada")

@@ -347,7 +347,7 @@ export default function DemoGameScreen() {
 
     // Cria o WebSocket apontando para a rota do backend FastAPI.
     const ws = new WebSocket(
-      `wss://tcc-polis-42o9.onrender.com/ws/match/${matchId.trim()}/${playerId.trim()}`
+      `ws://localhost:8000/ws/match/${matchId.trim()}/${playerId.trim()}`
     );
 
     // Guarda a conexão na referência para que outras funções possam usá-la.
@@ -635,7 +635,7 @@ export default function DemoGameScreen() {
         <div className="demo-connect-panel">
           {/* Campo controlado pelo estado matchId. */}
           <label>
-            Match ID2
+            Match ID
             <input
               value={matchId}
               // Cada alteração no input atualiza matchId.

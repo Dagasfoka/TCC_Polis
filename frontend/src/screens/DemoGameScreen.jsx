@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-
 import BrazilMapSvg from "../components/BrazilMapSvg.jsx";
 
 const PARTY_COLORS = {
@@ -9,7 +8,6 @@ const PARTY_COLORS = {
   PV: "#2ECC71",
   PD: "#F1C40F",
 };
-
 
 function formatMission(mission) {
   if (!mission) return "Missão não encontrada.";
@@ -52,7 +50,6 @@ function getPlayerNameById(playerId, players) {
 
 export default function DemoGameScreen() {
   const [matchId, setMatchId] = useState("");
-  const [username, setUsername] = useState("");
   const [playerId, setPlayerId] = useState("p1");
   const [connected, setConnected] = useState(false);
   const [matchState, setMatchState] = useState(null);
@@ -99,87 +96,6 @@ export default function DemoGameScreen() {
       ...currentLogs,
     ]);
   }
-  async function createPlayer() {
-      try {
-        const response = await fetch(
-          "https://tcc-polis-42o9.onrender.com/players",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              username,
-            }),
-          }
-        );
-    
-        const data = await response.json();
-    
-        console.log(data);
-    
-        if (data.player_id) {
-          setPlayerId(data.player_id);
-        }
-    
-        addLog("Jogador criado", data);
-      } catch (error) {
-        console.error(error);
-        addLog("Erro ao criar jogador", error);
-      }
-  }
-  async function initializeDatabase() {
-  try {
-    addLog("Inicializando banco...");
-
-    const response = await fetch(
-      "https://tcc-polis-42o9.onrender.com/db/init",
-      {
-        method: "POST",
-      }
-    );
-
-    const data = await response.json();
-
-    addLog("Banco inicializado", data);
-
-    alert("Banco criado com sucesso!");
-  } catch (error) {
-    console.error(error);
-    addLog("Erro ao inicializar banco", error);
-  }
-}
- async function createDemoMatch() {
-  try {
-    addLog("1 - Iniciando requisição");
-
-    const response = await fetch(
-      "https://tcc-polis-42o9.onrender.com/match/create",
-      {
-        method: "POST",
-      }
-    );
-
-    addLog(`2 - Status: ${response.status}`);
-
-    const data = await response.json();
-
-    addLog("3 - JSON recebido");
-
-    console.log(data);
-
-    if (data.match_id) {
-      addLog(`4 - Match ID: ${data.match_id}`);
-      setMatchId(String(data.match_id));
-    }
-
-    addLog("5 - Finalizado");
-
-  } catch (error) {
-    console.error(error);
-    addLog(`ERRO: ${error.message}`);
-  }
-}
 
   function handleWinnerAlert(newMatchState) {
     if (
@@ -213,7 +129,7 @@ export default function DemoGameScreen() {
     setPendingActionInfo(null);
 
     const ws = new WebSocket(
-      `wss://tcc-polis-42o9.onrender.com/ws/match/${matchId.trim()}/${playerId.trim()}`
+      `ws://localhost:8000/ws/match/${matchId.trim()}/${playerId.trim()}`
     );
 
     wsRef.current = ws;
@@ -410,28 +326,7 @@ export default function DemoGameScreen() {
           <button onClick={disconnect} disabled={!connected}>
             Desconectar
           </button>
-
-          <button onClick={createDemoMatch}>
-            Criar Partida Demo
-          </button>
-
-           <input
-            type="text"
-            placeholder="Nome do jogador"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-
-           
-          <button onClick={createPlayer}>
-            Criar Jogador
-          </button>
-
-          <button onClick={initializeDatabase}>
-            Inicializar Banco
-          </button>
         </div>
-
       </section>
 
       <section className="demo-layout">

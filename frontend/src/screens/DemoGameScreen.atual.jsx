@@ -1,10 +1,8 @@
-// Hooks usados para controlar estado, valores derivados, referências e ciclo de vida.
 import { useEffect, useMemo, useRef, useState } from "react";
 
-// Componente responsável por exibir e permitir a seleção dos territórios no mapa.
+
 import BrazilMapSvg from "../components/BrazilMapSvg.jsx";
 
-// Define a cor visual de cada partido.
 const PARTY_COLORS = {
   PR: "#E74C3C",
   PA: "#3498DB",
@@ -12,7 +10,7 @@ const PARTY_COLORS = {
   PD: "#F1C40F",
 };
 
-// Transforma os dados da missão em um texto legível para o jogador.
+
 function formatMission(mission) {
   if (!mission) return "Missão não encontrada.";
 
@@ -33,7 +31,6 @@ function formatMission(mission) {
   return "Tipo de missão desconhecido.";
 }
 
-// Reduz o estado recebido para exibir somente os dados principais no log.
 function summarizeEvent(data) {
   if (!data?.payload) return data;
 
@@ -47,37 +44,31 @@ function summarizeEvent(data) {
   };
 }
 
-// Retorna o nome e o ID de um jogador a partir de seu player_id.
 function getPlayerNameById(playerId, players) {
   const player = players.find((player) => player.player_id === playerId);
 
   return player ? `${player.username} (${player.player_id})` : playerId;
 }
 
-// Controla a tela da partida, a conexão WebSocket e as ações do jogador.
 export default function DemoGameScreen() {
-  // Dados da conexão e estado principal da partida.
   const [matchId, setMatchId] = useState("");
+  const [username, setUsername] = useState("");
   const [playerId, setPlayerId] = useState("p1");
   const [connected, setConnected] = useState(false);
   const [matchState, setMatchState] = useState(null);
   const [selectedTerritory, setSelectedTerritory] = useState(null);
   const [logs, setLogs] = useState([]);
 
-  // Dados usados pelo modal de pergunta.
   const [pendingQuestion, setPendingQuestion] = useState(null);
   const [pendingActionInfo, setPendingActionInfo] = useState(null);
 
-  // Referências mantidas entre renderizações sem atualizar a interface.
   const wsRef = useRef(null);
   const winnerAlertShownRef = useRef(false);
 
-  // Dados derivados do estado atual da partida.
   const players = matchState?.players ?? [];
   const territories = matchState?.territories ?? [];
   const attackOptions = matchState?.available_attack_options ?? [];
 
-  // Localiza o jogador responsável pelo turno atual.
   const currentPlayer = useMemo(() => {
     if (!matchState) return null;
 
@@ -86,20 +77,17 @@ export default function DemoGameScreen() {
     );
   }, [matchState, players]);
 
-  // Localiza o jogador representado por esta tela.
   const me = useMemo(() => {
     if (!matchState) return null;
 
     return players.find((player) => player.player_id === matchState.your_player_id);
   }, [matchState, players]);
 
-  // Indica se o jogador conectado pode realizar uma ação.
   const isMyTurn =
     matchState &&
     matchState.status === "running" &&
     matchState.current_turn_player_id === matchState.your_player_id;
 
-  // Adiciona uma nova mensagem ao início do painel de logs.
   function addLog(message, data = null) {
     setLogs((currentLogs) => [
       {
@@ -111,8 +99,88 @@ export default function DemoGameScreen() {
       ...currentLogs,
     ]);
   }
+  async function createPlayer() {
+      try {
+        const response = await fetch(
+          "https://tcc-polis-42o9.onrender.com/players",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username,
+            }),
+          }
+        );
+    
+        const data = await response.json();
+    
+        console.log(data);
+    
+        if (data.player_id) {
+          setPlayerId(data.player_id);
+        }
+    
+        addLog("Jogador criado", data);
+      } catch (error) {
+        console.error(error);
+        addLog("Erro ao criar jogador", error);
+      }
+  }
+  async function initializeDatabase() {
+  try {
+    addLog("Inicializando banco...");
 
-  // Exibe o vencedor uma única vez quando a partida termina.
+    const response = await fetch(
+      "https://tcc-polis-42o9.onrender.com/db/init",
+      {
+        method: "POST",
+      }
+    );
+
+    const data = await response.json();
+
+    addLog("Banco inicializado", data);
+
+    alert("Banco criado com sucesso!");
+  } catch (error) {
+    console.error(error);
+    addLog("Erro ao inicializar banco", error);
+  }
+}
+ async function createDemoMatch() {
+  try {
+    addLog("1 - Iniciando requisição");
+
+    const response = await fetch(
+      "https://tcc-polis-42o9.onrender.com/match/create",
+      {
+        method: "POST",
+      }
+    );
+
+    addLog(`2 - Status: ${response.status}`);
+
+    const data = await response.json();
+
+    addLog("3 - JSON recebido");
+
+    console.log(data);
+
+    if (data.match_id) {
+      addLog(`4 - Match ID: ${data.match_id}`);
+      setMatchId(String(data.match_id));
+    }
+
+    addLog("5 - Finalizado");
+
+  } catch (error) {
+    console.error(error);
+    addLog(`ERRO: ${error.message}`);
+  }
+}
+
   function handleWinnerAlert(newMatchState) {
     if (
       newMatchState.status === "finished" &&
@@ -130,7 +198,6 @@ export default function DemoGameScreen() {
     }
   }
 
-  // Abre o WebSocket e configura o tratamento dos eventos recebidos.
   function connect() {
     if (!matchId.trim() || !playerId.trim()) {
       alert("Preencha match_id e player_id.");
@@ -146,24 +213,21 @@ export default function DemoGameScreen() {
     setPendingActionInfo(null);
 
     const ws = new WebSocket(
-      `ws://localhost:8000/ws/match/${matchId.trim()}/${playerId.trim()}`
+`ws://localhost:8000/ws/match/${matchId.trim()}/${playerId.trim()}`
     );
 
     wsRef.current = ws;
 
-    // Confirma a abertura da conexão.
     ws.onopen = () => {
       setConnected(true);
       addLog(`Conectado como ${playerId} na partida ${matchId}`);
     };
 
-    // Recebe eventos do backend e atualiza a interface conforme o tipo.
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
       addLog(`Recebido evento: ${data.type ?? data.result?.type ?? "sem_tipo"}`, data);
 
-      // Abre o modal quando o backend envia uma pergunta de ataque.
       if (data.type === "attack_question") {
         setPendingQuestion(data.question);
 
@@ -179,7 +243,6 @@ export default function DemoGameScreen() {
         return;
       }
 
-      // Atualiza a tela com o estado mais recente da partida.
       if (data.type === "match_state") {
         const newMatchState = data.payload;
 
@@ -195,7 +258,6 @@ export default function DemoGameScreen() {
         return;
       }
 
-      // Trata uma resposta de ataque no formato { match, result }.
       if (data.result?.type === "attack_result") {
         const newMatchState = data.match;
 
@@ -207,7 +269,6 @@ export default function DemoGameScreen() {
         return;
       }
 
-      // Trata outros resultados que também tragam um novo estado da partida.
       if (data.match && data.result) {
         const newMatchState = data.match;
 
@@ -219,25 +280,21 @@ export default function DemoGameScreen() {
         return;
       }
 
-      // Exibe mensagens de erro enviadas pelo backend.
       if (data.type === "error") {
         alert(data.payload?.message ?? data.message ?? "Erro desconhecido.");
       }
     };
 
-    // Registra falhas na conexão.
     ws.onerror = () => {
       addLog("Erro no WebSocket.");
     };
 
-    // Atualiza a tela quando a conexão é encerrada.
     ws.onclose = () => {
       setConnected(false);
       addLog("Conexão fechada.");
     };
   }
 
-  // Fecha a conexão e limpa os dados temporários da pergunta.
   function disconnect() {
     if (wsRef.current) {
       wsRef.current.close();
@@ -249,7 +306,6 @@ export default function DemoGameScreen() {
     setPendingActionInfo(null);
   }
 
-  // Envia ao backend a ação escolhida para o território selecionado.
   function sendAttack(optionId) {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
       alert("WebSocket não está conectado.");
@@ -284,32 +340,30 @@ export default function DemoGameScreen() {
     setSelectedTerritory(null);
   }
 
-  // Envia a resposta da pergunta pendente ao backend.
   function answerAttackQuestion(answer) {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      alert("WebSocket não está conectado.");
-      return;
-    }
-
-    wsRef.current.send(
-      JSON.stringify({
-        type: "answer_attack_question",
-
-        answer,
-
-        payload: {
-          answer,
-        },
-      })
-    );
-
-    addLog(`Enviado answer_attack_question: ${answer ? "Verdadeiro" : "Falso"}`);
-
-    setPendingQuestion(null);
-    setPendingActionInfo(null);
+  if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+    alert("WebSocket não está conectado.");
+    return;
   }
 
-  // Fecha o WebSocket quando o usuário sai desta tela.
+  wsRef.current.send(
+    JSON.stringify({
+      type: "answer_attack_question",
+
+      answer,
+
+      payload: {
+        answer,
+      },
+    })
+  );
+
+  addLog(`Enviado answer_attack_question: ${answer ? "Verdadeiro" : "Falso"}`);
+
+  setPendingQuestion(null);
+  setPendingActionInfo(null);
+}
+
   useEffect(() => {
     return () => {
       if (wsRef.current) {
@@ -318,10 +372,8 @@ export default function DemoGameScreen() {
     };
   }, []);
 
-  // Monta a interface com conexão, informações da partida, mapa, log e modal.
   return (
     <main className="demo-game-page">
-      {/* Cabeçalho e controles de conexão. */}
       <section className="demo-topbar">
         <div>
           <h1>Polis — Protótipo da Partida</h1>
@@ -358,14 +410,32 @@ export default function DemoGameScreen() {
           <button onClick={disconnect} disabled={!connected}>
             Desconectar
           </button>
+
+          <button onClick={createDemoMatch}>
+            Criar Partida Demo
+          </button>
+
+           <input
+            type="text"
+            placeholder="Nome do jogador"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+
+           
+          <button onClick={createPlayer}>
+            Criar Jogador
+          </button>
+
+          <button onClick={initializeDatabase}>
+            Inicializar Banco
+          </button>
         </div>
+
       </section>
 
-      {/* Área principal dividida em informações, mapa e log. */}
       <section className="demo-layout">
-        {/* Painel lateral com os dados da partida e ações do jogador. */}
         <aside className="demo-sidebar">
-          {/* Identificação do jogador conectado. */}
           <div className="demo-card">
             <h2>Você</h2>
             <p>
@@ -380,7 +450,6 @@ export default function DemoGameScreen() {
             </p>
           </div>
 
-          {/* Informações sobre rodada, turno e resultado da partida. */}
           <div className="demo-card">
             <h2>Turno</h2>
             <p>
@@ -406,14 +475,12 @@ export default function DemoGameScreen() {
             </p>
           </div>
 
-          {/* Missão individual recebida do backend. */}
           <div className="demo-card">
             <h2>Sua missão</h2>
             <p>{formatMission(matchState?.your_mission)}</p>
             <pre>{JSON.stringify(matchState?.your_mission ?? null, null, 2)}</pre>
           </div>
 
-          {/* Dados do território selecionado e opções de ataque disponíveis. */}
           <div className="demo-card">
             <h2>Território selecionado</h2>
 
@@ -468,7 +535,6 @@ export default function DemoGameScreen() {
             )}
           </div>
 
-          {/* Resultado detalhado da ação mais recente. */}
           <div className="demo-card">
             <h2>Última ação</h2>
 
@@ -544,7 +610,6 @@ export default function DemoGameScreen() {
             )}
           </div>
 
-          {/* Lista dos jogadores e seus partidos. */}
           <div className="demo-card">
             <h2>Jogadores</h2>
 
@@ -566,7 +631,6 @@ export default function DemoGameScreen() {
           </div>
         </aside>
 
-        {/* Mapa interativo da partida. */}
         <section className="demo-map-area">
           <BrazilMapSvg
             territories={territories}
@@ -578,7 +642,6 @@ export default function DemoGameScreen() {
           />
         </section>
 
-        {/* Histórico dos eventos enviados e recebidos pelo WebSocket. */}
         <aside className="demo-log-panel">
           <h2>Log</h2>
 
@@ -600,7 +663,6 @@ export default function DemoGameScreen() {
         </aside>
       </section>
 
-      {/* Modal exibido enquanto existe uma pergunta pendente. */}
       {pendingQuestion && (
         <div className="question-modal-backdrop">
           <div className="question-modal">

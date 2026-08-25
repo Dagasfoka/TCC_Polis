@@ -1,6 +1,7 @@
 from typing import TypedDict
 
+
 class RoomPlayer(TypedDict):
-    player: dict
+    player_id: str
     ready: bool
     host: bool
