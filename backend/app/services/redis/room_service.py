@@ -1,7 +1,8 @@
 # Criar sala, entrar, sair, iniciar partida.]
 from backend.app.factories.room_factory import RoomFactory
-from backend.app.repositories.redis.player_repo import get_player_repo
 from backend.app.gateways.room_gateways import RoomGateway
+from backend.app.validators.room_validators import RoomValidator
+from backend.app.repositories.redis.player_repo import get_player_repo
 from backend.app.services.redis.match_service import create_match
 
 
@@ -11,13 +12,13 @@ def create_room(host_player_id:str) -> dict:
     return room_dict
 
 def join_room(player_id, room_code):
+    room_validator=RoomValidator()
     room_gateway=RoomGateway()
     room_factory=RoomFactory()
     room_dict = room_gateway.get_room(room_code)
-    print("Saida:",room_dict)
-    if room_dict is None:
-        raise Exception("Room não existe")
-
+       
+    room_dict = room_validator.not_exist(room_dict)
+        
     player = get_player_repo(player_id)
 
     if player is None:
