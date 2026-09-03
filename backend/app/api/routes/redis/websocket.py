@@ -110,7 +110,7 @@ async def match_websocket(
 
                 updated_match = response["match"]
 
-                 await manager.send_to_all(
+                await manager.send_to_all(
                     match_id,
                     lambda player_id: {
                         "type": "match_state",
