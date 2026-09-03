@@ -54,5 +54,19 @@ class ConnectionManager:
         for websocket in players.values():
             await websocket.send_json(message)
 
+    async def send_to_all(
+        self,
+        match_id: int,
+        message_factory,
+    ):
+        players = self.active_connections.get(match_id, {})
+
+        for player_id in players.keys():
+            await self.send_to_player(
+                match_id=match_id,
+                player_id=player_id,
+                message=message_factory(player_id),
+            )
+
 
 manager = ConnectionManager()
