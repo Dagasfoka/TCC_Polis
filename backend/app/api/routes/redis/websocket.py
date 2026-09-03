@@ -110,17 +110,20 @@ async def match_websocket(
 
                 updated_match = response["match"]
 
-                await manager.send_to_player(
-                    match_id=match_id,
-                    player_id=player_id,
-                    message={
-                        "type": "match_state",
-                        "payload": prepare_match_for_player(
-                            updated_match,
-                            player_id,
-                        ),
-                    },
-                )
+                players = manager.active_connections.get(match_id, {})
+                
+                for connected_player_id in players.keys():
+                    await manager.send_to_player(
+                        match_id=match_id,
+                        player_id=connected_player_id,
+                        message={
+                            "type": "match_state",
+                            "payload": prepare_match_for_player(
+                                updated_match,
+                                connected_player_id,
+                            ),
+                        },
+                    )
 
             else:
                 await manager.send_to_player(
