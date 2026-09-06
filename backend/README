@@ -33,3 +33,6 @@ Core:
 
 Utils:
 "Onde se cria utilitários?"
+
+
+linha pra eu testar em casa: docker compose -f docker-compose.yml -f docker-compose.local.yml up --build

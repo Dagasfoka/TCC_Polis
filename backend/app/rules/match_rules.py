@@ -37,17 +37,6 @@ def distribute_initial_territories_missions_questions(db, redis_client,match_sta
 
     return match_state_dict
 
-def distribute_questions(match_state_dict):
-    questions_gateway = QuestionGateways()
-    questions=questions_gateway.get_all_questions()
-
-    
-    for player in match_state_dict["players"]:
-        player_questions = [question.copy() for question in questions]
-        random.shuffle(player_questions)
-        player["questions"] = player_questions
-    return match_state_dict
-
 def distribute_match_missions(match_id, players,db):
     missions_gateway=MissionsGateway(db=db)
     missions=missions_gateway.get_all_missions()
@@ -89,3 +78,13 @@ def choose_destruction_target(players, owner_id):
         raise ValueError("Não há alvo possível para missão de destruição.")
 
     return random.choice(possible_targets)
+def distribute_questions(match_state_dict):
+    questions_gateway = QuestionGateways()
+    questions=questions_gateway.get_all_questions()
+
+    
+    for player in match_state_dict["players"]:
+        player_questions = [question.copy() for question in questions]
+        random.shuffle(player_questions)
+        player["questions"] = player_questions
+    return match_state_dict

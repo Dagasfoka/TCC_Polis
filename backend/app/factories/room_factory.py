@@ -21,3 +21,6 @@ class RoomFactory:
         return room_dict
         #Tem que atualizar a room, essa function so coloca ready
         # Frontend tem que fazer o host não ver esse botão.
+    def delete_player(self, room_dict, player_id):
+        del room_dict["players"][player_id]
+        return room_dict
