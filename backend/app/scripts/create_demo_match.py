@@ -1,5 +1,6 @@
 from backend.app.db.database import SessionLocal
-from backend.app.repositories.redis.room_repo import save_room
+from backend.app.gateways.room_gateways import RoomGateway
+from backend.app.factories.room_factory import RoomFactory
 from backend.app.services.redis.match_service import create_match
 from backend.app.db.redis import redis_client
 DEMO_ROOM_CODE = "DEMO1"
@@ -34,8 +35,9 @@ DEMO_ROOM = {
 
 def create_demo_match():
     db = SessionLocal()
-
-    save_room(DEMO_ROOM)
+    room_gateway=RoomGateway()
+    room_factory=RoomFactory()
+    room_factory.update_room(DEMO_ROOM)
 
     match_dict = create_match(db, redis_client,DEMO_ROOM_CODE)
 
