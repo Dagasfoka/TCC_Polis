@@ -13,9 +13,10 @@ class RoomValidator:
                 if player_id != p_id:
                     raise Exception("Apenas o host pode iniciar")
         return player_id
-    def player_is_duplicate(self,player_id,room_dict):
+    def player_is_duplicate(self, player_id, room_dict):
         if player_id in room_dict["players"]:
-            return room_dict
+            raise Exception("Player já está na sala")
+        return room_dict
     def max_players_room(self,room_dict):
         if len(room_dict['players']) >= 4:
             raise Exception ("A sala esta cheia")
