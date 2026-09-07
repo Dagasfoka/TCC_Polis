@@ -5,7 +5,9 @@ from backend.app.db.redis import redis_client
 from backend.app.models.redis.player import Player
 from backend.app.utils.ids import generate_player_id
 
-
+class PlayerRepo:
+    def __init__(self) -> None:
+        pass
 def save_player(username=None, party_id=None):
     player_id = generate_player_id()
 
