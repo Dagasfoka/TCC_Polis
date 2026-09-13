@@ -6,100 +6,98 @@ from backend.app.factories.match_verify_factory import (
     verify_state,
 )
 from backend.app.models.redis.match_mission import MatchMission
-from backend.app.repositories.redis.match_mission_repo import (
-    get_match_mission_by_owner_id,
-    update_match_mission,
-)
+from backend.app.repositories.redis.match_mission_repo import MatchMissionRepo
+class MatchMissionFactory:
+    def __init__(self):
+        self.match_mission_repo=MatchMissionRepo()
+    def start_verify_match_mission(self,match_id, player_id):
+        match_mission = self.match_mission_repo.get_match_mission_by_owner_id(match_id, player_id)
+
+        if match_mission is None:
+            raise ValueError("Missão do jogador não encontrada.")
+
+        if match_mission["type"] == "destruction":
+            target_id = match_mission["content"]["destruction"]
+
+            if not is_alive(match_id, target_id):
+                match_mission["type"] = "state"
+                self.match_mission_repo.update_match_mission(match_id, match_mission)
+                return True
+
+        return False
 
 
-def start_verify_match_mission(match_id, player_id):
-    match_mission = get_match_mission_by_owner_id(match_id, player_id)
+    def final_verify_match_mission(self,match_id, player_id):
+        match_mission = self.match_mission_repo.get_match_mission_by_owner_id(match_id, player_id)
 
-    if match_mission is None:
-        raise ValueError("Missão do jogador não encontrada.")
+        if match_mission is None:
+            raise ValueError("Missão do jogador não encontrada.")
 
-    if match_mission["type"] == "destruction":
-        target_id = match_mission["content"]["destruction"]
+        match match_mission["type"]:
+            case "region":
+                for region_content in match_mission["content"]["region"]:
+                    if not verify_region(
+                        region_content["region"],
+                        region_content["quantity"],
+                        match_id,
+                        match_mission["owner_id"],
+                    ):
+                        return False
 
-        if not is_alive(match_id, target_id):
-            match_mission["type"] = "state"
-            update_match_mission(match_id, match_mission)
-            return True
+                return True
 
-    return False
-
-
-def final_verify_match_mission(match_id, player_id):
-    match_mission = get_match_mission_by_owner_id(match_id, player_id)
-
-    if match_mission is None:
-        raise ValueError("Missão do jogador não encontrada.")
-
-    match match_mission["type"]:
-        case "region":
-            for region_content in match_mission["content"]["region"]:
-                if not verify_region(
-                    region_content["region"],
-                    region_content["quantity"],
-                    match_id,
+            case "state":
+                return verify_state(
+                    match_mission["content"]["state"],
                     match_mission["owner_id"],
-                ):
-                    return False
+                    match_id,
+                )
 
-            return True
+            case "destruction":
+                return not is_alive(
+                    match_id,
+                    match_mission["content"]["destruction"],
+                )
 
-        case "state":
-            return verify_state(
-                match_mission["content"]["state"],
-                match_mission["owner_id"],
-                match_id,
-            )
+            case _:
+                raise ValueError(f"Tipo de missão inválido: {match_mission['type']}")
 
-        case "destruction":
-            return not is_alive(
-                match_id,
-                match_mission["content"]["destruction"],
-            )
+    def distribute_match_missions(self,match_id, players, chosen_missions):
+        if len(players) != len(chosen_missions):
+            raise ValueError("A quantidade de players precisa ser igual à quantidade de missões.")
 
-        case _:
-            raise ValueError(f"Tipo de missão inválido: {match_mission['type']}")
+        match_missions = []
 
-def distribute_match_missions(match_id, players, chosen_missions):
-    if len(players) != len(chosen_missions):
-        raise ValueError("A quantidade de players precisa ser igual à quantidade de missões.")
+        for player, mission in zip(players, chosen_missions):
+            content = mission.content.copy()
 
-    match_missions = []
+            if mission.type == "destruction":
+                content["destruction"] = self.choose_destruction_target(
+                    players=players,
+                    owner_id=player["player_id"],
+                )
 
-    for player, mission in zip(players, chosen_missions):
-        content = mission.content.copy()
-
-        if mission.type == "destruction":
-            content["destruction"] = choose_destruction_target(
-                players=players,
+            match_mission = MatchMission(
+                match_id=match_id,
+                mission_id=mission.mission_id,
+                type=mission.type,
+                content=content,
                 owner_id=player["player_id"],
             )
 
-        match_mission = MatchMission(
-            match_id=match_id,
-            mission_id=mission.mission_id,
-            type=mission.type,
-            content=content,
-            owner_id=player["player_id"],
-        )
+            match_missions.append(match_mission.to_dict())
 
-        match_missions.append(match_mission.to_dict())
-
-    return match_missions
+        return match_missions
 
 
-def choose_destruction_target(players, owner_id):
-    possible_targets = [
-        player["player_id"]
-        for player in players
-        if player["player_id"] != owner_id
-    ]
+    def choose_destruction_target(self,players, owner_id):
+        possible_targets = [
+            player["player_id"]
+            for player in players
+            if player["player_id"] != owner_id
+        ]
 
-    if not possible_targets:
-        raise ValueError("Não há alvo possível para missão de destruição.")
+        if not possible_targets:
+            raise ValueError("Não há alvo possível para missão de destruição.")
 
-    return random.choice(possible_targets)
+        return random.choice(possible_targets)

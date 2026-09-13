@@ -12,9 +12,6 @@ Gateways:
 Factories:
 “Qual alteração precisa ser feita?”
 
-Rules:
-“Qual cálculo ou processamento precisa ocorrer?”
-
 Validators:
 “Essa operação ou situação é válida?”
 

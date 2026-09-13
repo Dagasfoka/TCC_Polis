@@ -4,7 +4,7 @@ from backend.app.gateways.questions_gateways import QuestionGateways
 
 from backend.app.rules.missions_rules import MissionsRules
 
-from backend.app.factories.match_mission_factory_test import MatchMissionFactory
+from backend.app.factories.match_mission_factory import MatchMissionFactory
 
 import random
 

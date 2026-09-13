@@ -1,12 +1,10 @@
-from backend.app.repositories.redis.match_mission_repo import (
-    get_match_mission_by_owner_id,
-)
+from backend.app.repositories.redis.match_mission_repo import MatchMissionRepo
 from backend.app.services.db.action_service import get_attack_options
 
-
+match_mission_repo=MatchMissionRepo()
 def build_personal_match_state(match_dict: dict, player_id: str):
     match_id = match_dict["match_id"]
-    your_mission = get_match_mission_by_owner_id(match_id, player_id)
+    your_mission = match_mission_repo.get_match_mission_by_owner_id(match_id, player_id)
 
     return {
         "type": "match_state",
