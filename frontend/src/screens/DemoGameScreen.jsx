@@ -131,6 +131,36 @@ export default function DemoGameScreen() {
         addLog("Erro ao criar jogador", error);
       }
   }
+  async function searchPlayers() {
+    try {
+      const response = await fetch(
+        `${API}/matches/${matchId}`,
+        {
+          method: "GET",
+        }
+      );
+
+      const data = await response.json();
+
+      addLog("JSON recebido", data);
+
+      console.log(data);
+
+      if (data.players) {
+        setDemoPlayers(data.players);
+
+        if (data.players.length > 0) {
+          setPlayerId(data.players[0].player_id);
+        }
+      }
+
+      addLog("Jogadores encontrados", data.players);
+
+    } catch (error) {
+      console.error(error);
+      addLog("Erro ao procurar jogadores da partida", error);
+    }
+  }
   async function initializeDatabase() {
   try {
     addLog("Inicializando banco...");
@@ -402,6 +432,10 @@ wsRef.current = ws;
               placeholder="ex: 39"
             />
           </label>
+
+          <button onClick={SearchPlayer}>
+            Buscar Jogadores
+          </button>
 
           <label>
             Player ID
