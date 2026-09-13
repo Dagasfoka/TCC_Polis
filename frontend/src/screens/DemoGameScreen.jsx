@@ -146,7 +146,7 @@ export default function DemoGameScreen() {
 
       console.log(data);
 
-      if (data.players) {
+      if (data && data.players) {
         setDemoPlayers(data.players);
 
         if (data.players.length > 0) {
@@ -433,7 +433,7 @@ wsRef.current = ws;
             />
           </label>
 
-          <button onClick={SearchPlayer}>
+          <button onClick={searchPlayers}>
             Buscar Jogadores
           </button>
 
