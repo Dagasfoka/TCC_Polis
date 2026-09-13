@@ -21,9 +21,9 @@ async def get_match_route(match_id: str):
 @router_match.post("/match/create")
 async def create_demo_match_route():
     match = create_demo_match()
-
     return {
-        "match_id": match["match_id"]
+        "match_id": match["match_id"],
+        "players": match["players"],
     }
 
 @router_match.post("/db/init")

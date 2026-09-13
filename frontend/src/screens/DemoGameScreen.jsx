@@ -10,7 +10,9 @@ const PARTY_COLORS = {
   PD: "#F1C40F",
 };
 
-
+const API =
+  import.meta.env.VITE_API_URL ||
+  "https://tcc-polis-42o9.onrender.com";
 function formatMission(mission) {
   if (!mission) return "Missão não encontrada.";
 
@@ -53,7 +55,8 @@ function getPlayerNameById(playerId, players) {
 export default function DemoGameScreen() {
   const [matchId, setMatchId] = useState("");
   const [username, setUsername] = useState("");
-  const [playerId, setPlayerId] = useState("p1");
+  const [playerId, setPlayerId] = useState("");
+  const [demoPlayers, setDemoPlayers] = useState([]);
   const [connected, setConnected] = useState(false);
   const [matchState, setMatchState] = useState(null);
   const [selectedTerritory, setSelectedTerritory] = useState(null);
@@ -102,7 +105,7 @@ export default function DemoGameScreen() {
   async function createPlayer() {
       try {
         const response = await fetch(
-          "https://tcc-polis-42o9.onrender.com/players",
+           `${API}/players`,
           {
             method: "POST",
             headers: {
@@ -133,7 +136,7 @@ export default function DemoGameScreen() {
     addLog("Inicializando banco...");
 
     const response = await fetch(
-      "https://tcc-polis-42o9.onrender.com/db/init",
+      `${API}/db/init`,
       {
         method: "POST",
       }
@@ -154,7 +157,7 @@ export default function DemoGameScreen() {
     addLog("1 - Iniciando requisição");
 
     const response = await fetch(
-      "https://tcc-polis-42o9.onrender.com/match/create",
+    `${API}/match/create`,
       {
         method: "POST",
       }
@@ -172,7 +175,13 @@ export default function DemoGameScreen() {
       addLog(`4 - Match ID: ${data.match_id}`);
       setMatchId(String(data.match_id));
     }
+    if (data.players) {
+  setDemoPlayers(data.players);
 
+      if (data.players.length > 0) {
+        setPlayerId(data.players[0].player_id);
+      }
+}
     addLog("5 - Finalizado");
 
   } catch (error) {
@@ -211,12 +220,16 @@ export default function DemoGameScreen() {
     winnerAlertShownRef.current = false;
     setPendingQuestion(null);
     setPendingActionInfo(null);
+    ///
+const WS =
+  import.meta.env.VITE_WS_URL ||
+  "wss://tcc-polis-42o9.onrender.com";
 
-    const ws = new WebSocket(
-      `wss://tcc-polis-42o9.onrender.com/ws/match/${matchId.trim()}/${playerId.trim()}`
-    );
+const ws = new WebSocket(
+  `${WS}/ws/match/${matchId}/${playerId}`
+);
 
-    wsRef.current = ws;
+wsRef.current = ws;
 
     ws.onopen = () => {
       setConnected(true);
@@ -392,15 +405,16 @@ export default function DemoGameScreen() {
 
           <label>
             Player ID
-            <select
-              value={playerId}
-              onChange={(event) => setPlayerId(event.target.value)}
-            >
-              <option value="p1">p1</option>
-              <option value="p2">p2</option>
-              <option value="p3">p3</option>
-              <option value="p4">p4</option>
-            </select>
+              <select
+                value={playerId}
+                onChange={(event) => setPlayerId(event.target.value)}
+              >
+                {demoPlayers.map((player) => (
+                  <option key={player.player_id} value={player.player_id}>
+                    {player.username}
+                  </option>
+                ))}
+              </select>
           </label>
 
           <button onClick={connect}>
