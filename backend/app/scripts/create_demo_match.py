@@ -1,45 +1,64 @@
 from backend.app.db.database import SessionLocal
-from backend.app.gateways.room_gateways import RoomGateway
 from backend.app.factories.room_factory import RoomFactory
 from backend.app.services.redis.match_service import create_match
+from backend.app.repositories.redis.player_repo import save_player
 from backend.app.db.redis import redis_client
+
+
 DEMO_ROOM_CODE = "DEMO1"
 
 
-DEMO_ROOM = {
-    "room_code": DEMO_ROOM_CODE,
-    "players": [
-        {
-            "player_id": "p1",
-            "username": "Redondo",
-            "party_id": "PR",
-        },
-        {
-            "player_id": "p2",
-            "username": "Mexicano",
-            "party_id": "PA",
-        },
-        {
-            "player_id": "p3",
-            "username": "Mínimo",
-            "party_id": "PV",
-        },
-        {
-            "player_id": "p4",
-            "username": "Careca",
-            "party_id": "PD",
-        },
-    ],
-}
+DEMO_PLAYERS = [
+    {
+        "username": "Redondo",
+        "party_id": "PR",
+    },
+    {
+        "username": "Mexicano",
+        "party_id": "PA",
+    },
+    {
+        "username": "Mínimo",
+        "party_id": "PV",
+    },
+    {
+        "username": "Careca",
+        "party_id": "PD",
+    },
+]
 
 
 def create_demo_match():
     db = SessionLocal()
-    room_gateway=RoomGateway()
-    room_factory=RoomFactory()
-    room_factory.update_room(DEMO_ROOM)
+    room_factory = RoomFactory()
 
-    match_dict = create_match(db, redis_client,DEMO_ROOM_CODE)
+    players = []
+
+    for player_data in DEMO_PLAYERS:
+        player = save_player(
+            username=player_data["username"],
+            party_id=player_data["party_id"],
+        )
+        players.append(player)
+
+    demo_room = {
+        "room_code": DEMO_ROOM_CODE,
+        "players": {}
+    }
+
+    for index, player in enumerate(players):
+        demo_room["players"][player["player_id"]] = {
+            "ready": index != 0,
+            "host": index == 0,
+        }
+
+    room_factory.update_room(demo_room)
+
+    match_dict = create_match(
+        db,
+        redis_client,
+        DEMO_ROOM_CODE,
+    )
 
     print("Partida demo criada com sucesso.")
     print(f"room_code: {DEMO_ROOM_CODE}")
@@ -53,9 +72,6 @@ def create_demo_match():
             f"party_id={player['party_id']}"
         )
 
-    print("\nUse no HTML:")
-    print(f"match_id = {match_dict['match_id']}")
-    print("players = p1, p2, p3, p4")
     return match_dict
 
 
