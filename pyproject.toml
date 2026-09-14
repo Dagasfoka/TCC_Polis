@@ -66,5 +66,3 @@ local = "docker compose -f docker-compose.yml -f docker-compose.local.yml up --b
 update_gitignore = "powershell -Command \"if (!(Test-Path .gitignore)) { New-Item .gitignore | Out-Null }; $lines = @('.env','.env.*','.vscode/','*.log','*.db','dump.rdb'); foreach ($line in $lines) { if (-not (Select-String -Path .gitignore -Pattern ('^' + [regex]::Escape($line) + '$') -Quiet)) { Add-Content .gitignore $line } }\""
 
 export_requirements = "poetry export -f requirements.txt --output requirements.txt --without-hashes --all-groups"
-
-local = "docker compose -f docker-compose.yml -f docker-compose.local.yml up --build"

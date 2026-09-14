@@ -1,3 +1,4 @@
+from email import contentmanager
 import random
 
 from backend.app.factories.match_verify_factory import (
@@ -101,3 +102,17 @@ class MatchMissionFactory:
             raise ValueError("Não há alvo possível para missão de destruição.")
 
         return random.choice(possible_targets)
+    
+    def create_match_mission(self,match_dict,mission_id,type,content,owner_id):
+        #_______________________________ validator
+        if match_dict is None:
+            raise ValueError("Partida não encontrada.")
+        #_______________________________ 
+        match_mission_dict=self.match_mission_repo.create_match_mission(
+            match_dict=match_dict,
+            mission_id=mission_id,
+            type=type,
+            content=content,
+            owner_id=owner_id,
+            )
+        return match_mission_dict

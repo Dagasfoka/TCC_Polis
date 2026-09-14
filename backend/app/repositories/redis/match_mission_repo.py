@@ -1,5 +1,5 @@
 from backend.app.repositories.redis.match_repo import get_match_state, save_match_state
-
+from backend.app.models.redis.match_mission import MatchMission
 class MatchMissionRepo:
     def get_match_mission_by_id(self,match_id, mission_id):
         for mission in self.get_all_match_missions(match_id):
@@ -17,23 +17,15 @@ class MatchMissionRepo:
         return None
 
 
-    def create_match_mission(self,match_id, match_mission_dict):
-        match_dict = get_match_state(match_id)
-
-        if match_dict is None:
-            raise ValueError("Partida não encontrada.")
-
-        missions = match_dict.setdefault("missions", [])
-
-        owner_id = match_mission_dict["owner_id"]
-
-        for mission in missions:
-            if mission["owner_id"] == owner_id:
-                raise ValueError("Esse jogador já possui uma missão nessa partida.")
-
-        missions.append(match_mission_dict)
-
-        save_match_state(match_dict)
+    def create_match_mission(self,match_dict,mission_id,type,content,owner_id):
+        match_mission=MatchMission(
+            match_id=match_dict["match_id"],
+            mission_id=mission_id,
+            type=type,content=content,
+            owner_id=owner_id
+        )
+        match_mission_dict=match_mission.to_dict()
+        
 
         return match_mission_dict
 

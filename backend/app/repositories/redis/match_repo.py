@@ -5,12 +5,11 @@ from backend.app.db.redis import redis_client
 
 
 class MatchRepo:
-    def __init__(self, match_id,redis_client):
-        self.match_id = match_id
+    def __init__(self):
         self.redis_client : Redis =redis_client
         
-    async def get_match(self):
-            key = f"match:{self.match_id}:state"
+    async def get_match(self,match_id):
+            key = f"match:{match_id}:state"
     
             match_state = await self.redis_client.get(key)
     
@@ -25,9 +24,9 @@ class MatchRepo:
 
         await self.redis_client.set(key, match_state_JSON)
     
-    async def incr_match_round(self):
+    async def incr_match_round(self,match_id):
         return await self.redis_client.incr(
-            f"match:{self.match_id}:round"
+            f"match:{match_id}:round"
         )
 
     async def generate_match_id(self) -> int:

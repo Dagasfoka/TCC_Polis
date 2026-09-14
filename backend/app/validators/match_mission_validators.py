@@ -3,7 +3,7 @@ from backend.app.repositories.redis.match_mission_repo import MatchMissionRepo
 
 class MatchMissionValidator:
     def __init__(self) -> None:
-        self.match_mission_repo=MatchMissionRepo
+        self.match_mission_repo=MatchMissionRepo()
     def start_verify_match_mission(self,match_id, player_id):
         match_mission = self.match_mission_repo.get_match_mission_by_owner_id(match_id=match_id, owner_id=player_id)
 

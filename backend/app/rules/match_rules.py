@@ -2,19 +2,19 @@ from backend.app.gateways.match_gateways import MatchGateway
 from backend.app.gateways.missions_gateways import MissionsGateway
 from backend.app.gateways.questions_gateways import QuestionGateways
 
+from backend.app.models.db.mission import Mission
 from backend.app.rules.missions_rules import MissionsRules
 
 from backend.app.factories.match_mission_factory import MatchMissionFactory
 
 import random
 
-def distribute_initial_territories_missions_questions(db, redis_client,match_state_dict):
+def distribute_initial_territories_missions_questions(db,match_state_dict):
     #Gateways
     missions_gateway=MissionsGateway(db=db)
     questions_gateway = QuestionGateways(db=db)
 #____________________
     players = match_state_dict["players"]
-    missions = missions_gateway.get_all_missions()
     questions=questions_gateway.get_all_questions()
 #____________________
     #Rules (dentro provalmente tem que repartir Gateways e factories)
@@ -50,9 +50,12 @@ def distribute_questions(match_state_dict):
 
 def distribute_match_missions(match_id, players,db):
     missions_gateway=MissionsGateway(db=db)
+    match_gateway = MatchGateway()
+    
     missions=missions_gateway.get_all_missions()
+    match_dict=match_gateway.get_match_by_id(match_id)
 
-    match_missions_factory=MatchMissionFactory(match_id=match_id)
+    match_missions_factory=MatchMissionFactory()
 
     missions_rules=MissionsRules(missions=missions)
     chosen_missions=missions_rules.choose_missions(quantity_players=len(players))
@@ -65,15 +68,15 @@ def distribute_match_missions(match_id, players,db):
 
     for player, mission in zip(players, chosen_missions):
         content = mission.content.copy()
-
+        mission : Mission
         if mission.type == "destruction":
             content["destruction"] = choose_destruction_target(
                 players=players,
                 owner_id=player["player_id"],
             )
             mission.content=content
-        match_mission= match_missions_factory.create_match_mission(mission=mission,player=player)
-
+        match_mission= match_missions_factory.create_match_mission(match_dict,mission.mission_id,type,content,player['player_id'])
+        
         match_missions.append(match_mission)
         print(match_missions)
     return match_missions
