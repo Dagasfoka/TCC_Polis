@@ -56,7 +56,6 @@ def create_demo_match():
 
     match_dict = create_match(
         db,
-        redis_client,
         DEMO_ROOM_CODE,
     )
 
