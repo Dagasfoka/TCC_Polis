@@ -11,20 +11,12 @@ import random
 
 def distribute_initial_territories_missions_questions(db,match_state_dict):
     #Gateways
-    missions_gateway=MissionsGateway(db=db)
     questions_gateway = QuestionGateways(db=db)
 #____________________
     players = match_state_dict["players"]
     questions=questions_gateway.get_all_questions()
 #____________________
     #Rules (dentro provalmente tem que repartir Gateways e factories)
-    match_state_dict["missions"] =(
-        distribute_match_missions(
-        db=db,
-        match_id=match_state_dict["match_id"],
-        players=players,
-        )
-    )
     #Rules (fazer função para:)
     for player in match_state_dict["players"]:
         player_questions = [question.to_dict() for question in questions]
@@ -78,7 +70,7 @@ def distribute_match_missions(match_id, players,db):
         match_mission= match_missions_factory.create_match_mission(match_dict,mission.mission_id,type,content,player['player_id'])
         
         match_missions.append(match_mission)
-        print(match_missions)
+        
     return match_missions
 
 def choose_destruction_target(players, owner_id):

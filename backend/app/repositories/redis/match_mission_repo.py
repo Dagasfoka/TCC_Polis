@@ -17,9 +17,9 @@ class MatchMissionRepo:
         return None
 
 
-    def create_match_mission(self,match_dict,mission_id,type,content,owner_id):
+    def create_match_mission(self,match_id,mission_id,type,content,owner_id):
         match_mission=MatchMission(
-            match_id=match_dict["match_id"],
+            match_id=match_id,
             mission_id=mission_id,
             type=type,content=content,
             owner_id=owner_id

@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from backend.app.models.db.mission import Mission
 from backend.app.repositories.db.mission_repo import MissionsRepository
 
 #from backend.app.validators.missions_validators import *
@@ -7,5 +8,5 @@ from backend.app.repositories.db.mission_repo import MissionsRepository
 class MissionsGateway:
     def __init__(self, db: Session):
         self.missions_repository = MissionsRepository(db)
-    def get_all_missions(self):
+    def get_all_missions(self)-> list[Mission]:
         return self.missions_repository.get_all_missions()
