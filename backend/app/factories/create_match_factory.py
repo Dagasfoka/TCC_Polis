@@ -5,8 +5,6 @@ from backend.app.gateways.match_gateways import MatchGateway
 from backend.app.gateways.questions_gateways import QuestionGateways
 from backend.app.gateways.player_gateways import PlayerGateway
 
-from backend.app.rules.missions_rules import MissionsRules
-
 from backend.app.models.redis.match import Match
 from backend.app.models.redis.match_territory import MatchTerritory
 from backend.app.repositories.redis.match_repo import generate_match_id
