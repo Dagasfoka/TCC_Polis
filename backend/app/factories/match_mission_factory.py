@@ -1,11 +1,6 @@
 from email import contentmanager
 import random
 
-from backend.app.factories.match_verify_factory import (
-    is_alive,
-    verify_region,
-    verify_state,
-)
 
 from backend.app.repositories.redis.match_mission_repo import MatchMissionRepo
 
@@ -15,58 +10,6 @@ import random
 class MatchMissionFactory:
     def __init__(self):
         self.match_mission_repo=MatchMissionRepo()
-    def start_verify_match_mission(self,match_id, player_id):
-        match_mission = self.match_mission_repo.get_match_mission_by_owner_id(match_id, player_id)
-
-        if match_mission is None:
-            raise ValueError("Missão do jogador não encontrada.")
-
-        if match_mission["type"] == "destruction":
-            target_id = match_mission["content"]["destruction"]
-
-            if not is_alive(match_id, target_id):
-                match_mission["type"] = "state"
-                self.match_mission_repo.update_match_mission(match_id, match_mission)
-                return True
-
-        return False
-
-
-    def final_verify_match_mission(self,match_id, player_id):
-        match_mission = self.match_mission_repo.get_match_mission_by_owner_id(match_id, player_id)
-
-        if match_mission is None:
-            raise ValueError("Missão do jogador não encontrada.")
-
-        match match_mission["type"]:
-            case "region":
-                for region_content in match_mission["content"]["region"]:
-                    if not verify_region(
-                        region_content["region"],
-                        region_content["quantity"],
-                        match_id,
-                        match_mission["owner_id"],
-                    ):
-                        return False
-
-                return True
-
-            case "state":
-                return verify_state(
-                    match_mission["content"]["state"],
-                    match_mission["owner_id"],
-                    match_id,
-                )
-
-            case "destruction":
-                return not is_alive(
-                    match_id,
-                    match_mission["content"]["destruction"],
-                )
-
-            case _:
-                raise ValueError(f"Tipo de missão inválido: {match_mission['type']}")
-
     def distribute_match_missions(self,match_id, players,db):
         missions_gateway=MissionsGateway(db=db)
         

@@ -8,10 +8,7 @@ from backend.app.repositories.redis.match_repo import (
     get_match_state,
     save_match_state,
 )
-from backend.app.services.redis.match_mission_service import (
-    final_round_verify,
-    start_round_verify,
-)
+from backend.app.validators.match_mission_validators import MatchMissionValidator
 
 QUESTION_CORRECT_BONUS = 20
 QUESTION_WRONG_PENALTY = 20
@@ -19,6 +16,7 @@ QUESTION_WRONG_PENALTY = 20
 MIN_SUCCESS_CHANCE = 5
 MAX_SUCCESS_CHANCE = 95
 
+match_mission_validator=MatchMissionValidator()
 
 def get_attack_options():
     return list_options_by_action("attack")
@@ -187,7 +185,7 @@ def resolve_attack_question(
 
     save_match_state(match)
 
-    won = final_round_verify(match_id, player_id)
+    won = match_mission_validator.final_round_verify(match_id, player_id)
 
     if won:
         match = get_match_state(match_id)
@@ -213,7 +211,7 @@ def resolve_attack_question(
 
     save_match_state(match)
 
-    start_round_verify(match_id, match["current_turn_player_id"])
+    match_mission_validator.start_round_verify(match_id, match["current_turn_player_id"])
 
     match = get_match_state(match_id)
     match["last_action_result"] = action_result

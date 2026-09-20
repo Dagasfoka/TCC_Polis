@@ -46,3 +46,6 @@ class RoomValidator:
         if len(room_dict['players']) != 4:
             raise Exception ("Não tem quatro jogadores")
         return True
+    def players_exist(self,room_dict):
+        if not room_dict["players"]:
+            raise ValueError("Sala sem jogadores")
