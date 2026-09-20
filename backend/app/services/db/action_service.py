@@ -10,6 +10,7 @@ from backend.app.repositories.redis.match_repo import (
 )
 from backend.app.validators.match_mission_validators import MatchMissionValidator
 
+from backend.app.validators.match_territory_validator import MatchTerritoryValidator
 QUESTION_CORRECT_BONUS = 20
 QUESTION_WRONG_PENALTY = 20
 
@@ -17,7 +18,7 @@ MIN_SUCCESS_CHANCE = 5
 MAX_SUCCESS_CHANCE = 95
 
 match_mission_validator=MatchMissionValidator()
-
+match_territory_validator=MatchTerritoryValidator()
 def get_attack_options():
     return list_options_by_action("attack")
 
@@ -66,6 +67,11 @@ def resolve_attack_option(
 
     if player is None:
         raise ValueError("Jogador não encontrado")
+    match_territory_validator.frontier_verify(
+        target_territory_id=target_territory_id,
+        player_id=player_id,
+        match_territories=match['territories'],
+        )
 
     question = get_next_question_for_player(player)
 

@@ -8,12 +8,13 @@ from backend.app.gateways.player_gateways import PlayerGateway
 from backend.app.models.redis.match import Match
 from backend.app.models.redis.match_territory import MatchTerritory
 from backend.app.repositories.redis.match_repo import generate_match_id
-from backend.app.repositories.db.territory_repo import get_all_territories
+from backend.app.repositories.db.territory_repo import TerritoryRepo
 
 
 
 def build_initial_match_state(db, room_dict) -> Match:
-    territories = get_all_territories(db)
+    territory_repo=TerritoryRepo()
+    territories = territory_repo.get_all_territories(db)
     match_territories = []
     match_id = generate_match_id()
     player_gateway=PlayerGateway()
