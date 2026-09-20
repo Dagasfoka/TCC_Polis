@@ -70,87 +70,83 @@ async def match_websocket(
 
         while True:
             data = await websocket.receive_json()
-            event_type = data.get("type")
-            payload = data.get("payload", {})
 
-            if event_type == "choose_attack_option":
-                target_territory_id = (
-                    data.get("target_territory_id")
-                    or data.get("territory_id")
-                    or payload.get("target_territory_id")
-                    or payload.get("territory_id")
-                )
+            try:
+                event_type = data.get("type")
+                payload = data.get("payload", {})
 
-                option_id = data.get("option_id") or payload.get("option_id")
+                if event_type == "choose_attack_option":
+                    target_territory_id = (
+                        data.get("target_territory_id")
+                        or data.get("territory_id")
+                        or payload.get("target_territory_id")
+                        or payload.get("territory_id")
+                    )
 
-                response = resolve_attack_option(
-                    match_id=match_id,
-                    player_id=player_id,
-                    target_territory_id=target_territory_id,
-                    option_id=option_id,
-                )
+                    option_id = data.get("option_id") or payload.get("option_id")
 
-                await manager.send_to_player(
-                    match_id=match_id,
-                    player_id=player_id,
-                    message=response["result"],
-                )
+                    response = resolve_attack_option(
+                        match_id=match_id,
+                        player_id=player_id,
+                        target_territory_id=target_territory_id,
+                        option_id=option_id,
+                    )
 
-            elif event_type == "answer_attack_question":
-                answer = data.get("answer")
+                    await manager.send_to_player(
+                        match_id=match_id,
+                        player_id=player_id,
+                        message=response["result"],
+                    )
 
-                if answer is None:
-                    answer = payload.get("answer")
+                elif event_type == "answer_attack_question":
+                    answer = data.get("answer")
 
-                response = resolve_attack_question(
-                    match_id=match_id,
-                    player_id=player_id,
-                    answer=answer,
-                )
+                    if answer is None:
+                        answer = payload.get("answer")
 
-                updated_match = response["match"]
+                    response = resolve_attack_question(
+                        match_id=match_id,
+                        player_id=player_id,
+                        answer=answer,
+                    )
 
-                await manager.send_to_all(
-                    match_id,
-                    lambda player_id: {
-                        "type": "match_state",
-                        "payload": prepare_match_for_player(
-                            updated_match,
-                            player_id,
-                        ),
-                    },
-                )
+                    updated_match = response["match"]
 
-            else:
+                    await manager.send_to_all(
+                        match_id,
+                        lambda player_id: {
+                            "type": "match_state",
+                            "payload": prepare_match_for_player(
+                                updated_match,
+                                player_id,
+                            ),
+                        },
+                    )
+
+                else:
+                    await manager.send_to_player(
+                        match_id=match_id,
+                        player_id=player_id,
+                        message={
+                            "type": "error",
+                            "payload": {
+                                "message": f"Evento WebSocket desconhecido: {event_type}",
+                            },
+                        },
+                    )
+
+            except Exception as error:
                 await manager.send_to_player(
                     match_id=match_id,
                     player_id=player_id,
                     message={
                         "type": "error",
                         "payload": {
-                            "message": f"Evento WebSocket desconhecido: {event_type}",
+                            "message": str(error),
                         },
                     },
                 )
-
     except WebSocketDisconnect:
-        manager.disconnect(
-            match_id=match_id,
-            player_id=player_id,
-        )
-
-    except Exception as error:
-        await manager.send_to_player(
-            match_id=match_id,
-            player_id=player_id,
-            message={
-                "type": "error",
-                "payload": {
-                    "message": str(error),
-                },
-            },
-        )
-
         manager.disconnect(
             match_id=match_id,
             player_id=player_id,
