@@ -57,7 +57,7 @@ TERRITORIES_DATA = [
         "name": "Bahia",
         "region": "Nordeste",
         "base_influence": 6,
-        "frontiers": ["AL", "PE", "PI", "TO", "GO", "MG"],
+        "frontiers": ["AL", "PE", "PI", "TO", "GO", "MG", "RJ"],
     },
     {
         "id": "CE",
@@ -131,7 +131,7 @@ TERRITORIES_DATA = [
         "name": "Rio de Janeiro",
         "region": "Sudeste",
         "base_influence": 7,
-        "frontiers": ["MG", "SP", "CE"],  # CE = fronteira especial
+        "frontiers": ["MG", "SP", "BA", "CE"],  # CE = fronteira especial
     },
     {
         "id": "SP",
