@@ -2,7 +2,7 @@
 from pydantic import BaseModel
 
 
-class RoomCreate(BaseModel):
+class RoomCode(BaseModel):
     room_code:str
 class StartRoomRequest(BaseModel):
     host_id: str
