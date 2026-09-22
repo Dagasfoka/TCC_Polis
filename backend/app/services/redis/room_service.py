@@ -73,7 +73,7 @@ def start_game(db,room_code,redis_client, player_id):
     room_dict=room_validator.not_exist(room_dict)
     player_id= room_validator.player_can_start(player_id,room_dict)
     if (room_validator.ready_to_start(room_dict)):
-        match = create_match(db=db,redis_client=redis_client,room_code=room_code)
+        match = create_match(db=db,room_code=room_code)
 
         room_dict["status"] = "in_game"
         room_factory.update_room(room_dict)
