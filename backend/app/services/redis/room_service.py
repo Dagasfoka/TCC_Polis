@@ -6,7 +6,22 @@ from backend.app.validators.player_validators import PlayerValidator
 from backend.app.repositories.redis.player_repo import get_player_repo
 from backend.app.services.redis.match_service import create_match
 
-
+def exit_room(room_code,player_id):
+    room_gateway=RoomGateway()
+    room_factory=RoomFactory()
+    room_validator=RoomValidator()
+    
+    player_validator=PlayerValidator()
+    player = get_player_repo(player_id)
+    player=player_validator.not_exist(player)
+    player_id=player["player_id"]    
+    
+    room_dict = room_gateway.get_room(room_code)
+    
+    room_dict=room_validator.not_exist(room_dict)
+    room_dict=room_factory.delete_player(room_dict,player_id)
+    room_factory.update_room(room_dict)
+    return room_dict
 def create_room(host_player_id:str) -> dict:
     room_factory=RoomFactory()
     room_validator=RoomValidator()

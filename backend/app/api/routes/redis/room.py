@@ -1,4 +1,6 @@
 # Criar sala, entrar em sala, sair da sala.
+from urllib import response
+
 from fastapi import APIRouter, Depends
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -7,6 +9,7 @@ from backend.app.api.deps import get_db
 from backend.app.db.redis import redis_client
 from backend.app.schemas.redis.player import PlayerRoom
 from backend.app.schemas.redis.room import (
+    RoomCode,
     StartRoomRequest,
     JoinRoomRequest,
     PutReady,
@@ -19,6 +22,7 @@ from backend.app.services.redis.room_service import (
     put_ready,
     delete_player,
     get_room,
+    exit_room,
 )
 
 router_room = APIRouter()
@@ -29,10 +33,14 @@ templates = Jinja2Templates(directory="templates")
 def get_room_route(room_code: str):
     return get_room(room_code)
 
-
-@router_room.post("/rooms")
+@router_room.delete('/room/{room_code}/exit', response_model=RoomCode)
+def exit_room_route(room_code: str, player_id):
+    return  exit_room(room_code,player_id)
+    
+@router_room.post("/rooms", response_model=RoomCode)
 def post_room(data: PlayerRoom):
     return create_room(host_player_id=data.host_id)
+
 
 
 @router_room.post("/rooms/{room_code}/join")
