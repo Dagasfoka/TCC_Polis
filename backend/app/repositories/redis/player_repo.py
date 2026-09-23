@@ -3,19 +3,20 @@ from json import dumps, loads
 
 from backend.app.db.redis import redis_client
 from backend.app.models.redis.player import Player
-from backend.app.utils.ids import generate_player_id
+from backend.app.utils.ids import generate_player_id, generate_player_token
 
 class PlayerRepo:
     def __init__(self) -> None:
         pass
 def save_player(username=None, party_id=None):
     player_id = generate_player_id()
-
+    player_token = generate_player_token()
     player = Player(
         player_id=player_id,
         match_id=None,
         party_id=party_id,
-        username=username,
+        player_token = player_token,
+        username=username
     )
 
     player_dict = player.to_dict()
@@ -23,7 +24,13 @@ def save_player(username=None, party_id=None):
     key = f"player:{player_id}"
     redis_client.set(key, dumps(player_dict))
 
-    return player_dict
+    key = f"player_token:{player_token}"
+    redis_client.set(key,player_id)
+
+    return {
+        **player_dict,
+        "player_token": player_token
+    }
 
 def get_player_repo(player_id):
     key = f"player:{player_id}"
@@ -33,5 +40,15 @@ def get_player_repo(player_id):
         return loads(player_json)
 
     return None
+
+def get_player_repo_by_token(player_token):
+    key = f"player:{player_token}"
+    player_id = redis_client.get(key)
+
+    if not player_id:
+         return None 
+    
+    return get_player_repo(player_id)
+
 def get_all_players():
     key='player:*'

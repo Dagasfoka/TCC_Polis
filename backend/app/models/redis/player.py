@@ -5,15 +5,15 @@ class Player:
         player_id: str,
         match_id: int,
         party_id: int,
-        username: str | None = None, 
+        player_token: str,
+        username: str, 
         questions: dict | None =None,
     ):
         self.player_id = player_id
         self.match_id = match_id
         self.party_id = party_id
         self.questions = questions
-
-        # opcional (pode ser None ou gerado depois)
+        self.player_token = player_token
         self.username = username
 
     def to_dict(self):
