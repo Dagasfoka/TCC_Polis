@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
     createRoom,
     joinRoom
-} from "../services/api.jsx";
+} from "../service/api.jsx";
 
 export default function Menu({ player, onEnterRoom }) {
 
