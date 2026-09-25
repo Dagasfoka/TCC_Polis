@@ -10,9 +10,10 @@ const PARTY_COLORS = {
   PD: "#F1C40F",
 };
 
-const API =
+const API_URL = (
   import.meta.env.VITE_API_URL ||
-  "https://tcc-polis-42o9.onrender.com";
+  "https://tcc-polis-42o9.onrender.com"
+).replace(/\/$/, "");
 function formatMission(mission) {
   if (!mission) return "Missão não encontrada.";
 
