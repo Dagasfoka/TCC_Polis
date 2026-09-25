@@ -42,13 +42,16 @@ def get_player_repo(player_id):
     return None
 
 def get_player_repo_by_token(player_token):
-    key = f"player:{player_token}"
+
+    key = f"player_token:{player_token}"
+
     player_id = redis_client.get(key)
 
     if not player_id:
-         return None 
-    
+        return None
+
     return get_player_repo(player_id)
+    
 
 def get_all_players():
     key='player:*'

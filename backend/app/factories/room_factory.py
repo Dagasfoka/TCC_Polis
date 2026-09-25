@@ -24,3 +24,11 @@ class RoomFactory:
     def delete_player(self, room_dict, player_id):
         del room_dict["players"][player_id]
         return room_dict
+    def delete_room(self, room_code):
+        return self.room_repository.delete_room(room_code)
+    def transfer_host(self, room_dict):
+        players = room_dict["players"]
+        new_host_id = next(iter(players))
+        for player_id, player_data in players.items():
+            player_data["host"] = player_id == new_host_id
+        return room_dict

@@ -13,3 +13,5 @@ class PutReady(BaseModel):
 class DeletePlayer(BaseModel):
     host_id : str
     target_id : str
+class ExitRoomRequest(BaseModel):
+    player_id: str

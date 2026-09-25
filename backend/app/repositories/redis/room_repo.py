@@ -39,3 +39,6 @@ class RoomRepo:
                     host=host,
                     )
        return room_player
+    def delete_room(self, room_code):
+        key = f"room:{room_code}"
+        return redis_client.delete(key)

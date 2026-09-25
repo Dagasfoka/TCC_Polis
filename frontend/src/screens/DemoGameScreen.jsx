@@ -52,10 +52,17 @@ function getPlayerNameById(playerId, players) {
   return player ? `${player.username} (${player.player_id})` : playerId;
 }
 
-export default function DemoGameScreen() {
-  const [matchId, setMatchId] = useState("");
+export default function DemoGameScreen({
+  initialMatchId,
+  initialPlayerId
+}) {
+  const [matchId, setMatchId] = useState(
+    String(initialMatchId ?? "")
+  );
+  const [playerId, setPlayerId] = useState(
+    initialPlayerId ?? ""
+  );
   const [username, setUsername] = useState("");
-  const [playerId, setPlayerId] = useState("");
   const [demoPlayers, setDemoPlayers] = useState([]);
   const [connected, setConnected] = useState(false);
   const [matchState, setMatchState] = useState(null);
@@ -438,7 +445,8 @@ wsRef.current = ws;
           </button>
 
           <label>
-            Player ID
+              Player ID
+              <input value={playerId} readOnly />
               <select
                 value={playerId}
                 onChange={(event) => setPlayerId(event.target.value)}
