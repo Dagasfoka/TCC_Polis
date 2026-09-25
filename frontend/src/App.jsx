@@ -6,7 +6,7 @@ import LoginScreen from "./screens/Login.jsx";
 import MenuScreen from "./screens/Menu.jsx";
 import LobbyScreen from "./screens/Lobby.jsx";
 
-import { getPlayer } from "./services/api.js";
+import { getPlayer } from "./service/api.jsx";
 
 export default function App() {
 
