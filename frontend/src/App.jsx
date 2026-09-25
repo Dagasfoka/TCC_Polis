@@ -2,9 +2,9 @@
 import { useState, useEffect } from "react";
 
 import DemoGameScreen from "./screens/DemoGameScreen.jsx";
-import LoginScreen from "./screens/LoginScreen.jsx";
-import MenuScreen from "./screens/MenuScreen.jsx";
-import LobbyScreen from "./screens/LobbyScreen.jsx";
+import LoginScreen from "./screens/Login.jsx";
+import MenuScreen from "./screens/Menu.jsx";
+import LobbyScreen from "./screens/Lobby.jsx";
 
 import { getPlayer } from "./services/api.js";
 
@@ -63,22 +63,18 @@ export default function App() {
 
   // Entrou ou criou uma sala
   function handleEnterRoom(roomData) {
-
-    setRoom(roomData);
-
-    setScreen("lobby");
-
-  }
+  setMatchId(null);
+  setRoom(roomData);
+  setScreen("lobby");
+}
 
 
-  // Sair do lobby
-  function handleLeaveRoom() {
-
-    setRoom(null);
-
-    setScreen("menu");
-
-  }
+//Saiu da sala 
+function handleLeaveRoom() {
+  setRoom(null);
+  setMatchId(null);
+  setScreen("menu");
+}
 
 
   // Iniciar partida
