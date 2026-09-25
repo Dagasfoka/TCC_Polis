@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createPlayer } from "../services/api";
+import { createPlayer } from "../services/api.jsx";
 
 export default function Login({ onLogin }) {
 

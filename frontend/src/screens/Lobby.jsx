@@ -8,7 +8,7 @@ import {
   startRoom,
   deletePlayer,
   exitRoom,
-} from "../services/api.js";
+} from "../services/api.jsx";
 
 const MAX_PLAYERS = 4;
 const REFRESH_INTERVAL = 2000;
