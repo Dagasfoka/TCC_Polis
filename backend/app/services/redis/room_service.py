@@ -6,22 +6,7 @@ from backend.app.validators.player_validators import PlayerValidator
 from backend.app.repositories.redis.player_repo import get_player_repo
 from backend.app.services.redis.match_service import create_match
 
-def exit_room(room_code,player_id):
-    room_gateway=RoomGateway()
-    room_factory=RoomFactory()
-    room_validator=RoomValidator()
-    
-    player_validator=PlayerValidator()
-    player = get_player_repo(player_id)
-    player=player_validator.not_exist(player)
-    player_id=player["player_id"]    
-    
-    room_dict = room_gateway.get_room(room_code)
-    
-    room_dict=room_validator.not_exist(room_dict)
-    room_dict=room_factory.delete_player(room_dict,player_id)
-    room_factory.update_room(room_dict)
-    return room_dict
+
 def create_room(host_player_id:str) -> dict:
     room_factory=RoomFactory()
     room_validator=RoomValidator()
@@ -63,23 +48,33 @@ def get_room(room_code):
     room_gateway=RoomGateway()
     return room_gateway.get_room(room_code)
 
-def start_game(db,room_code,redis_client, player_id):
-    room_gateway=RoomGateway()
-    room_factory=RoomFactory()
-    room_validator=RoomValidator()
+def start_game(db, room_code, player_id):
+    room_gateway = RoomGateway()
+    room_factory = RoomFactory()
+    room_validator = RoomValidator()
 
     room_dict = room_gateway.get_room(room_code)
+    room_dict = room_validator.not_exist(room_dict)
 
-    room_dict=room_validator.not_exist(room_dict)
-    player_id= room_validator.player_can_start(player_id,room_dict)
-    if (room_validator.ready_to_start(room_dict)):
-        match = create_match(db=db,room_code=room_code)
+    player_id = room_validator.player_can_start(
+        player_id,
+        room_dict
+    )
 
-        room_dict["status"] = "in_game"
-        room_factory.update_room(room_dict)
+    if not room_validator.ready_to_start(room_dict):
+        raise ValueError("Nem todos os jogadores estão prontos")
 
-        return match
-    raise Exception ("Sala não criada")
+    match = create_match(
+        db=db,
+        room_code=room_code
+    )
+
+    room_dict["status"] = "in_game"
+    room_dict["match_id"] = match["match_id"]
+
+    room_factory.update_room(room_dict)
+
+    return match
 def put_ready(room_code,player_id):
     room_gateway=RoomGateway()
     room_factory=RoomFactory()
@@ -113,4 +108,45 @@ def delete_player(room_code,host_id,player_id):
     room_dict=room_factory.delete_player(room_dict,player_id)
     room_factory.update_room(room_dict)
     return room_dict
-        
+
+def exit_room(room_code, player_id):
+    room_gateway = RoomGateway()
+    room_factory = RoomFactory()
+    room_validator = RoomValidator()
+
+    # Buscar e validar a sala
+    room_dict = room_gateway.get_room(room_code)
+    room_dict = room_validator.not_exist(room_dict)
+
+    # Validar se o jogador pertence à sala
+    player_id = room_validator.player_in_room(
+        room_dict,
+        player_id
+    )
+    
+    # Verificar se o jogador é o host
+    was_host = room_validator.player_is_host(
+        room_dict,
+        player_id
+    )
+    # Excluir a sala caso não existam jogadores
+    if room_validator.room_is_empty(room_dict):
+            room_dict=room_factory.delete_room(room_code)
+            return room_dict
+    
+    # Transferir a liderança se o host saiu
+    if was_host:
+            room_dict = room_factory.transfer_host(
+                room_dict
+            )
+
+    # Remover o jogador
+    room_dict = room_factory.delete_player(
+        room_dict,
+        player_id
+    )
+    
+    # Salvar a sala atualizada no Redis
+    room_factory.update_room(room_dict)
+
+    return room_dict

@@ -17,11 +17,11 @@ class Player:
         self.username = username
 
     def to_dict(self):
-        return {
-            "player_id": self.player_id,
-            "match_id": self.match_id,
-            "party_id": self.party_id,
-            "username": self.username,
-            'questions': self.questions
-        }
+     return {
+        "player_id": self.player_id,
+        "match_id": self.match_id,
+        "party_id": self.party_id,
+        "username": self.username,
+        "questions": self.questions,
+    }
  

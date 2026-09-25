@@ -14,6 +14,8 @@ from backend.app.schemas.redis.room import (
     JoinRoomRequest,
     PutReady,
     DeletePlayer,
+    ExitRoomRequest,
+
 )
 from backend.app.services.redis.room_service import (
     create_room,
@@ -33,9 +35,6 @@ templates = Jinja2Templates(directory="templates")
 def get_room_route(room_code: str):
     return get_room(room_code)
 
-@router_room.delete('/room/{room_code}/exit', response_model=RoomCode)
-def exit_room_route(room_code: str, player_id):
-    return  exit_room(room_code,player_id)
     
 @router_room.post("/rooms", response_model=RoomCode)
 def post_room(data: PlayerRoom):
@@ -73,7 +72,18 @@ async def ready(
     return put_ready(room_code, data.player_id)
 
 
-@router_room.delete("/rooms/{room_code}/delete")
+
+@router_room.delete("/rooms/{room_code}/exit",response_model=RoomCode)
+def exit_room_route(
+    room_code: str,
+    data: ExitRoomRequest
+):
+
+    return exit_room(
+        room_code,
+        data.player_id
+    )
+@router_room.delete("/rooms/{room_code}/kick",response_model=RoomCode)
 async def delete(
     room_code: str,
     data: DeletePlayer,

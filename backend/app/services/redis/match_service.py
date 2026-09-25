@@ -23,7 +23,7 @@ def create_match(db,room_code):
     room_dict=room_gateway.get_room(room_code)
     
     room_validator.not_exist(room_dict)
-    room_validator.players_exist(room_dict)
+    room_validator.player_in_room(room_dict)
 
     
     match_state=build_initial_match_state(db,room_dict)

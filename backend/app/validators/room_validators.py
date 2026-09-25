@@ -7,11 +7,11 @@ class RoomValidator:
         if room_dict is None:
                 raise Exception("Room não existe")
         return room_dict
-    def player_can_start(self,player_id,room_dict):
-        for p_id in room_dict['players']:
-            if self.player_is_host(room_dict,p_id):
-                if player_id != p_id:
-                    raise Exception("Apenas o host pode iniciar")
+    def player_can_start(self, player_id, room_dict):
+        self.player_in_room(room_dict, player_id)
+        player = room_dict['players']
+        if player["host"] is not True:
+            raise ValueError("Apenas o host pode iniciar")
         return player_id
     def player_is_duplicate(self, player_id, room_dict):
         if player_id in room_dict["players"]:
@@ -46,6 +46,13 @@ class RoomValidator:
         if len(room_dict['players']) != 4:
             raise Exception ("Não tem quatro jogadores")
         return True
-    def players_exist(self,room_dict):
-        if not room_dict["players"]:
-            raise ValueError("Sala sem jogadores")
+    def player_in_room(self, room_dict, player_id):
+        if player_id not in room_dict["players"]:
+            raise ValueError("Jogador não está na sala")
+        return player_id
+    def room_is_empty(self, room_dict):
+        return len(room_dict["players"]) == 0
+    def validate_ready_to_start(self, room_dict):
+        if not self.ready_to_start(room_dict):
+            raise ValueError("Nem todos os jogadores estão prontos")
+        return room_dict
