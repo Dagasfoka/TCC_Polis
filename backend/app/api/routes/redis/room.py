@@ -59,7 +59,6 @@ async def start_game_route(
     return start_game(
         db,
         room_id,
-        redis_client,
         data.host_id,
     )
 

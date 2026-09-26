@@ -129,10 +129,12 @@ def exit_room(room_code, player_id):
         room_dict,
         player_id
     )
-    # Excluir a sala caso não existam jogadores
-    if room_validator.room_is_empty(room_dict):
-            room_dict=room_factory.delete_room(room_code)
-            return room_dict
+    
+    # Remover o jogador
+    room_dict = room_factory.delete_player(
+        room_dict,
+        player_id
+    )
     
     # Transferir a liderança se o host saiu
     if was_host:
@@ -140,11 +142,11 @@ def exit_room(room_code, player_id):
                 room_dict
             )
 
-    # Remover o jogador
-    room_dict = room_factory.delete_player(
-        room_dict,
-        player_id
-    )
+
+        # Excluir a sala caso não existam jogadores
+    if room_validator.room_is_empty(room_dict):
+            room_dict=room_factory.delete_room(room_code)
+            return room_dict
     
     # Salvar a sala atualizada no Redis
     room_factory.update_room(room_dict)

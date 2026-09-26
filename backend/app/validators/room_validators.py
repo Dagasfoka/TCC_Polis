@@ -9,8 +9,8 @@ class RoomValidator:
         return room_dict
     def player_can_start(self, player_id, room_dict):
         self.player_in_room(room_dict, player_id)
-        player = room_dict['players']
-        if player["host"] is not True:
+        players = room_dict['players']
+        if players[player_id]["host"] is not True:
             raise ValueError("Apenas o host pode iniciar")
         return player_id
     def player_is_duplicate(self, player_id, room_dict):
