@@ -1,7 +1,6 @@
 from os import read
 
 from backend.app.repositories.redis.room_repo import RoomRepo
-from backend.app.models.redis.room import Room
 
 
 class RoomFactory:
@@ -25,7 +24,8 @@ class RoomFactory:
         del room_dict["players"][player_id]
         return room_dict
     def delete_room(self, room_code):
-        return self.room_repository.delete_room(room_code)
+        self.room_repository.delete_room(room_code)
+        return {"room_code": room_code}
     def transfer_host(self, room_dict):
         players = room_dict["players"]
         new_host_id = next(iter(players))
