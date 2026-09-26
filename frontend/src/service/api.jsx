@@ -16,11 +16,17 @@ async function request(path, options = {}) {
         ...options.headers,
       },
     });
-  } catch {
-    throw new Error(
-      "Não foi possível conectar ao servidor. Verifique se o backend está ligado."
-    );
-  }
+  } catch (error) {
+  console.error("ERRO DE CONEXÃO COM O BACKEND:", {
+    url: `${API_URL}${path}`,
+    metodo: options.method || "GET",
+    erro: error,
+  });
+
+  throw new Error(
+    "Não foi possível conectar ao servidor. Verifique o Console (F12)."
+  );
+}
 
   const contentType =
     response.headers.get("content-type") || "";

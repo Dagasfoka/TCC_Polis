@@ -6,7 +6,6 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from backend.app.api.deps import get_db
-from backend.app.db.redis import redis_client
 from backend.app.schemas.redis.player import PlayerRoom
 from backend.app.schemas.redis.room import (
     RoomCode,
