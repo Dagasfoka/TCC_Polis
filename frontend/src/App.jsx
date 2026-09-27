@@ -11,9 +11,16 @@ import {
   restoreRoom,
 } from "./service/lobbySession.js";
 
-import { getPlayer } from "./service/api.jsx";
+import { 
+  getPlayer,
+} from "./service/api.jsx";
+
+import { RoomValidator } from "./validators/RoomValidator.js";
+import { PlayerValidator } from "./validators/PlayerValidator.js";
 
 export default function App() {
+  const roomValidator= new RoomValidator
+  const playerValidator=new PlayerValidator
 
   const [screen, setScreen] = useState("login");
 
@@ -27,22 +34,20 @@ export default function App() {
     
     async function restorePlayer() {
       const playerId = localStorage.getItem("player_id");
-
-      if (!playerId) return;
+      if (!playerValidator.playerIdExists(playerId)) return;
 
       try {
 
         const savedPlayer = await getPlayer(playerId);
 
-        if (!savedPlayer?.player_id) {
-          throw new Error("Jogador não encontrado");
-        }
+        playerValidator.playerExists(savedPlayer)
 
         setPlayer(savedPlayer);
 
       try {
         const currentRoom = await restoreRoom();
-        if (currentRoom && currentRoom.players?.[savedPlayer.player_id]) {
+        
+        if (roomValidator.roomExists(currentRoom) && roomValidator.playerInRoom(currentRoom,savedPlayer)) {
           setRoom(currentRoom);
           setScreen("lobby");
         } else {
@@ -67,32 +72,32 @@ export default function App() {
   }, []);
 
 
-  // Jogador criado
-  function handleLogin(playerData) {
+    // Jogador criado
+    function handleLogin(playerData) {
 
-    setPlayer(playerData);
+      setPlayer(playerData);
 
-    setScreen("menu");
+      setScreen("menu");
 
+    }
+
+
+    // Entrou ou criou uma sala
+    function handleEnterRoom(roomData) {
+    saveRoomCode(roomData.room_code)
+    setMatchId(null);
+    setRoom(roomData);
+    setScreen("lobby");
   }
 
 
-  // Entrou ou criou uma sala
-  function handleEnterRoom(roomData) {
-  saveRoomCode(roomData.room_code)
-  setMatchId(null);
-  setRoom(roomData);
-  setScreen("lobby");
-}
-
-
-//Saiu da sala 
-function handleLeaveRoom() {
-  clearRoomCode()
-  setRoom(null);
-  setMatchId(null);
-  setScreen("menu");
-}
+  //Saiu da sala 
+  function handleLeaveRoom() {
+    clearRoomCode()
+    setRoom(null);
+    setMatchId(null);
+    setScreen("menu");
+  }
 
 
   // Iniciar partida
