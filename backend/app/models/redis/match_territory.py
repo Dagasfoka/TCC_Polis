@@ -17,3 +17,8 @@ class MatchTerritory:
             "name": self.name,
             "region": self.region,
         }
+    @classmethod
+    def create_dict(cls, match_id, territory_id, base_influence, name, region):
+        return cls(
+            match_id, territory_id, base_influence, name, region
+        ).to_dict()

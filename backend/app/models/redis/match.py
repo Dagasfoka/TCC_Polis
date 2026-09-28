@@ -1,15 +1,10 @@
-# Status geral da partida.
-from backend.app.models.redis.match_territory import MatchTerritory
-from backend.app.models.redis.player import Player
-
-
 class Match:
     def __init__(
         self,
         match_id: int,
-        territories: list[MatchTerritory],
+        territories: list[dict],
         room_code,
-        players: list[Player],
+        players: list[dict],
         status: str,
         current_turn_player_id: str,
         round,
@@ -27,11 +22,34 @@ class Match:
     def to_dict(self):
         return {
             "match_id": self.match_id,
-            "territories": [t.to_dict() for t in self.territories],
+            "territories": self.territories,
             "room_code": self.room_code,
-            "players": [p for p in self.players],
+            "players": self.players,
             "status": self.status,
             "current_turn_player_id": self.current_turn_player_id,
             "round": self.round,
             "missions": self.missions,
         }
+
+    @classmethod
+    def create_dict(
+        cls,
+        match_id: int,
+        territories: list[dict],
+        room_code,
+        players: list[dict],
+        status: str,
+        current_turn_player_id: str,
+        round,
+        missions: list[dict] | None = None,
+    ):
+        return cls(
+            match_id,
+            territories,
+            room_code,
+            players,
+            status,
+            current_turn_player_id,
+            round,
+            missions,
+        ).to_dict()

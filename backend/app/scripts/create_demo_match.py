@@ -1,12 +1,12 @@
 from backend.app.db.database import SessionLocal
 from backend.app.factories.room_factory import RoomFactory
-from backend.app.services.redis.match_service import create_match
+from backend.app.services.redis.match_service import MatchService
 from backend.app.repositories.redis.player_repo import save_player
 from backend.app.db.redis import redis_client
 
 
 DEMO_ROOM_CODE = "DEMO1"
-
+match_service=MatchService ()
 
 DEMO_PLAYERS = [
     {
@@ -54,7 +54,7 @@ def create_demo_match():
 
     room_factory.update_room(demo_room)
 
-    match_dict = create_match(
+    match_dict = match_service.create_match(
         db,
         DEMO_ROOM_CODE,
     )

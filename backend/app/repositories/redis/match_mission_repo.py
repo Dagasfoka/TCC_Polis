@@ -1,6 +1,10 @@
-from backend.app.repositories.redis.match_repo import get_match_state, save_match_state
+from backend.app.factories.match_factory import MatchFactory
+from backend.app.gateways.match_gateways import MatchGateway
 from backend.app.models.redis.match_mission import MatchMission
 class MatchMissionRepo:
+    def __init__(self) -> None:
+        self.match_gateway=MatchGateway()
+        self.match_factory=MatchFactory()
     def get_match_mission_by_id(self,match_id, mission_id):
         for mission in self.get_all_match_missions(match_id):
             if mission["mission_id"] == mission_id:
@@ -31,19 +35,19 @@ class MatchMissionRepo:
 
 
     def save_match_missions(self,match_id, match_missions):
-        match_dict = get_match_state(match_id)
+        match_dict = self.match_gateway.get_match(match_id)
 
         if match_dict is None:
             raise ValueError("Partida não encontrada.")
 
         match_dict["missions"] = match_missions
 
-        save_match_state(match_dict)
+        self.match_factory.update_match(match_dict)
 
         return match_missions
 
     def update_match_mission(self,match_id, updated_match_mission):
-        match_dict = get_match_state(match_id)
+        match_dict = self.match_gateway.get_match(match_id)
 
         if match_dict is None:
             raise ValueError("Partida não encontrada.")
@@ -53,12 +57,12 @@ class MatchMissionRepo:
         for index, mission in enumerate(missions):
             if mission["owner_id"] == updated_match_mission["owner_id"]:
                 missions[index] = updated_match_mission
-                save_match_state(match_dict)
+                self.match_factory.update_match(match_dict)
                 return updated_match_mission
 
         raise ValueError("Missão do jogador não encontrada.")
     def get_all_match_missions(self,match_id):
-            match_dict = get_match_state(match_id)
+            match_dict = self.match_gateway.get_match(match_id)
     
             if match_dict is None:
                 raise ValueError("Partida não encontrada.")

@@ -1,13 +1,12 @@
 import random
 
+from backend.app.factories.match_factory import MatchFactory
+from backend.app.gateways.match_gateways import MatchGateway
 from backend.app.repositories.db.action_option_repo import (
     get_option_by_id,
     list_options_by_action,
 )
-from backend.app.repositories.redis.match_repo import (
-    get_match_state,
-    save_match_state,
-)
+from backend.app.repositories.redis.match_repo import MatchRepo
 from backend.app.validators.match_mission_validators import MatchMissionValidator
 
 from backend.app.validators.match_territory_validator import MatchTerritoryValidator
@@ -19,6 +18,8 @@ MAX_SUCCESS_CHANCE = 95
 
 match_mission_validator=MatchMissionValidator()
 match_territory_validator=MatchTerritoryValidator()
+match_gateway=MatchGateway()
+match_factory=MatchFactory()
 def get_attack_options():
     return list_options_by_action("attack")
 
@@ -39,7 +40,7 @@ def resolve_attack_option(
     4. devolve a pergunta para o front exibir.
     """
 
-    match = get_match_state(match_id)
+    match = match_gateway.get_match(match_id)
 
     if match is None:
         raise ValueError("Partida não encontrada")
@@ -83,7 +84,7 @@ def resolve_attack_option(
         "correct_answer": question["answer"],
     }
 
-    save_match_state(match)
+    match_factory.update_match(match)
 
     return {
         "match": match,
@@ -125,7 +126,7 @@ def resolve_attack_question(
     6. avança turno.
     """
 
-    match = get_match_state(match_id)
+    match = match_gateway.get_match(match_id)
 
     if match is None:
         raise ValueError("Partida não encontrada")
@@ -189,16 +190,18 @@ def resolve_attack_question(
 
     match["last_action_result"] = action_result
 
-    save_match_state(match)
+    match_factory.update_match(match)
 
     won = match_mission_validator.final_round_verify(match_id, player_id)
 
     if won:
-        match = get_match_state(match_id)
+        match = match_gateway.get_match(match_id)
+        if match is None:
+            return "Validator"
         match["status"] = "finished"
         match["winner_id"] = player_id
         match["last_action_result"] = action_result
-        save_match_state(match)
+        match_factory.update_match(match)
 
         return {
             "match": match,
@@ -211,18 +214,21 @@ def resolve_attack_question(
             },
         }
 
-    match = get_match_state(match_id)
-
+    match = match_gateway.get_match(match_id)
+    if match is None:
+        return "Validator"
     advance_turn(match)
 
-    save_match_state(match)
+    match_factory.update_match(match)
 
     match_mission_validator.start_round_verify(match_id, match["current_turn_player_id"])
 
-    match = get_match_state(match_id)
+    match = match_gateway.get_match(match_id)
+    if match is None:
+        return "Validator"
     match["last_action_result"] = action_result
 
-    save_match_state(match)
+    match_factory.update_match(match)
 
     return {
         "match": match,

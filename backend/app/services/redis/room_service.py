@@ -4,9 +4,9 @@ from backend.app.gateways.room_gateways import RoomGateway
 from backend.app.validators.room_validators import RoomValidator
 from backend.app.validators.player_validators import PlayerValidator
 from backend.app.repositories.redis.player_repo import get_player_repo
-from backend.app.services.redis.match_service import create_match
+from backend.app.services.redis.match_service import MatchService
 
-
+match_service=MatchService()
 def create_room(host_player_id:str) -> dict:
     room_factory=RoomFactory()
     room_validator=RoomValidator()
@@ -64,7 +64,7 @@ def start_game(db, room_code, player_id):
     if not room_validator.ready_to_start(room_dict):
         raise ValueError("Nem todos os jogadores estão prontos")
 
-    match = create_match(
+    match = match_service.create_match(
         db=db,
         room_code=room_code
     )

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from backend.app.repositories.redis.match_repo import get_match_state
+from backend.app.gateways.match_gateways import MatchGateway
 from backend.app.services.db.action_service import (
     get_attack_options,
     resolve_attack_option,
@@ -10,7 +10,7 @@ from backend.app.websocket.manager import manager
 
 router_websocket = APIRouter()
 
-
+match_gateway=MatchGateway()
 def find_your_mission(match: dict, player_id: str):
     missions = match.get("missions", [])
 
@@ -44,7 +44,7 @@ async def match_websocket(
     )
 
     try:
-        match = get_match_state(match_id)
+        match = match_gateway.get_match(match_id)
 
         if match is None:
             await manager.send_to_player(

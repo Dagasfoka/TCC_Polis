@@ -3,7 +3,7 @@ from backend.app.core.config import settings
 from fastapi import APIRouter
 from fastapi.templating import Jinja2Templates
 
-from backend.app.services.redis.match_service import get_match
+from backend.app.services.redis.match_service import MatchService
 from backend.app.scripts.create_demo_match import create_demo_match
 from backend.app.scripts.create_db import create_database
 from backend.app.scripts.seed_parties import seed_parties
@@ -14,9 +14,10 @@ from backend.app.scripts.seed_questions import seed_questions
 router_match = APIRouter()
 templates = Jinja2Templates(directory='templates')
 
+match_service=MatchService()
 @router_match.get("/matches/{match_id}")
 async def get_match_route(match_id: str):
-    return get_match(match_id)
+    return match_service.get_match(match_id)
 
 @router_match.post("/match/create")
 async def create_demo_match_route():

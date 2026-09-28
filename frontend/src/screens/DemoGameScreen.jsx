@@ -113,7 +113,7 @@ export default function DemoGameScreen({
   async function createPlayer() {
       try {
         const response = await fetch(
-           `${API}/players`,
+           `${API_URL}/players`,
           {
             method: "POST",
             headers: {
@@ -142,7 +142,7 @@ export default function DemoGameScreen({
   async function searchPlayers() {
     try {
       const response = await fetch(
-        `${API}/matches/${matchId}`,
+        `${API_URL}/matches/${matchId}`,
         {
           method: "GET",
         }
@@ -174,7 +174,7 @@ export default function DemoGameScreen({
     addLog("Inicializando banco...");
 
     const response = await fetch(
-      `${API}/db/init`,
+      `${API_URL}/db/init`,
       {
         method: "POST",
       }
@@ -195,7 +195,7 @@ export default function DemoGameScreen({
     addLog("1 - Iniciando requisição");
 
     const response = await fetch(
-    `${API}/match/create`,
+    `${API_URL}/match/create`,
       {
         method: "POST",
       }
