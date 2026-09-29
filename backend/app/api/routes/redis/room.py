@@ -17,6 +17,7 @@ from backend.app.schemas.redis.room import (
     PutReady,
     DeletePlayer,
     ExitRoomRequest,
+    ChoosePartyRequest,
 )
 
 from backend.app.services.redis.room_service import (
@@ -29,6 +30,7 @@ from backend.app.services.redis.room_service import (
     delete_player,
     get_room,
     exit_room,
+    choose_party,
 )
 
 router_room = APIRouter()
@@ -110,4 +112,17 @@ async def change_privacy_route(
         room_code=room_code,
         host_id=data.host_id,
         is_private=data.is_private
+    )
+
+@router_room.patch("/rooms/{room_code}/party")
+def choose_party_route(
+    room_code: str,
+    data: ChoosePartyRequest,
+    db: Session = Depends(get_db),
+):
+    return choose_party(
+        db=db,
+        room_code=room_code,
+        player_id=data.player_id,
+        party_id=data.party_id,
     )

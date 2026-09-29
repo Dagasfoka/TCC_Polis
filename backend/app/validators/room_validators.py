@@ -26,9 +26,12 @@ class RoomValidator:
         players=room_dict['players']
         All_ready=False
         for player_id in players:
-            if players[player_id]['host'] is True:
+            player = players[player_id]
+            if not player.get("party_id"):
+                return False
+            if player['host'] is True:
                 continue
-            ready=players[player_id]["ready"]
+            ready=player["ready"]
             if ready is not True:
                 return All_ready
         All_ready=True
@@ -56,3 +59,13 @@ class RoomValidator:
         if not self.ready_to_start(room_dict):
             raise ValueError("Nem todos os jogadores estão prontos")
         return room_dict
+    def party_is_available(self,room_dict,player_id,party_id):
+        for other_id, player_data in room_dict["players"].items():
+            if (
+                other_id != player_id
+                and player_data.get("party_id") == party_id
+            ):
+                raise ValueError(
+                    "Esse partido já foi escolhido"
+                )
+        return party_id

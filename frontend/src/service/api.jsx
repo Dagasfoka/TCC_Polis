@@ -232,3 +232,25 @@ export function changeRoomPrivacy(
     }
   );
 }
+
+export function getParties() {
+  return request("/parties");
+}
+
+// Escolher/trocar partido dentro do lobby.
+export function chooseParty(
+  roomCode,
+  playerId,
+  partyId
+) {
+  return request(
+    `/rooms/${encodeURIComponent(roomCode)}/party`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        player_id: playerId,
+        party_id: partyId,
+      }),
+    }
+  );
+}

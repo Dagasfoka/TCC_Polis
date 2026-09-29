@@ -1,14 +1,17 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import {getRoom,
+import {
+  getRoom,
   getPlayer,
   putReady,
   startRoom,
   deletePlayer,
   exitRoom,
   changeRoomPrivacy,
-}from "../service/api.jsx";
+  getParties,
+  chooseParty,
+} from "../service/api.jsx";
 
 const MAX_PLAYERS = 4;
 const REFRESH_INTERVAL = 2000;
@@ -22,6 +25,7 @@ export default function Lobby({
 }) {
   const [currentRoom, setCurrentRoom] = useState(room);
   const [playerNames, setPlayerNames] = useState({});
+  const [parties, setParties] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -57,15 +61,18 @@ export default function Lobby({
   const isHost = myRoomPlayer?.host === true;
   const isReady = myRoomPlayer?.ready === true;
   const isPrivate = currentRoom?.is_private === true;
+  const myPartyId = myRoomPlayer?.party_id ?? null;
 
   const allReady =
     playerEntries.length === MAX_PLAYERS &&
     playerEntries.every(
       ([, roomPlayer]) =>
-        roomPlayer.host === true ||
-        roomPlayer.ready === true
+        roomPlayer.party_id &&
+        (
+          roomPlayer.host === true ||
+          roomPlayer.ready === true
+        )
     );
-
   const emptySlots = Math.max(
     0,
     MAX_PLAYERS - playerEntries.length
@@ -99,19 +106,49 @@ export default function Lobby({
   }
 
   function handleChangePrivacy() {
-  if (!isHost) return;
+    if (!isHost) return;
 
-  runAction(async () => {
-    const updatedRoom = await changeRoomPrivacy(
-      roomCode,
-      playerId,
-      !isPrivate
-    );
+    runAction(async () => {
+      const updatedRoom = await changeRoomPrivacy(
+        roomCode,
+        playerId,
+        !isPrivate
+      );
 
-    processRoom(updatedRoom);
-  });
-}
+      processRoom(updatedRoom);
+    });
+  }
 
+  useEffect(() => {
+    let active = true;
+
+    async function loadParties() {
+      try {
+        const data = await getParties();
+
+        if (!active) return;
+
+        setParties(data);
+      } catch (err) {
+        console.error(
+          "Não foi possível carregar os partidos:",
+          err
+        );
+
+        if (active) {
+          setError(
+            "Não foi possível carregar os partidos."
+          );
+        }
+      }
+    }
+
+    loadParties();
+
+    return () => {
+      active = false;
+    };
+  }, []);
   // Atualização automática da sala.
   useEffect(() => {
     let active = true;
@@ -192,8 +229,8 @@ export default function Lobby({
           return [
             id,
             playerData.username ??
-              playerData.nickname ??
-              id,
+            playerData.nickname ??
+            id,
           ];
         })
       );
@@ -246,9 +283,29 @@ export default function Lobby({
     }
   }
 
+  function handleChooseParty(partyId) {
+    if (isReady) return;
+
+    runAction(async () => {
+      const updatedRoom = await chooseParty(
+        roomCode,
+        playerId,
+        partyId
+      );
+
+      processRoom(updatedRoom);
+    });
+  }
+
   // Jogador marca pronto.
   function handleReady() {
-    if (isHost || isReady) return;
+    if (
+      isHost ||
+      isReady ||
+      !myPartyId
+    ) {
+      return;
+    }
 
     runAction(async () => {
       const updatedRoom = await putReady(
@@ -259,7 +316,9 @@ export default function Lobby({
       if (updatedRoom?.players) {
         processRoom(updatedRoom);
       } else {
-        const refreshedRoom = await getRoom(roomCode);
+        const refreshedRoom =
+          await getRoom(roomCode);
+
         processRoom(refreshedRoom);
       }
     });
@@ -330,39 +389,39 @@ export default function Lobby({
         </span>
 
         <h2 style={{ margin: "10px 0" }}>
-        Código: {roomCode}
+          Código: {roomCode}
         </h2>
 
-          <p
-  style={{
-    color: "var(--tx-d)",
-    marginBottom: 10,
-  }}
->
-  Sala: {isPrivate ? "🔒 PRIVADA" : "🌐 PÚBLICA"}
-</p>
+        <p
+          style={{
+            color: "var(--tx-d)",
+            marginBottom: 10,
+          }}
+        >
+          Sala: {isPrivate ? "🔒 PRIVADA" : "🌐 PÚBLICA"}
+        </p>
 
-{isHost && (
-  <button
-    type="button"
-    className="btn"
-    onClick={handleChangePrivacy}
-    disabled={loading}
-    style={{ marginBottom: 16 }}
-  >
-    {isPrivate
-      ? "🌐 TORNAR SALA PÚBLICA"
-      : "🔒 TORNAR SALA PRIVADA"}
-  </button>
-)}
+        {isHost && (
+          <button
+            type="button"
+            className="btn"
+            onClick={handleChangePrivacy}
+            disabled={loading}
+            style={{ marginBottom: 16 }}
+          >
+            {isPrivate
+              ? "🌐 TORNAR SALA PÚBLICA"
+              : "🔒 TORNAR SALA PRIVADA"}
+          </button>
+        )}
 
-<p
-  style={{
-    color: "var(--tx-d)",
-    marginBottom: 16,
-  }}
->
-</p>
+        <p
+          style={{
+            color: "var(--tx-d)",
+            marginBottom: 16,
+          }}
+        >
+        </p>
 
         <p
           style={{
@@ -372,7 +431,85 @@ export default function Lobby({
         >
           Jogadores: {playerEntries.length}/{MAX_PLAYERS}
         </p>
+        <div
+          style={{
+            marginBottom: 24,
+          }}
+        >
+          <h3
+            style={{
+              textAlign: "center",
+              marginBottom: 12,
+            }}
+          >
+            ESCOLHA SEU PARTIDO
+          </h3>
 
+          {parties.length === 0 ? (
+            <p
+              style={{
+                textAlign: "center",
+                color: "var(--tx-d)",
+              }}
+            >
+              Carregando partidos...
+            </p>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(180px, 1fr))",
+                gap: 10,
+              }}
+            >
+              {parties.map((party) => {
+                const selected =
+                  myPartyId === party.id;
+
+                const usedByAnotherPlayer =
+                  playerEntries.some(
+                    ([id, roomPlayer]) =>
+                      id !== playerId &&
+                      roomPlayer.party_id === party.id
+                  );
+
+                return (
+                  <button
+                    key={party.id}
+                    type="button"
+                    className="btn"
+                    onClick={() =>
+                      handleChooseParty(party.id)
+                    }
+                    disabled={
+                      loading ||
+                      isReady ||
+                      usedByAnotherPlayer
+                    }
+                    style={{
+                      borderLeft: `8px solid ${party.color}`,
+                      opacity:
+                        usedByAnotherPlayer ? 0.45 : 1,
+                      fontWeight:
+                        selected ? "bold" : "normal",
+                    }}
+                  >
+                    {selected ? "✓ " : ""}
+
+                    {party.name}
+
+                    {usedByAnotherPlayer
+                      ? " — OCUPADO"
+                      : ""}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <hr className="sep" />
         <div
           className="prog-wrap"
           style={{ marginBottom: 18 }}
@@ -380,75 +517,100 @@ export default function Lobby({
           <div
             className="prog-fill"
             style={{
-              width: `${
-                (playerEntries.length / MAX_PLAYERS) * 100
-              }%`,
+              width: `${(playerEntries.length / MAX_PLAYERS) * 100
+                }%`,
             }}
           />
         </div>
 
         <div className="players-grid">
-          {playerEntries.map(([id, roomPlayer]) => (
-            <div className="p-slot" key={id}>
-              <div
-                className={`p-av ${
-                  roomPlayer.host ? "host" : ""
-                }`}
-              >
-                {roomPlayer.host ? "👑" : "👤"}
-              </div>
+          {playerEntries.map(([id, roomPlayer]) => {
+            const selectedParty = parties.find(
+              (party) => party.id === roomPlayer.party_id
+            );
 
-              <div
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                }}
-              >
-                <strong
+            return (
+              <div className="p-slot" key={id}>
+                <div
+                  className={`p-av ${roomPlayer.host ? "host" : ""
+                    }`}
+                >
+                  {roomPlayer.host ? "👑" : "👤"}
+                </div>
+
+                <div
                   style={{
-                    display: "block",
-                    overflowWrap: "anywhere",
+                    flex: 1,
+                    minWidth: 0,
                   }}
                 >
-                  {playerNames[id] ?? id}
+                  <strong
+                    style={{
+                      display: "block",
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {playerNames[id] ?? id}
 
-                  {id === playerId ? " (você)" : ""}
-                </strong>
+                    {id === playerId ? " (você)" : ""}
+                  </strong>
 
-                <span
-                  className={`badge ${
-                    roomPlayer.host
+                  {selectedParty ? (
+                    <span
+                      style={{
+                        display: "block",
+                        marginTop: 4,
+                        color: selectedParty.color,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      ● {selectedParty.name}
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        display: "block",
+                        marginTop: 4,
+                        color: "var(--tx-d)",
+                      }}
+                    >
+                      Sem partido
+                    </span>
+                  )}
+
+                  <span
+                    className={`badge ${roomPlayer.host
                       ? "bg-gold"
                       : roomPlayer.ready
                         ? "bg-green"
                         : "bg-gray"
-                  }`}
-                  style={{ marginTop: 5 }}
-                >
-                  {roomPlayer.host
-                    ? "HOST"
-                    : roomPlayer.ready
-                      ? "PRONTO"
-                      : "AGUARDANDO"}
-                </span>
-              </div>
+                      }`}
+                    style={{ marginTop: 5 }}
+                  >
+                    {roomPlayer.host
+                      ? "HOST"
+                      : roomPlayer.ready
+                        ? "PRONTO"
+                        : "AGUARDANDO"}
+                  </span>
+                </div>
 
-              {isHost && id !== playerId && (
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  onClick={() => handleKick(id)}
-                  disabled={loading}
-                  title="Remover jogador"
-                  aria-label={`Remover ${
-                    playerNames[id] ?? id
-                  }`}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
+                {isHost && id !== playerId && (
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={() => handleKick(id)}
+                    disabled={loading}
+                    title="Remover jogador"
+                    aria-label={`Remover ${playerNames[id] ?? id
+                      }`}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            );
+          })}
 
           {Array.from({
             length: emptySlots,
@@ -478,10 +640,12 @@ export default function Lobby({
           {isHost
             ? allReady
               ? "Todos estão prontos! A partida pode começar."
-              : "Aguarde quatro jogadores e todos ficarem prontos."
+              : "Aguarde quatro jogadores, todos escolherem seus partidos e ficarem prontos."
             : isReady
               ? "Você está pronto. Aguarde o host iniciar."
-              : "Marque pronto para participar da partida."}
+              : !myPartyId
+                ? "Escolha seu partido para continuar."
+                : "Marque pronto para participar da partida."}
         </p>
 
         {error && (
@@ -514,11 +678,17 @@ export default function Lobby({
               type="button"
               className="btn btn-gold"
               onClick={handleReady}
-              disabled={loading || isReady}
+              disabled={
+                loading ||
+                isReady ||
+                !myPartyId
+              }
             >
-              {isReady
-                ? "✓ PRONTO"
-                : "ESTOU PRONTO"}
+              {!myPartyId
+                ? "ESCOLHA UM PARTIDO"
+                : isReady
+                  ? "✓ PRONTO"
+                  : "ESTOU PRONTO"}
             </button>
           )}
 
