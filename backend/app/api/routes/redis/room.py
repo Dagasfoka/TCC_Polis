@@ -11,6 +11,7 @@ from backend.app.schemas.redis.room import (
     RoomCode,
     CreateRoomRequest,
     RandomRoomRequest,
+    ChangePrivacyRequest,
     StartRoomRequest,
     JoinRoomRequest,
     PutReady,
@@ -22,6 +23,7 @@ from backend.app.services.redis.room_service import (
     create_room,
     join_room,
     join_random_room,
+    change_room_privacy,
     start_game,
     put_ready,
     delete_player,
@@ -97,4 +99,15 @@ async def delete(
         room_code,
         data.host_id,
         data.target_id,
+    )
+
+@router_room.patch("/rooms/{room_code}/privacy")
+async def change_privacy_route(
+    room_code: str,
+    data: ChangePrivacyRequest
+):
+    return change_room_privacy(
+        room_code=room_code,
+        host_id=data.host_id,
+        is_private=data.is_private
     )
