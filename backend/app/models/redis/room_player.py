@@ -1,8 +1,8 @@
 from typing import TypedDict
 
 
-class RoomPlayer:
+class RoomPlayer(TypedDict):
     player_id: str
-    ready: bool 
-    host: bool 
-    party_id: str | None = None
+    ready: bool
+    host: bool
+    party_id: str | None
