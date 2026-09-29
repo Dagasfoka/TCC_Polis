@@ -47,10 +47,10 @@ class RoomRepo:
 
         room_dict = room.to_dict()
 
-        room_dict["players"][room_player.player_id] = {
-            "ready": room_player.ready,
-            "host": room_player.host,
-            "party_id": room_player.party_id,
+        room_dict["players"][room_player["player_id"]] = {
+        "ready": room_player["ready"],
+        "host": room_player["host"],
+        "party_id": room_player["party_id"],
         }
 
         return self.update_room(room_dict)
