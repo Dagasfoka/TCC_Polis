@@ -11,15 +11,13 @@ class PlayerRepo:
     def create_player(self,username, party_id=None):
         player_id = generate_player_id()
         player_token = generate_player_token()
-        player = Player(
+        player_dict = Player.create_dict(
             player_id=player_id,
             match_id=None,
             party_id=None,
             player_token = player_token,
             username=username
         )
-
-        player_dict = player.to_dict()
 
         key = f"player:{player_id}"
         redis_client.set(key, dumps(player_dict))
@@ -29,14 +27,12 @@ class PlayerRepo:
 
         return {
             **player_dict,
-            "player_token": player_token
         }
-
-    def get_player(self,player_id):
+    def get_player(self, player_id):
         key = f"player:{player_id}"
         player_json = redis_client.get(key)
 
-        if player_json:
+        if isinstance(player_json, (str, bytes)):
             return loads(player_json)
 
         return None
