@@ -1,13 +1,13 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import {
-  getRoom,
+getRoom,
   getPlayer,
   putReady,
   startRoom,
   deletePlayer,
   exitRoom,
+  changeRoomPrivacy,
 } from "../service/api.jsx";
 
 const MAX_PLAYERS = 4;
@@ -56,6 +56,7 @@ export default function Lobby({
 
   const isHost = myRoomPlayer?.host === true;
   const isReady = myRoomPlayer?.ready === true;
+  const isPrivate = currentRoom?.is_private === true;
 
   const allReady =
     playerEntries.length === MAX_PLAYERS &&
@@ -96,6 +97,20 @@ export default function Lobby({
       callbacksRef.current.onStart(updatedRoom.match_id);
     }
   }
+
+  function handleChangePrivacy() {
+  if (!isHost) return;
+
+  runAction(async () => {
+    const updatedRoom = await changeRoomPrivacy(
+      roomCode,
+      playerId,
+      !isPrivate
+    );
+
+    processRoom(updatedRoom);
+  });
+}
 
   // Atualização automática da sala.
   useEffect(() => {
@@ -315,8 +330,40 @@ export default function Lobby({
         </span>
 
         <h2 style={{ margin: "10px 0" }}>
-          Código: {roomCode}
+        Código: {roomCode}
         </h2>
+
+          <p
+  style={{
+    color: "var(--tx-d)",
+    marginBottom: 10,
+  }}
+>
+  Sala: {isPrivate ? "🔒 PRIVADA" : "🌐 PÚBLICA"}
+</p>
+
+{isHost && (
+  <button
+    type="button"
+    className="btn"
+    onClick={handleChangePrivacy}
+    disabled={loading}
+    style={{ marginBottom: 16 }}
+  >
+    {isPrivate
+      ? "🌐 TORNAR SALA PÚBLICA"
+      : "🔒 TORNAR SALA PRIVADA"}
+  </button>
+)}
+
+<p
+  style={{
+    color: "var(--tx-d)",
+    marginBottom: 16,
+  }}
+>
+  Jogadores: {playerEntries.length}/{MAX_PLAYERS}
+</p>
 
         <p
           style={{
