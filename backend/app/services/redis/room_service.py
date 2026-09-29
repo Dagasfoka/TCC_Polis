@@ -7,11 +7,16 @@ from backend.app.repositories.redis.player_repo import get_player_repo
 from backend.app.services.redis.match_service import MatchService
 
 match_service=MatchService()
-def create_room(host_player_id:str) -> dict:
-    room_factory=RoomFactory()
-    room_validator=RoomValidator()
-    room_dict=room_factory.create_room(host_player_id)
-    room_dict=room_validator.not_exist(room_dict)
+def create_room(host_player_id: str,is_private: bool = False) -> dict:
+    room_factory = RoomFactory()
+    room_validator = RoomValidator()
+    room_dict = room_factory.create_room(
+        host_player_id,
+        is_private
+    )
+
+    room_dict = room_validator.not_exist(room_dict)
+
     return room_dict
 
 def join_room(player_id, room_code):
@@ -43,6 +48,24 @@ def join_room(player_id, room_code):
     room_factory.update_room(room_dict)
 
     return room_dict
+
+def join_random_room(player_id):
+    room_factory = RoomFactory()
+    public_rooms = room_factory.get_public_rooms()
+    # Encontrou alguma sala pública disponível
+    if public_rooms:
+        room = public_rooms[0]
+
+        return join_room(
+            player_id=player_id,
+            room_code=room["room_code"]
+        )
+    # Não existe sala pública.
+    # Cria uma e transforma o jogador em host.
+    return create_room(
+        host_player_id=player_id,
+        is_private=False
+    )
 
 def get_room(room_code):
     room_gateway=RoomGateway()
