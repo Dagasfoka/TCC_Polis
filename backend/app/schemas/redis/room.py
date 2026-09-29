@@ -20,3 +20,6 @@ class CreateRoomRequest(BaseModel):
     is_private: bool = False
 class RandomRoomRequest(BaseModel):
     player_id: str
+class ChangePrivacyRequest(BaseModel):
+    host_id: str
+    is_private: bool
