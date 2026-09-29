@@ -1,7 +1,7 @@
 from backend.app.db.database import SessionLocal
 from backend.app.factories.room_factory import RoomFactory
 from backend.app.services.redis.match_service import MatchService
-from backend.app.repositories.redis.player_repo import save_player
+from backend.app.factories.player_factory import PlayerFactory
 from backend.app.db.redis import redis_client
 
 
@@ -26,7 +26,7 @@ DEMO_PLAYERS = [
         "party_id": "PD",
     },
 ]
-
+player_factory=PlayerFactory()
 
 def create_demo_match():
     db = SessionLocal()
@@ -35,7 +35,7 @@ def create_demo_match():
     players = []
 
     for player_data in DEMO_PLAYERS:
-        player = save_player(
+        player = player_factory.create_player(
             username=player_data["username"],
             party_id=player_data["party_id"],
         )

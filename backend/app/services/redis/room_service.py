@@ -3,10 +3,11 @@ from backend.app.factories.room_factory import RoomFactory
 from backend.app.gateways.room_gateways import RoomGateway
 from backend.app.validators.room_validators import RoomValidator
 from backend.app.validators.player_validators import PlayerValidator
-from backend.app.repositories.redis.player_repo import get_player_repo
 from backend.app.services.redis.match_service import MatchService
+from backend.app.gateways.player_gateways import PlayerGateway
 import random
 
+player_gateway=PlayerGateway()
 match_service=MatchService()
 def create_room(host_player_id: str,is_private: bool = False) -> dict:
     room_factory = RoomFactory()
@@ -32,7 +33,7 @@ def join_room(player_id, room_code):
     room_dict = room_validator.not_exist(room_dict)
     room_dict = room_validator.max_players_room(room_dict)
     
-    player = get_player_repo(player_id)
+    player = player_gateway.get_player(player_id)
 
     player=player_validator.not_exist(player)
     player_id=player["player_id"]
@@ -108,7 +109,7 @@ def put_ready(room_code,player_id):
     room_dict = room_gateway.get_room(room_code)
     room_dict=room_validator.not_exist(room_dict)
 
-    player = get_player_repo(player_id)
+    player = player_gateway.get_player(player_id)
     player=player_validator.not_exist(player)
     player_id=player["player_id"]
     room_factory.put_ready(room_dict,player_id)
@@ -120,7 +121,7 @@ def delete_player(room_code,host_id,player_id):
     room_validator=RoomValidator()
     
     player_validator=PlayerValidator()
-    player = get_player_repo(player_id)
+    player = player_gateway.get_player(player_id)
     player=player_validator.not_exist(player)
     player_id=player["player_id"]    
     
