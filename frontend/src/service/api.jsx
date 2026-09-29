@@ -182,3 +182,36 @@ export function exitRoom(roomCode, playerId) {
     }
   );
 }
+
+export async function createPrivateRoom(playerId) {
+  const result = await request("/rooms", {
+    method: "POST",
+    body: JSON.stringify({
+      host_id: playerId,
+      is_private: true,
+    }),
+  });
+
+  return getRoom(result.room_code);
+}
+
+export async function createPublicRoom(playerId) {
+  const result = await request("/rooms", {
+    method: "POST",
+    body: JSON.stringify({
+      host_id: playerId,
+      is_private: false,
+    }),
+  });
+
+  return getRoom(result.room_code);
+}
+
+export async function joinRandomRoom(playerId) {
+  return request("/rooms/random", {
+    method: "POST",
+    body: JSON.stringify({
+      player_id: playerId,
+    }),
+  });
+}
