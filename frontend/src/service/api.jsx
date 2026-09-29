@@ -215,3 +215,20 @@ export async function joinRandomRoom(playerId) {
     }),
   });
 }
+
+export function changeRoomPrivacy(
+  roomCode,
+  playerId,
+  isPrivate
+) {
+  return request(
+    `/rooms/${encodeURIComponent(roomCode)}/privacy`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        host_id: playerId,
+        is_private: isPrivate,
+      }),
+    }
+  );
+}
