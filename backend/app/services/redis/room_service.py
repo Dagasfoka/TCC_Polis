@@ -5,6 +5,7 @@ from backend.app.validators.room_validators import RoomValidator
 from backend.app.validators.player_validators import PlayerValidator
 from backend.app.repositories.redis.player_repo import get_player_repo
 from backend.app.services.redis.match_service import MatchService
+import random
 
 match_service=MatchService()
 def create_room(host_player_id: str,is_private: bool = False) -> dict:
@@ -50,18 +51,17 @@ def join_room(player_id, room_code):
     return room_dict
 
 def join_random_room(player_id):
+   
     room_factory = RoomFactory()
     public_rooms = room_factory.get_public_rooms()
-    # Encontrou alguma sala pública disponível
+    
     if public_rooms:
-        room = public_rooms[0]
-
+        room = random.choice(public_rooms)
         return join_room(
             player_id=player_id,
             room_code=room["room_code"]
         )
-    # Não existe sala pública.
-    # Cria uma e transforma o jogador em host.
+    
     return create_room(
         host_player_id=player_id,
         is_private=False
