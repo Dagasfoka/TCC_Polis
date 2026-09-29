@@ -1,14 +1,14 @@
 
 import { useEffect, useRef, useState } from "react";
 
-getRoom,
+import {getRoom,
   getPlayer,
   putReady,
   startRoom,
   deletePlayer,
   exitRoom,
   changeRoomPrivacy,
-} from "../service/api.jsx";
+}from "../service/api.jsx";
 
 const MAX_PLAYERS = 4;
 const REFRESH_INTERVAL = 2000;
@@ -362,7 +362,6 @@ export default function Lobby({
     marginBottom: 16,
   }}
 >
-  Jogadores: {playerEntries.length}/{MAX_PLAYERS}
 </p>
 
         <p

@@ -173,3 +173,25 @@ def exit_room(room_code, player_id):
     room_factory.update_room(room_dict)
 
     return room_dict
+def change_room_privacy(
+    room_code,
+    host_id,
+    is_private
+):
+    room_gateway = RoomGateway()
+    room_factory = RoomFactory()
+    room_validator = RoomValidator()
+    # Buscar sala
+    room_dict = room_gateway.get_room(room_code)
+    # Verificar se existe
+    room_dict = room_validator.not_exist(room_dict)
+    # Verificar se quem está alterando é o host
+    room_validator.player_can_start(
+        host_id,
+        room_dict
+    )
+    # Alterar privacidade
+    room_dict["is_private"] = is_private
+    # Salvar no Redis
+    room_factory.update_room(room_dict)
+    return room_dict
