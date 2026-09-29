@@ -15,3 +15,8 @@ class DeletePlayer(BaseModel):
     target_id : str
 class ExitRoomRequest(BaseModel):
     player_id: str
+class CreateRoomRequest(BaseModel):
+    host_id: str
+    is_private: bool = False
+class RandomRoomRequest(BaseModel):
+    player_id: str
