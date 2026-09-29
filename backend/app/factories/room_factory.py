@@ -9,10 +9,12 @@ class RoomFactory:
     def update_room(self,room_dict):
         self.room_repository.update_room(room_dict)
         print("Upado")
-    def create_room(self,host_player_id):
-        return self.room_repository.create_room(host_player_id)
+    def create_room(self, host_player_id, is_private=False):
+        return self.room_repository.create_room(host_player_id, is_private)
     def create_room_player(self,player_id):
         return self.room_repository.create_room_player(player_id)
+    def get_public_rooms(self):
+            return self.room_repository.get_public_rooms()
     def put_ready(self,room_dict,player_id):
         for p_id in room_dict['players']:
             if p_id==player_id:
@@ -32,3 +34,6 @@ class RoomFactory:
         for player_id, player_data in players.items():
             player_data["host"] = player_id == new_host_id
         return room_dict
+    
+
+    
