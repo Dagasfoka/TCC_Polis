@@ -8,8 +8,7 @@ from backend.app.gateways.player_gateways import PlayerGateway
 from backend.app.services.db.party_service import get_party
 import random
 
-player_gateway=PlayerGateway()
-match_service=MatchService()
+
 def create_room(host_player_id: str,is_private: bool = False) -> dict:
     room_factory = RoomFactory()
     room_validator = RoomValidator()
@@ -26,7 +25,7 @@ def join_room(player_id, room_code):
     room_validator=RoomValidator()
     room_gateway=RoomGateway()
     room_factory=RoomFactory()
-
+    player_gateway=PlayerGateway()
     player_validator=PlayerValidator()
 
     room_dict = room_gateway.get_room(room_code)
@@ -80,6 +79,7 @@ def start_game(db, room_code, player_id):
     room_gateway = RoomGateway()
     room_factory = RoomFactory()
     room_validator = RoomValidator()
+    match_service=MatchService()
 
     room_dict = room_gateway.get_room(room_code)
     room_dict = room_validator.not_exist(room_dict)
@@ -107,6 +107,7 @@ def put_ready(room_code,player_id):
     room_gateway=RoomGateway()
     room_factory=RoomFactory()
     room_validator=RoomValidator()
+    player_gateway=PlayerGateway()
     
     player_validator=PlayerValidator()
     
@@ -123,6 +124,7 @@ def delete_player(room_code,host_id,player_id):
     room_gateway=RoomGateway()
     room_factory=RoomFactory()
     room_validator=RoomValidator()
+    player_gateway=PlayerGateway()
     
     player_validator=PlayerValidator()
     player = player_gateway.get_player(player_id)
