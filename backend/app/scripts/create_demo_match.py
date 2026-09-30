@@ -50,6 +50,7 @@ def create_demo_match():
         demo_room["players"][player["player_id"]] = {
             "ready": index != 0,
             "host": index == 0,
+            "party_id": player["party_id"],
         }
 
     room_factory.update_room(demo_room)
