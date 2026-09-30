@@ -3,6 +3,7 @@ import random
 import string
 import uuid
 import secrets
+import hashlib
 
 def generate_room_code(length=6):
     chars = string.ascii_uppercase + string.digits
@@ -13,3 +14,6 @@ def generate_player_id():
 
 def generate_player_token():
     return secrets.token_urlsafe(32)
+
+def generate_password_hash(password):
+    return  hashlib.sha256(password.encode()).hexdigest()
