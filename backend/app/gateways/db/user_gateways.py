@@ -5,8 +5,8 @@ from backend.app.repositories.db.user_repo import UsersRepository
 
 
 class UsersGateway:
-    def __init__(self, db: Session):
-        self.users_repository = UsersRepository(db)
+    def __init__(self):
+        self.users_repository = UsersRepository()
 
     def get_all_users(self)-> list[User]:
         return self.users_repository.get_all_users()

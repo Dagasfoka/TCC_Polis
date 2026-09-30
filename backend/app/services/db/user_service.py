@@ -1,9 +1,8 @@
 from backend.app.gateways.db.user_gateways import UsersGateway
 from backend.app.factories.user_factory import UserFactory
 from backend.app.validators.user_validators import UserValidator
-from backend.app.db.database import get_db
 
-user_gateway= UsersGateway(get_db())
+user_gateway= UsersGateway()
 user_factory=UserFactory()
 user_validator=UserValidator()
 
