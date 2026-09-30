@@ -98,28 +98,37 @@ export default function Lobby({
 
 
   function processRoom(updatedRoom) {
-    // Jogador expulso, sala encerrada ou sala inexistente.
-    if (
-      !updatedRoom ||
-      updatedRoom.status === "closed" ||
-      !updatedRoom.players?.[playerId]
-    ) {
-      callbacksRef.current.onLeave();
-      return;
-    }
-
-
-    applyRoom(updatedRoom);
-
-
-    // Todos entram na mesma partida quando ela começar.
-    if (
-      updatedRoom.status === "in_game" &&
-      updatedRoom.match_id
-    ) {
-      callbacksRef.current.onStart(updatedRoom.match_id);
-    }
+  if (!updatedRoom) {
+    return;
   }
+
+  if (updatedRoom.status === "closed") {
+    callbacksRef.current.onLeave();
+    return;
+  }
+
+  // Se uma atualização não encontrar o jogador,
+  // não fecha o lobby imediatamente.
+  if (!updatedRoom.players?.[playerId]) {
+    console.warn(
+      "Jogador ainda não apareceu na atualização da sala:",
+      playerId,
+      updatedRoom
+    );
+    return;
+  }
+
+  applyRoom(updatedRoom);
+
+  if (
+    updatedRoom.status === "in_game" &&
+    updatedRoom.match_id
+  ) {
+    callbacksRef.current.onStart(
+      updatedRoom.match_id
+    );
+  }
+}
 
 
   function handleChangePrivacy() {
