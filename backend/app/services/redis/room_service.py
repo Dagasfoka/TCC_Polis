@@ -51,6 +51,8 @@ def join_room(player_id, room_code):
         "party_id": room_player["party_id"],
     }
 
+    room_factory.update_room(room_dict)
+    
     return room_dict
 
 def join_random_room(player_id):
