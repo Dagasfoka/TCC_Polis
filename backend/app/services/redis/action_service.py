@@ -2,14 +2,15 @@ import random
 
 from backend.app.factories.match_factory import MatchFactory
 from backend.app.gateways.match_gateways import MatchGateway
-from backend.app.repositories.db.action_option_repo import (
-    get_option_by_id,
-    list_options_by_action,
-)
-from backend.app.repositories.redis.match_repo import MatchRepo
+from backend.app.gateways.player_gateways import PlayerGateway
+from backend.app.validators.action_validators import ActionValidator
 from backend.app.validators.match_mission_validators import MatchMissionValidator
-
+from backend.app.gateways.action_gateway import ActionGateway
 from backend.app.validators.match_territory_validator import MatchTerritoryValidator
+from backend.app.validators.match_validators import MatchValidator
+from backend.app.validators.pending_action_validators import PendingActionValidator
+from backend.app.validators.player_validators import PlayerValidator
+from backend.app.models.redis.pending_action import PendingAction
 QUESTION_CORRECT_BONUS = 20
 QUESTION_WRONG_PENALTY = 20
 
@@ -18,88 +19,67 @@ MAX_SUCCESS_CHANCE = 95
 
 match_mission_validator=MatchMissionValidator()
 match_territory_validator=MatchTerritoryValidator()
+
 match_gateway=MatchGateway()
 match_factory=MatchFactory()
-def get_attack_options():
-    return list_options_by_action("attack")
+match_validator=MatchValidator()
 
+player_gateway=PlayerGateway()
+player_validator=PlayerValidator()
 
-def resolve_attack_option(
+action_gateway=ActionGateway()
+action_validator=ActionValidator()
+
+pending_action_validator=PendingActionValidator()
+def get_attack_actions():
+    return action_gateway.list_action_by_type("attack")
+
+def prepare_attack_action(
     match_id,
     player_id: str,
     target_territory_id: str,
     option_id: str,
 ):
-    """
-    Essa função agora NÃO executa o ataque diretamente.
-
-    Ela só:
-    1. valida se a ação pode acontecer;
-    2. pega uma pergunta do jogador;
-    3. salva uma ação pendente no match;
-    4. devolve a pergunta para o front exibir.
-    """
-
+    status="running"
+    
     match = match_gateway.get_match(match_id)
+    match=match_validator.match_exist(match)
+    match=match_validator.verify_match_status(match,status)
+    match=match_validator.verify_current_turn_player_id(match,player_id)
 
-    if match is None:
-        raise ValueError("Partida não encontrada")
+    action = action_gateway.get_action_by_id(option_id)
+    action = action_validator.action_exist(action)
 
-    if match["status"] != "running":
-        raise ValueError("Partida não está em andamento")
-
-    if match["current_turn_player_id"] != player_id:
-        raise ValueError("Não é o turno desse jogador")
-
-    option = get_option_by_id(option_id)
-
-    if option is None:
-        raise ValueError("Opção inválida")
-
-    target = find_territory(match, target_territory_id)
-
-    if target is None:
-        raise ValueError("Território não encontrado")
-
-    if target["owner_id"] == player_id:
-        raise ValueError("Você já controla esse território")
-
-    player = find_player(match, player_id)
-
-    if player is None:
-        raise ValueError("Jogador não encontrado")
+    target = match_gateway.find_territory(match, target_territory_id)
+    target=match_territory_validator.territory_exist(target)
+    target=match_territory_validator.verify_territory_owner_id(target,player_id)
+    
+    player = match_gateway.find_player(match, player_id)
+    player=player_validator.not_exist(player)
+    
     match_territory_validator.frontier_verify(
         target_territory_id=target_territory_id,
         player_id=player_id,
         match_territories=match['territories'],
         )
 
-    question = get_next_question_for_player(player)
-
-    match["pending_attack_question"] = {
-        "player_id": player_id,
-        "target_territory_id": target_territory_id,
-        "option_id": option_id,
-        "question_id": question["question_id"],
-        "correct_answer": question["answer"],
-    }
-
+    question = player_gateway.get_next_question_for_player(player)
+    newPendingValue= PendingAction.create_dict(
+        player_id=player_id,
+        target_territory_id=target_territory_id,
+        option_id=option_id,
+        question_id=question["question_id"],
+        correct_answer=question["answer"],
+    )
+    key="pending_action"
+    match=match_factory.change_key_value(match,key,newPendingValue)
     match_factory.update_match(match)
-
+    
+    actionType="attack_question"
     return {
         "match": match,
         "result": {
-            "type": "attack_question",
-            "player_id": player_id,
-            "target_territory_id": target_territory_id,
-            "territory_id": target_territory_id,
-            "territory_name": target["name"],
-            "option_id": option["option_id"],
-            "title": option["title"],
-            "description": option["description"],
-            "risk_level": option["risk_level"],
-            "cost_money": option["cost_money"],
-            "success_chance": option["success_chance"],
+            "type": actionType,
             "question": {
                 "question_id": question["question_id"],
                 "subject": question["subject"],
@@ -109,7 +89,7 @@ def resolve_attack_option(
     }
 
 
-def resolve_attack_question(
+def resolve_attack_action(
     match_id,
     player_id: str,
     answer: bool,
@@ -125,68 +105,49 @@ def resolve_attack_question(
     5. verifica vitória;
     6. avança turno.
     """
-
+    status="running"
     match = match_gateway.get_match(match_id)
+    match=match_validator.match_exist(match)
+    match=match_validator.verify_match_status(match,status)
+    match=match_validator.verify_current_turn_player_id(match,player_id)
+    
+    pending_action = match.get("pending_action")
+    
+    pending_action_validator.pending_action_exist(pending_action)
+    pending_action_validator.verify_pending_action_player_id(pending_action,player_id)
 
-    if match is None:
-        raise ValueError("Partida não encontrada")
 
-    if match["status"] != "running":
-        raise ValueError("Partida não está em andamento")
+    target_territory_id = pending_action["target_territory_id"]
+    option_id = pending_action["option_id"]
 
-    pending_question = match.get("pending_attack_question")
+    action = action_gateway.get_action_by_id(option_id)
+    action = action_validator.action_exist(action)
 
-    if pending_question is None:
-        raise ValueError("Não existe pergunta pendente para essa ação")
+    target = match_gateway.find_territory(match, target_territory_id)
+    target = match_territory_validator.territory_exist(target)
+    target = match_territory_validator.verify_territory_owner_id(target,player_id)
 
-    if pending_question["player_id"] != player_id:
-        raise ValueError("Essa pergunta não pertence a esse jogador")
 
-    if match["current_turn_player_id"] != player_id:
-        raise ValueError("Não é o turno desse jogador")
-
-    target_territory_id = pending_question["target_territory_id"]
-    option_id = pending_question["option_id"]
-
-    option = get_option_by_id(option_id)
-
-    if option is None:
-        raise ValueError("Opção inválida")
-
-    target = find_territory(match, target_territory_id)
-
-    if target is None:
-        raise ValueError("Território não encontrado")
-
-    if target["owner_id"] == player_id:
-        raise ValueError("Você já controla esse território")
-
-    correct_answer = pending_question["correct_answer"]
+    correct_answer = pending_action["correct_answer"]
     question_was_correct = answer == correct_answer
+    base_success_chance = action["success_chance"]
 
-    base_success_chance = option["success_chance"]
-
-    if question_was_correct:
-        adjusted_success_chance = base_success_chance + QUESTION_CORRECT_BONUS
-    else:
-        adjusted_success_chance = base_success_chance - QUESTION_WRONG_PENALTY
-
-    adjusted_success_chance = clamp_success_chance(adjusted_success_chance)
+    adjusted_success_chance = clamp_success_chance(question_was_correct,base_success_chance)
 
     action_result = execute_attack_roll(
         match=match,
         player_id=player_id,
         target_territory_id=target_territory_id,
-        option=option,
+        option=action,
         base_success_chance=base_success_chance,
         adjusted_success_chance=adjusted_success_chance,
         question_was_correct=question_was_correct,
         correct_answer=correct_answer,
         player_answer=answer,
-        question_id=pending_question["question_id"],
+        question_id=pending_action["question_id"],
     )
-
-    match.pop("pending_attack_question", None)
+    key="pending_action"
+    match=match_factory.clean_key_value(key,match)
 
     match["last_action_result"] = action_result
 
@@ -195,9 +156,6 @@ def resolve_attack_question(
     won = match_mission_validator.final_round_verify(match_id, player_id)
 
     if won:
-        match = match_gateway.get_match(match_id)
-        if match is None:
-            return "Validator"
         match["status"] = "finished"
         match["winner_id"] = player_id
         match["last_action_result"] = action_result
@@ -217,7 +175,7 @@ def resolve_attack_question(
     match = match_gateway.get_match(match_id)
     if match is None:
         return "Validator"
-    advance_turn(match)
+    match_factory.advance_turn(match)
 
     match_factory.update_match(match)
 
@@ -255,13 +213,13 @@ def execute_attack_roll(
     question_id,
 ):
     """
-    Essa função mantém a lógica antiga da sua resolve_attack_option.
+    Essa função mantém a lógica antiga da sua prepare_attack_action.
 
     A diferença é que agora ela usa adjusted_success_chance
     em vez de option["success_chance"] diretamente.
     """
 
-    target = find_territory(match, target_territory_id)
+    target = match_gateway.find_territory(match, target_territory_id)
 
     if target is None:
         raise ValueError("Território não encontrado")
@@ -335,52 +293,11 @@ def execute_attack_roll(
 
     return action_result
 
-
-def get_next_question_for_player(player: dict):
-    questions = player.get("questions", [])
-    print(player)
-    if not questions:
-        raise ValueError("Esse jogador não possui mais perguntas disponíveis")
-
-    question = questions.pop(0)
-
-    return question
+def clamp_success_chance(question_was_correct,base_success_chance):
+    if question_was_correct:
+        adjusted_success_chance = base_success_chance + QUESTION_CORRECT_BONUS
+    else:
+        adjusted_success_chance = base_success_chance - QUESTION_WRONG_PENALTY
+    return max(MIN_SUCCESS_CHANCE, min(MAX_SUCCESS_CHANCE, adjusted_success_chance))
 
 
-def find_player(match: dict, player_id: str):
-    for player in match["players"]:
-        if player["player_id"] == player_id:
-            return player
-
-    return None
-
-
-def find_territory(match: dict, territory_id: str):
-    for territory in match["territories"]:
-        if territory["territory_id"] == territory_id:
-            return territory
-
-    return None
-
-
-def clamp_success_chance(success_chance: int):
-    return max(MIN_SUCCESS_CHANCE, min(MAX_SUCCESS_CHANCE, success_chance))
-
-
-def advance_turn(match: dict):
-    players = match["players"]
-    current_player_id = match["current_turn_player_id"]
-
-    current_index = 0
-
-    for index, player in enumerate(players):
-        if player["player_id"] == current_player_id:
-            current_index = index
-            break
-
-    next_index = (current_index + 1) % len(players)
-
-    if next_index == 0:
-        match["round"] += 1
-
-    match["current_turn_player_id"] = players[next_index]["player_id"]

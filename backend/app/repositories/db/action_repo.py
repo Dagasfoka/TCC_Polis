@@ -29,18 +29,16 @@ ATTACK_OPTIONS = [
     ),
 ]
 
+class ActionRepo:
+    def list_options_by_action(self,action_type: str):
+        return [
+            option.to_dict()
+            for option in ATTACK_OPTIONS
+            if option.action_type == action_type
+        ]
+    def get_option_by_id(self,option_id: str):
+        for option in ATTACK_OPTIONS:
+            if option.option_id == option_id:
+                return option.to_dict()
 
-def list_options_by_action(action_type: str):
-    return [
-        option.to_dict()
-        for option in ATTACK_OPTIONS
-        if option.action_type == action_type
-    ]
-
-
-def get_option_by_id(option_id: str):
-    for option in ATTACK_OPTIONS:
-        if option.option_id == option_id:
-            return option.to_dict()
-
-    return None
+        return None

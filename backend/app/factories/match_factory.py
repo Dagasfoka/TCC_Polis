@@ -3,6 +3,7 @@ from backend.app.repositories.redis.match_repo import MatchRepo
 from backend.app.repositories.db.territory_repo import TerritoryRepo
 from backend.app.gateways.player_gateways import PlayerGateway
 from backend.app.models.redis.match import Match
+
 class MatchFactory:
     def __init__(self) -> None:
         self.match_repository=MatchRepo()
@@ -35,4 +36,27 @@ class MatchFactory:
             round=1,
             missions=[],
         )
+        return match_dict
+    def advance_turn(self,match_dict: dict):
+            players = match_dict["players"]
+            current_player_id = match_dict["current_turn_player_id"]
+    
+            current_index = 0
+    
+            for index, player in enumerate(players):
+                if player["player_id"] == current_player_id:
+                    current_index = index
+                    break
+    
+            next_index = (current_index + 1) % len(players)
+    
+            if next_index == 0:
+                match_dict["round"] += 1
+    
+            match_dict["current_turn_player_id"] = players[next_index]["player_id"]
+    def change_key_value(self,match_dict,key,newValue):
+        match_dict[key]=newValue
+        return match_dict
+    def clean_key_value(self,key,match_dict):
+        match_dict.pop(key,None)
         return match_dict
