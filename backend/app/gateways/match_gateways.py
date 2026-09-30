@@ -19,6 +19,8 @@ class MatchGateway:
         return self.match_repository.get_territory_by_id(match_dict,territory_id)
     def get_territory_by_region(self,match_dict,region):
         return self.match_repository.get_territory_by_region(match_dict,region)
+    def get_round(self,match_dict):
+        return match_dict['round']
     #_________________
     def find_player(self,match_dict: dict, player_id: str):
         for player in match_dict["players"]:

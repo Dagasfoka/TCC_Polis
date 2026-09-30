@@ -84,3 +84,8 @@ class MatchFactory:
     def clean_key_value(self,key,match_dict):
         match_dict.pop(key,None)
         return match_dict
+    def finish_match(self,match,player_id,action_result):
+        match["status"] = "finished"
+        match["winner_id"] = player_id
+        match["last_action_result"] = action_result
+        return match
