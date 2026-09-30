@@ -2,6 +2,7 @@
 from backend.app.repositories.redis.match_repo import MatchRepo
 
 class MatchGateway:
+    #__________________
     def __init__(self):
         self.match_repository=MatchRepo()
     def get_all_players(self,match_id):
@@ -18,3 +19,14 @@ class MatchGateway:
         return self.match_repository.get_territory_by_id(match_dict,territory_id)
     def get_territory_by_region(self,match_dict,region):
         return self.match_repository.get_territory_by_region(match_dict,region)
+    #_________________
+    def find_player(self,match_dict: dict, player_id: str):
+        for player in match_dict["players"]:
+            if player["player_id"] == player_id:
+                return player
+        return None
+    def find_territory(self,match_dict: dict, territory_id: str):
+        for territory in match_dict["territories"]:
+            if territory["territory_id"] == territory_id:
+                return territory
+        return None

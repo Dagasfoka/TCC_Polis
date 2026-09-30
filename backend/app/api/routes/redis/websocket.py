@@ -1,10 +1,10 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from backend.app.gateways.match_gateways import MatchGateway
-from backend.app.services.db.action_service import (
-    get_attack_options,
-    resolve_attack_option,
-    resolve_attack_question,
+from backend.app.services.redis.action_service import (
+    get_attack_actions,
+    prepare_attack_action,
+    resolve_attack_action,
 )
 from backend.app.websocket.manager import manager
 
@@ -26,7 +26,7 @@ def prepare_match_for_player(match: dict, player_id: str):
 
     match_for_player["your_player_id"] = player_id
     match_for_player["your_mission"] = find_your_mission(match, player_id)
-    match_for_player["available_attack_options"] = get_attack_options()
+    match_for_player["available_attack_options"] = get_attack_actions()
 
     return match_for_player
 
@@ -85,7 +85,7 @@ async def match_websocket(
 
                     option_id = data.get("option_id") or payload.get("option_id")
 
-                    response = resolve_attack_option(
+                    response = prepare_attack_action(
                         match_id=match_id,
                         player_id=player_id,
                         target_territory_id=target_territory_id,
@@ -104,7 +104,7 @@ async def match_websocket(
                     if answer is None:
                         answer = payload.get("answer")
 
-                    response = resolve_attack_question(
+                    response = resolve_attack_action(
                         match_id=match_id,
                         player_id=player_id,
                         answer=answer,
