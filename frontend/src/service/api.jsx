@@ -286,5 +286,5 @@ export function chooseParty(
         party_id: partyId,
       }),
     }
-  );
+  )
 }
