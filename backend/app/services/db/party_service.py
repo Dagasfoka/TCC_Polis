@@ -1,4 +1,4 @@
-from backend.app.gateways.party_gateway import PartyGateway
+from backend.app.gateways.db.party_gateway import PartyGateway
 from backend.app.validators.party_validator import PartyValidator
 
 
