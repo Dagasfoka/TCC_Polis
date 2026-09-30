@@ -9,6 +9,8 @@ class Match:
         current_turn_player_id: str,
         round,
         missions: list[dict] | None = None,
+        pending_action : dict | None = None,
+        winner_id : str | None = None,
     ):
         self.match_id = match_id
         self.territories = territories
@@ -18,6 +20,8 @@ class Match:
         self.current_turn_player_id = current_turn_player_id
         self.round = round
         self.missions = missions or []
+        self.pending_action= pending_action,
+        self.winner_id=winner_id
 
     def to_dict(self):
         return {
@@ -29,6 +33,8 @@ class Match:
             "current_turn_player_id": self.current_turn_player_id,
             "round": self.round,
             "missions": self.missions,
+            "pending_action" :self.pending_action ,
+            "winner_id" : self.winner_id,
         }
 
     @classmethod
@@ -42,6 +48,8 @@ class Match:
         current_turn_player_id: str,
         round,
         missions: list[dict] | None = None,
+        pending_action : dict | None = None,
+        winner_id : str | None = None,
     ):
         return cls(
             match_id,
@@ -52,4 +60,6 @@ class Match:
             current_turn_player_id,
             round,
             missions,
+            pending_action,
+            winner_id,
         ).to_dict()
