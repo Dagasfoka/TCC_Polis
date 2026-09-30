@@ -11,4 +11,4 @@ class MissionsRepository:
         return list(self.db.scalars(select(Mission)).all())
 
     def get_mission_by_id(self, mission_id: int) -> Mission | None:
-        return self.db.get(Mission, mission_id)
+        return self.db.get(Mission, mission_id)   

@@ -23,3 +23,6 @@ class RandomRoomRequest(BaseModel):
 class ChangePrivacyRequest(BaseModel):
     host_id: str
     is_private: bool
+class ChoosePartyRequest(BaseModel):
+    player_id: str
+    party_id: str

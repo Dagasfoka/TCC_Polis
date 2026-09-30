@@ -19,7 +19,7 @@ PARTIES = [
         "color": "#2ECC71",
     },
     {
-        "id": "PD",
+        "id": "PD", 
         "name": "Partido Dourado",
         "color": "#F1C40F",
     },

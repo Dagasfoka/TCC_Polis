@@ -11,11 +11,12 @@ class Party(Base):
     id: Mapped[str] = mapped_column(String(2), primary_key=True)
     name: Mapped[str] = mapped_column(String(30), nullable=False)
     color: Mapped[str] = mapped_column(String(15), nullable=False)
-def __repr__(self) -> str:
-    return (
-        f"Party("
-        f"id={self.id!r}, "
-        f"name={self.name!r}, "
-        f"color={self.color!r}"
-        f")"
-    )
+
+    def __repr__(self) -> str:
+        return (
+            f"Party("
+            f"id={self.id!r}, "
+            f"name={self.name!r}, "
+            f"color={self.color!r}"
+            f")"
+        )
