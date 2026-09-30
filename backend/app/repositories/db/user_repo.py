@@ -22,6 +22,7 @@ class UsersRepository:
     
     def create_user(self,username, password_hash):
 
+        try:
             user = User(
                 username=username,
                 password_hash=password_hash,
@@ -35,3 +36,7 @@ class UsersRepository:
             return {
                 **user.to_dict(),
             }
+            
+        except Exception:
+            self.db.rollback()
+            raise
