@@ -1,17 +1,24 @@
 
+
 import { useEffect, useRef, useState } from "react";
 
-import {getRoom,
+
+import {
+  getRoom,
   getPlayer,
   putReady,
   startRoom,
   deletePlayer,
   exitRoom,
   changeRoomPrivacy,
-}from "../service/api.jsx";
+  getParties,
+  chooseParty,
+} from "../service/api.jsx";
+
 
 const MAX_PLAYERS = 4;
 const REFRESH_INTERVAL = 2000;
+
 
 export default function Lobby({
   player,
@@ -22,15 +29,19 @@ export default function Lobby({
 }) {
   const [currentRoom, setCurrentRoom] = useState(room);
   const [playerNames, setPlayerNames] = useState({});
+  const [parties, setParties] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
 
   const roomCode = room.room_code;
   const playerId = player.player_id;
 
+
   // Evita que uma consulta antiga sobrescreva uma ação recente.
   const actionInProgress = useRef(false);
   const requestVersion = useRef(0);
+
 
   // Mantém os callbacks atualizados sem reiniciar o polling.
   const callbacksRef = useRef({
@@ -38,6 +49,7 @@ export default function Lobby({
     onLeave,
     onStart,
   });
+
 
   useEffect(() => {
     callbacksRef.current = {
@@ -47,34 +59,43 @@ export default function Lobby({
     };
   }, [onRoomUpdate, onLeave, onStart]);
 
+
   const players = currentRoom?.players ?? {};
   const playerEntries = Object.entries(players);
   const playerIds = Object.keys(players);
   const playerIdsKey = playerIds.join(",");
 
+
   const myRoomPlayer = players[playerId];
+
 
   const isHost = myRoomPlayer?.host === true;
   const isReady = myRoomPlayer?.ready === true;
   const isPrivate = currentRoom?.is_private === true;
+  const myPartyId = myRoomPlayer?.party_id ?? null;
+
 
   const allReady =
     playerEntries.length === MAX_PLAYERS &&
     playerEntries.every(
       ([, roomPlayer]) =>
-        roomPlayer.host === true ||
-        roomPlayer.ready === true
+        roomPlayer.party_id &&
+        (
+          roomPlayer.host === true ||
+          roomPlayer.ready === true
+        )
     );
-
   const emptySlots = Math.max(
     0,
     MAX_PLAYERS - playerEntries.length
   );
 
+
   function applyRoom(updatedRoom) {
     setCurrentRoom(updatedRoom);
     callbacksRef.current.onRoomUpdate(updatedRoom);
   }
+
 
   function processRoom(updatedRoom) {
     // Jogador expulso, sala encerrada ou sala inexistente.
@@ -87,7 +108,9 @@ export default function Lobby({
       return;
     }
 
+
     applyRoom(updatedRoom);
+
 
     // Todos entram na mesma partida quando ela começar.
     if (
@@ -98,27 +121,69 @@ export default function Lobby({
     }
   }
 
+
   function handleChangePrivacy() {
-  if (!isHost) return;
+    if (!isHost) return;
 
-  runAction(async () => {
-    const updatedRoom = await changeRoomPrivacy(
-      roomCode,
-      playerId,
-      !isPrivate
-    );
 
-    processRoom(updatedRoom);
-  });
-}
+    runAction(async () => {
+      const updatedRoom = await changeRoomPrivacy(
+        roomCode,
+        playerId,
+        !isPrivate
+      );
 
+
+      processRoom(updatedRoom);
+    });
+  }
+
+
+  useEffect(() => {
+    let active = true;
+
+
+    async function loadParties() {
+      try {
+        const data = await getParties();
+
+
+        if (!active) return;
+
+
+        setParties(data);
+      } catch (err) {
+        console.error(
+          "Não foi possível carregar os partidos:",
+          err
+        );
+
+
+        if (active) {
+          setError(
+            "Não foi possível carregar os partidos."
+          );
+        }
+      }
+    }
+
+
+    loadParties();
+
+
+    return () => {
+      active = false;
+    };
+  }, []);
   // Atualização automática da sala.
   useEffect(() => {
     let active = true;
     let timeoutId;
 
+
     async function refreshRoom() {
       if (!active) return;
+
 
       // Não consulta enquanto uma ação do jogador está em andamento.
       if (actionInProgress.current) {
@@ -129,14 +194,18 @@ export default function Lobby({
         return;
       }
 
+
       const version = requestVersion.current;
+
 
       try {
         const updatedRoom = await getRoom(roomCode);
 
+
         if (!active || version !== requestVersion.current) {
           return;
         }
+
 
         processRoom(updatedRoom);
         setError("");
@@ -145,10 +214,12 @@ export default function Lobby({
           return;
         }
 
+
         if (err.status === 404) {
           callbacksRef.current.onLeave();
           return;
         }
+
 
         setError("Não foi possível atualizar a sala.");
       } finally {
@@ -161,7 +232,9 @@ export default function Lobby({
       }
     }
 
+
     refreshRoom();
+
 
     return () => {
       active = false;
@@ -169,14 +242,17 @@ export default function Lobby({
     };
   }, [roomCode, playerId]);
 
+
   // Busca os nicknames quando alguém entra ou sai da sala.
   useEffect(() => {
     let active = true;
+
 
     async function loadPlayerNames() {
       const ids = playerIdsKey
         ? playerIdsKey.split(",")
         : [];
+
 
       const results = await Promise.allSettled(
         ids.map(async (id) => {
@@ -187,20 +263,25 @@ export default function Lobby({
             ];
           }
 
+
           const playerData = await getPlayer(id);
+
 
           return [
             id,
             playerData.username ??
-              playerData.nickname ??
-              id,
+            playerData.nickname ??
+            id,
           ];
         })
       );
 
+
       if (!active) return;
 
+
       const names = {};
+
 
       for (const result of results) {
         if (result.status === "fulfilled") {
@@ -209,10 +290,13 @@ export default function Lobby({
         }
       }
 
+
       setPlayerNames(names);
     }
 
+
     loadPlayerNames();
+
 
     return () => {
       active = false;
@@ -224,15 +308,19 @@ export default function Lobby({
     player.nickname,
   ]);
 
+
   // Centraliza o controle das ações do lobby.
   async function runAction(action) {
     if (actionInProgress.current) return;
 
+
     actionInProgress.current = true;
     requestVersion.current += 1;
 
+
     setLoading(true);
     setError("");
+
 
     try {
       await action();
@@ -246,9 +334,34 @@ export default function Lobby({
     }
   }
 
+
+  function handleChooseParty(partyId) {
+    if (isReady) return;
+
+
+    runAction(async () => {
+      const updatedRoom = await chooseParty(
+        roomCode,
+        playerId,
+        partyId
+      );
+
+
+      processRoom(updatedRoom);
+    });
+  }
+
+
   // Jogador marca pronto.
   function handleReady() {
-    if (isHost || isReady) return;
+    if (
+      isHost ||
+      isReady ||
+      !myPartyId
+    ) {
+      return;
+    }
+
 
     runAction(async () => {
       const updatedRoom = await putReady(
@@ -256,20 +369,26 @@ export default function Lobby({
         playerId
       );
 
+
       if (updatedRoom?.players) {
         processRoom(updatedRoom);
       } else {
-        const refreshedRoom = await getRoom(roomCode);
+        const refreshedRoom =
+          await getRoom(roomCode);
+
+
         processRoom(refreshedRoom);
       }
     });
   }
+
 
   // Host remove outro jogador.
   function handleKick(targetPlayerId) {
     if (!isHost || targetPlayerId === playerId) {
       return;
     }
+
 
     runAction(async () => {
       const updatedRoom = await deletePlayer(
@@ -278,6 +397,7 @@ export default function Lobby({
         targetPlayerId
       );
 
+
       if (updatedRoom?.players) {
         processRoom(updatedRoom);
       } else {
@@ -286,6 +406,7 @@ export default function Lobby({
       }
     });
   }
+
 
   // Jogador sai voluntariamente da sala.
   function handleLeave() {
@@ -295,9 +416,11 @@ export default function Lobby({
     });
   }
 
+
   // Host inicia a partida.
   function handleStart() {
     if (!isHost || !allReady) return;
+
 
     runAction(async () => {
       const match = await startRoom(
@@ -305,15 +428,18 @@ export default function Lobby({
         playerId
       );
 
+
       if (!match?.match_id) {
         throw new Error(
           "O servidor não retornou o ID da partida."
         );
       }
 
+
       callbacksRef.current.onStart(match.match_id);
     });
   }
+
 
   return (
     <main className="lobby-wrap htbg">
@@ -324,45 +450,51 @@ export default function Lobby({
         POL<em>IS</em>
       </h1>
 
+
       <section className="card-dark lobby-card anim-up">
         <span className="lbl lbl-light">
           SALA DE ESPERA
         </span>
 
+
         <h2 style={{ margin: "10px 0" }}>
-        Código: {roomCode}
+          Código: {roomCode}
         </h2>
 
-          <p
-  style={{
-    color: "var(--tx-d)",
-    marginBottom: 10,
-  }}
->
-  Sala: {isPrivate ? "🔒 PRIVADA" : "🌐 PÚBLICA"}
-</p>
 
-{isHost && (
-  <button
-    type="button"
-    className="btn"
-    onClick={handleChangePrivacy}
-    disabled={loading}
-    style={{ marginBottom: 16 }}
-  >
-    {isPrivate
-      ? "🌐 TORNAR SALA PÚBLICA"
-      : "🔒 TORNAR SALA PRIVADA"}
-  </button>
-)}
+        <p
+          style={{
+            color: "var(--tx-d)",
+            marginBottom: 10,
+          }}
+        >
+          Sala: {isPrivate ? "🔒 PRIVADA" : "🌐 PÚBLICA"}
+        </p>
 
-<p
-  style={{
-    color: "var(--tx-d)",
-    marginBottom: 16,
-  }}
->
-</p>
+
+        {isHost && (
+          <button
+            type="button"
+            className="btn"
+            onClick={handleChangePrivacy}
+            disabled={loading}
+            style={{ marginBottom: 16 }}
+          >
+            {isPrivate
+              ? "🌐 TORNAR SALA PÚBLICA"
+              : "🔒 TORNAR SALA PRIVADA"}
+          </button>
+        )}
+
+
+        <p
+          style={{
+            color: "var(--tx-d)",
+            marginBottom: 16,
+          }}
+        >
+        </p>
+
 
         <p
           style={{
@@ -372,7 +504,91 @@ export default function Lobby({
         >
           Jogadores: {playerEntries.length}/{MAX_PLAYERS}
         </p>
+        <div
+          style={{
+            marginBottom: 24,
+          }}
+        >
+          <h3
+            style={{
+              textAlign: "center",
+              marginBottom: 12,
+            }}
+          >
+            ESCOLHA SEU PARTIDO
+          </h3>
 
+
+          {parties.length === 0 ? (
+            <p
+              style={{
+                textAlign: "center",
+                color: "var(--tx-d)",
+              }}
+            >
+              Carregando partidos...
+            </p>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(180px, 1fr))",
+                gap: 10,
+              }}
+            >
+              {parties.map((party) => {
+                const selected =
+                  myPartyId === party.id;
+
+
+                const usedByAnotherPlayer =
+                  playerEntries.some(
+                    ([id, roomPlayer]) =>
+                      id !== playerId &&
+                      roomPlayer.party_id === party.id
+                  );
+
+
+                return (
+                  <button
+                    key={party.id}
+                    type="button"
+                    className="btn"
+                    onClick={() =>
+                      handleChooseParty(party.id)
+                    }
+                    disabled={
+                      loading ||
+                      isReady ||
+                      usedByAnotherPlayer
+                    }
+                    style={{
+                      borderLeft: `8px solid ${party.color}`,
+                      opacity:
+                        usedByAnotherPlayer ? 0.45 : 1,
+                      fontWeight:
+                        selected ? "bold" : "normal",
+                    }}
+                  >
+                    {selected ? "✓ " : ""}
+
+
+                    {party.name}
+
+
+                    {usedByAnotherPlayer
+                      ? " — OCUPADO"
+                      : ""}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+
+        <hr className="sep" />
         <div
           className="prog-wrap"
           style={{ marginBottom: 18 }}
@@ -380,75 +596,108 @@ export default function Lobby({
           <div
             className="prog-fill"
             style={{
-              width: `${
-                (playerEntries.length / MAX_PLAYERS) * 100
-              }%`,
+              width: `${(playerEntries.length / MAX_PLAYERS) * 100
+                }%`,
             }}
           />
         </div>
 
-        <div className="players-grid">
-          {playerEntries.map(([id, roomPlayer]) => (
-            <div className="p-slot" key={id}>
-              <div
-                className={`p-av ${
-                  roomPlayer.host ? "host" : ""
-                }`}
-              >
-                {roomPlayer.host ? "👑" : "👤"}
-              </div>
 
-              <div
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                }}
-              >
-                <strong
+        <div className="players-grid">
+          {playerEntries.map(([id, roomPlayer]) => {
+            const selectedParty = parties.find(
+              (party) => party.id === roomPlayer.party_id
+            );
+
+
+            return (
+              <div className="p-slot" key={id}>
+                <div
+                  className={`p-av ${roomPlayer.host ? "host" : ""
+                    }`}
+                >
+                  {roomPlayer.host ? "👑" : "👤"}
+                </div>
+
+
+                <div
                   style={{
-                    display: "block",
-                    overflowWrap: "anywhere",
+                    flex: 1,
+                    minWidth: 0,
                   }}
                 >
-                  {playerNames[id] ?? id}
+                  <strong
+                    style={{
+                      display: "block",
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {playerNames[id] ?? id}
 
-                  {id === playerId ? " (você)" : ""}
-                </strong>
 
-                <span
-                  className={`badge ${
-                    roomPlayer.host
+                    {id === playerId ? " (você)" : ""}
+                  </strong>
+
+
+                  {selectedParty ? (
+                    <span
+                      style={{
+                        display: "block",
+                        marginTop: 4,
+                        color: selectedParty.color,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      ● {selectedParty.name}
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        display: "block",
+                        marginTop: 4,
+                        color: "var(--tx-d)",
+                      }}
+                    >
+                      Sem partido
+                    </span>
+                  )}
+
+
+                  <span
+                    className={`badge ${roomPlayer.host
                       ? "bg-gold"
                       : roomPlayer.ready
                         ? "bg-green"
                         : "bg-gray"
-                  }`}
-                  style={{ marginTop: 5 }}
-                >
-                  {roomPlayer.host
-                    ? "HOST"
-                    : roomPlayer.ready
-                      ? "PRONTO"
-                      : "AGUARDANDO"}
-                </span>
-              </div>
+                      }`}
+                    style={{ marginTop: 5 }}
+                  >
+                    {roomPlayer.host
+                      ? "HOST"
+                      : roomPlayer.ready
+                        ? "PRONTO"
+                        : "AGUARDANDO"}
+                  </span>
+                </div>
 
-              {isHost && id !== playerId && (
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  onClick={() => handleKick(id)}
-                  disabled={loading}
-                  title="Remover jogador"
-                  aria-label={`Remover ${
-                    playerNames[id] ?? id
-                  }`}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
+
+                {isHost && id !== playerId && (
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={() => handleKick(id)}
+                    disabled={loading}
+                    title="Remover jogador"
+                    aria-label={`Remover ${playerNames[id] ?? id
+                      }`}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            );
+          })}
+
 
           {Array.from({
             length: emptySlots,
@@ -459,6 +708,7 @@ export default function Lobby({
             >
               <div className="p-av">+</div>
 
+
               <span>
                 Aguardando jogador...
               </span>
@@ -466,7 +716,9 @@ export default function Lobby({
           ))}
         </div>
 
+
         <hr className="sep" />
+
 
         <p
           style={{
@@ -478,11 +730,14 @@ export default function Lobby({
           {isHost
             ? allReady
               ? "Todos estão prontos! A partida pode começar."
-              : "Aguarde quatro jogadores e todos ficarem prontos."
+              : "Aguarde quatro jogadores, todos escolherem seus partidos e ficarem prontos."
             : isReady
               ? "Você está pronto. Aguarde o host iniciar."
-              : "Marque pronto para participar da partida."}
+              : !myPartyId
+                ? "Escolha seu partido para continuar."
+                : "Marque pronto para participar da partida."}
         </p>
+
 
         {error && (
           <p
@@ -496,6 +751,7 @@ export default function Lobby({
             {error}
           </p>
         )}
+
 
         <div className="btn-row">
           {isHost ? (
@@ -514,13 +770,20 @@ export default function Lobby({
               type="button"
               className="btn btn-gold"
               onClick={handleReady}
-              disabled={loading || isReady}
+              disabled={
+                loading ||
+                isReady ||
+                !myPartyId
+              }
             >
-              {isReady
-                ? "✓ PRONTO"
-                : "ESTOU PRONTO"}
+              {!myPartyId
+                ? "ESCOLHA UM PARTIDO"
+                : isReady
+                  ? "✓ PRONTO"
+                  : "ESTOU PRONTO"}
             </button>
           )}
+
 
           <button
             type="button"
@@ -535,3 +798,4 @@ export default function Lobby({
     </main>
   );
 }
+
