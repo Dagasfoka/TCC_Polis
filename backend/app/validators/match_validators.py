@@ -20,6 +20,10 @@ class MatchValidator:
         if match_dict["current_turn_player_id"] != player_id:
             raise ValueError("Não é o turno desse jogador")
         return match_dict
+    def round_exist(self,round):
+        if round is None:
+           raise Exception("Round não encontrado") 
+        return round
 #_________________________________________________ AUX
     def is_alive(self,match_id, target_id):
         match_dict = self.match_gateway.get_match(match_id)

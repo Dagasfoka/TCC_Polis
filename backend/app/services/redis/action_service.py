@@ -46,7 +46,9 @@ def prepare_attack_action(
     match=match_validator.match_exist(match)
     match=match_validator.verify_match_status(match,status)
     match=match_validator.verify_current_turn_player_id(match,player_id)
-
+    round=match_gateway.get_round(match)
+    round=match_validator.round_exist(round)
+    
     action = action_gateway.get_action_by_id(option_id)
     action = action_validator.action_exist(action)
 
@@ -62,49 +64,109 @@ def prepare_attack_action(
         player_id=player_id,
         match_territories=match['territories'],
         )
+    if (round%3)==0:
+        question = player_gateway.get_next_question_for_player(player)
+        newPendingValue= PendingAction.create_dict(
+            player_id=player_id,
+            target_territory_id=target_territory_id,
+            option_id=option_id,
+            question_id=question["question_id"],
+            correct_answer=question["answer"],
+        )
+        key="pending_action"
+        match=match_factory.change_key_value(match,key,newPendingValue)
+        match_factory.update_match(match)
+        
+        actionType="attack_question"
+        return {
+            "match": match,
+            "result": {
+                "type": actionType,
+                "question": {
+                    "question_id": question["question_id"],
+                    "subject": question["subject"],
+                    "description": question["description"],
+                },
+            },
+        }
+    else:
+        return resolve_action_no_question(match_id,player_id,action,target_territory_id)
 
-    question = player_gateway.get_next_question_for_player(player)
-    newPendingValue= PendingAction.create_dict(
+def resolve_action_no_question(
+    match_id : int,
+    player_id: str,
+    action : dict,
+    target_territory_id: str,
+):
+
+    match = match_gateway.get_match(match_id)
+    match=match_validator.match_exist(match)
+
+    action = action_validator.action_exist(action)
+
+    target = match_gateway.find_territory(match, target_territory_id)
+    target = match_territory_validator.territory_exist(target)
+    target = match_territory_validator.verify_territory_owner_id(target,player_id)
+
+
+
+    base_success_chance = action["success_chance"]
+
+    action_result = execute_attack_roll(
+        match=match,
         player_id=player_id,
         target_territory_id=target_territory_id,
-        option_id=option_id,
-        question_id=question["question_id"],
-        correct_answer=question["answer"],
+        option=action,
+        base_success_chance=base_success_chance,
     )
-    key="pending_action"
-    match=match_factory.change_key_value(match,key,newPendingValue)
+
+    match["last_action_result"] = action_result
+
     match_factory.update_match(match)
-    
-    actionType="attack_question"
+
+    won = match_mission_validator.final_round_verify(match_id, player_id)
+
+    if won:
+        match=match_factory.finish_match(match,player_id,action_result)
+        match_factory.update_match(match)
+
+        return {
+            "match": match,
+            "result": {
+                **action_result,
+                "next_turn_player_id": match["current_turn_player_id"],
+                "round": match["round"],
+                "winner_id": player_id,
+                "status": "finished",
+            },
+        }
+
+    match_factory.advance_turn(match)
+
+    match_factory.update_match(match)
+
+    match_mission_validator.start_round_verify(match_id, match["current_turn_player_id"])
+
+    match["last_action_result"] = action_result
+
+    match_factory.update_match(match)
+
     return {
         "match": match,
         "result": {
-            "type": actionType,
-            "question": {
-                "question_id": question["question_id"],
-                "subject": question["subject"],
-                "description": question["description"],
-            },
+            **action_result,
+            "next_turn_player_id": match["current_turn_player_id"],
+            "round": match["round"],
+            "winner_id": match.get("winner_id"),
+            "status": match["status"],
         },
     }
-
 
 def resolve_attack_action(
     match_id,
     player_id: str,
     answer: bool,
 ):
-    """
-    Essa função é chamada depois que o jogador responde Verdadeiro/Falso.
-
-    Ela:
-    1. confere a resposta;
-    2. ajusta a chance da action_option;
-    3. rola o dado;
-    4. aplica o resultado;
-    5. verifica vitória;
-    6. avança turno.
-    """
     status="running"
     match = match_gateway.get_match(match_id)
     match=match_validator.match_exist(match)
@@ -172,18 +234,12 @@ def resolve_attack_action(
             },
         }
 
-    match = match_gateway.get_match(match_id)
-    if match is None:
-        return "Validator"
     match_factory.advance_turn(match)
 
     match_factory.update_match(match)
 
     match_mission_validator.start_round_verify(match_id, match["current_turn_player_id"])
 
-    match = match_gateway.get_match(match_id)
-    if match is None:
-        return "Validator"
     match["last_action_result"] = action_result
 
     match_factory.update_match(match)
@@ -206,11 +262,11 @@ def execute_attack_roll(
     target_territory_id: str,
     option: dict,
     base_success_chance: int,
-    adjusted_success_chance: int,
-    question_was_correct: bool,
-    correct_answer: bool,
-    player_answer: bool,
-    question_id,
+    adjusted_success_chance: int | None=None,
+    question_was_correct: bool | None=None,
+    correct_answer: bool | None=None,
+    player_answer: bool | None=None,
+    question_id: int | None=None,
 ):
     """
     Essa função mantém a lógica antiga da sua prepare_attack_action.
@@ -220,12 +276,13 @@ def execute_attack_roll(
     """
 
     target = match_gateway.find_territory(match, target_territory_id)
-
-    if target is None:
-        raise ValueError("Território não encontrado")
+    target=match_territory_validator.territory_exist(target)
 
     roll = random.randint(1, 100)
-    minimum_roll_to_succeed = 100 - adjusted_success_chance
+    if adjusted_success_chance:
+        minimum_roll_to_succeed = 100 - adjusted_success_chance
+    else:
+        minimum_roll_to_succeed = 100 - base_success_chance
     success = roll >= minimum_roll_to_succeed
 
     influence_generated = 0
@@ -241,7 +298,7 @@ def execute_attack_roll(
         current_influence = target["current_influence"]
         base_influence = target["base_influence"]
 
-        if influence_generated > current_influence:
+        if influence_generated >= current_influence:
             conquered = True
             leftover = influence_generated - current_influence
 
@@ -299,5 +356,3 @@ def clamp_success_chance(question_was_correct,base_success_chance):
     else:
         adjusted_success_chance = base_success_chance - QUESTION_WRONG_PENALTY
     return max(MIN_SUCCESS_CHANCE, min(MAX_SUCCESS_CHANCE, adjusted_success_chance))
-
-
