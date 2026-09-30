@@ -12,6 +12,14 @@ class MatchValidator:
         if territory is None:
            raise Exception("Território não existe") 
         return territory 
+    def verify_match_status(self,match_dict,status):
+        if match_dict["status"] != status:
+            raise ValueError("Partida não está em andamento")
+        return match_dict
+    def verify_current_turn_player_id(self,match_dict,player_id):
+        if match_dict["current_turn_player_id"] != player_id:
+            raise ValueError("Não é o turno desse jogador")
+        return match_dict
 #_________________________________________________ AUX
     def is_alive(self,match_id, target_id):
         match_dict = self.match_gateway.get_match(match_id)

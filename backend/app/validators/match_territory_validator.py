@@ -34,8 +34,12 @@ class MatchTerritoryValidator:
             raise Exception("Você não possui fronteiras com esse território")
 
         return True
+    #_______SIMPLES
     def territory_exist(self, territory):
         if territory is None:
             raise Exception("Território não existe")
-
         return territory
+    def verify_territory_owner_id(self,target,player_id):
+        if target["owner_id"] == player_id:
+            raise ValueError("Você já controla esse território")
+        return target

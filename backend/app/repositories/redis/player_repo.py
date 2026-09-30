@@ -34,7 +34,6 @@ class PlayerRepo:
 
         if isinstance(player_json, (str, bytes)):
             return loads(player_json)
-
         return None
     def get_player_repo_by_token(self,player_token):
 

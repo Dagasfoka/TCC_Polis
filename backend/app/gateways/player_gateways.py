@@ -11,3 +11,11 @@ class PlayerGateway:
         return players
     def get_player(self,player_id):
         return self.player_repository.get_player(player_id)
+    def get_next_question_for_player(self, player: dict):
+        questions = player.get("questions", [])
+        if not questions:
+            raise ValueError("Esse jogador não possui mais perguntas disponíveis")
+
+        question = questions.pop(0)
+
+        return question
