@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from backend.app.db.database import get_db
+from backend.app.api.deps import get_db
 from backend.app.schemas.db.party import PartyResponse
 from backend.app.services.db.party_service import get_parties
 
