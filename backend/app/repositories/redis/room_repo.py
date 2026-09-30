@@ -35,20 +35,18 @@ class RoomRepo:
         room_dict["players"][room_player["player_id"]] = {
             "ready": room_player["ready"],
             "host": room_player["host"],
+            "party_id": room_player["party_id"],
         }
         return self.update_room(room_dict)
-    def create_room_player(
-        self,
-        player_id,
-        ready=False,
-        host=False
-    ):
-        room_player = RoomPlayer(
+    def create_room_player(self,player_id,ready=False,host=False,party_id=None,):
+        return RoomPlayer(
             player_id=player_id,
             ready=ready,
             host=host,
+            party_id=party_id,
         )
-        return room_player
+        
+    
     def get_public_rooms(self):
         public_rooms = []
         # Procura todas as chaves room:*
