@@ -5,6 +5,7 @@ from backend.app.api.routes.redis.match import router_match
 from backend.app.api.routes.redis.player import router_player
 from backend.app.api.routes.redis.room import router_room
 from backend.app.api.routes.db.user import router_user
+from backend.app.api.routes.db.party import router_party
 from backend.app.api.routes.redis.websocket import router_websocket
 
 router = APIRouter()
@@ -23,3 +24,4 @@ router.include_router(router_room)
 router.include_router(router_player)
 router.include_router(router_websocket)
 router.include_router(router_user)
+router.include_router(router_party)
