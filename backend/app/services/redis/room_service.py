@@ -5,6 +5,7 @@ from backend.app.validators.room_validators import RoomValidator
 from backend.app.validators.player_validators import PlayerValidator
 from backend.app.services.redis.match_service import MatchService
 from backend.app.gateways.player_gateways import PlayerGateway
+from backend.app.services.db.party_service import get_party
 import random
 
 player_gateway=PlayerGateway()
@@ -40,14 +41,15 @@ def join_room(player_id, room_code):
     # evitar duplicado
     room_validator.player_is_duplicate(player_id,room_dict)
 
-    room_player=room_factory.create_room_player(player_id)
-    # colocar dentro do factories?
-    room_dict["players"][room_player['player_id']]={
-        'ready':room_player['ready'],
-        'host':room_player['host'],
-        }
-    #____
-    room_factory.update_room(room_dict)
+    room_player = room_factory.create_room_player(
+    player_id
+    )
+
+    room_dict["players"][room_player["player_id"]] = {
+        "ready": room_player["ready"],
+        "host": room_player["host"],
+        "party_id": room_player["party_id"],
+    }
 
     return room_dict
 
@@ -195,4 +197,39 @@ def change_room_privacy(
     room_dict["is_private"] = is_private
     # Salvar no Redis
     room_factory.update_room(room_dict)
+    return room_dict
+
+def choose_party(
+    db,
+    room_code,
+    player_id,
+    party_id
+):
+    room_gateway = RoomGateway()
+    room_factory = RoomFactory()
+    room_validator = RoomValidator()
+
+    room_dict = room_gateway.get_room(room_code)
+    room_dict = room_validator.not_exist(room_dict)
+
+    room_validator.player_in_room(
+        room_dict,
+        player_id
+    )
+
+    # Verifica se o partido existe no banco
+    get_party(db, party_id)
+
+    # Verifica se está disponível nesta sala
+    room_validator.party_is_available(
+        room_dict,
+        player_id,
+        party_id
+    )
+
+    # Registra escolha
+    room_dict["players"][player_id]["party_id"] = party_id
+
+    room_factory.update_room(room_dict)
+
     return room_dict
