@@ -1,41 +1,61 @@
-class Action:
-    def __init__(self, action_id: int, action_type: str, alignment : str, title:str , statement :str, content: dict):
-        self.action_id = action_id
-        self.action_type = action_type
-        self.alignment = alignment
-        self.title = title
-        self.statement = statement
-        self.content = content
+from sqlalchemy import Integer, String, Text, JSON
+from sqlalchemy.orm import Mapped, mapped_column
 
-    def to_dict(self):
+from backend.app.db.base import Base
+
+
+class Action(Base):
+    __tablename__ = "actions"
+
+    action_id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    action_type: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    alignment: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    title: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    description: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    risk_level: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    cost: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
+
+    content: Mapped[dict] = mapped_column(
+        JSON,
+        nullable=False,
+    )
+
+    def to_dict(self) -> dict:
         return {
             "action_id": self.action_id,
             "action_type": self.action_type,
             "alignment": self.alignment,
             "title": self.title,
-            "statement": self.statement,
+            "description": self.description,
+            "risk_level": self.risk_level,
+            "cost": self.cost,
             "content": self.content,
-        }
-
-    @classmethod
-    def create(cls, action_id: int, action_type: str, alignment : str, title:str , statement :str, content: dict):
-        return cls(
-            action_id, action_type, alignment, title, statement, content
-        ).to_dict()
-
-    @staticmethod
-    def create_gain(money:int , influence: int, corruption: int | None = None):
-        return {
-            "money": money,
-            "influence": influence,
-            "corruption": corruption,
-        }
-
-    @staticmethod
-    def create_content(description : str, cost : int, gains:dict, success_chance: int):
-        return {
-            "description": description,
-            "cost": cost,
-            "gains": gains,
-            "success_chance": success_chance,
         }
