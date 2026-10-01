@@ -83,9 +83,13 @@ def prepare_attack_action(
             "result": {
                 "type": actionType,
                 "question": {
-                    "question_id": question["question_id"],
-                    "subject": question["subject"],
-                    "description": question["description"],
+                "question_id": question['question_id'],
+                "subject": question['subject'],
+                "description": question['description'],
+                "exam_board": question['exam_board'],
+                "options": question['options'],
+                "difficulty": question['difficulty'],
+                "explanation": question['explanation'],
                 },
             },
         }

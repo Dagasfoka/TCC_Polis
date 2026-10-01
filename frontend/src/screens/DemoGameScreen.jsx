@@ -111,33 +111,33 @@ export default function DemoGameScreen({
     ]);
   }
   async function createPlayer() {
-      try {
-        const response = await fetch(
-           `${API_URL}/players`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              username,
-            }),
-          }
-        );
-    
-        const data = await response.json();
-    
-        console.log(data);
-    
-        if (data.player_id) {
-          setPlayerId(data.player_id);
+    try {
+      const response = await fetch(
+        `${API_URL}/players`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+          }),
         }
-    
-        addLog("Jogador criado", data);
-      } catch (error) {
-        console.error(error);
-        addLog("Erro ao criar jogador", error);
+      );
+
+      const data = await response.json();
+
+      console.log(data);
+
+      if (data.player_id) {
+        setPlayerId(data.player_id);
       }
+
+      addLog("Jogador criado", data);
+    } catch (error) {
+      console.error(error);
+      addLog("Erro ao criar jogador", error);
+    }
   }
   async function searchPlayers() {
     try {
@@ -170,63 +170,63 @@ export default function DemoGameScreen({
     }
   }
   async function initializeDatabase() {
-  try {
-    addLog("Inicializando banco...");
+    try {
+      addLog("Inicializando banco...");
 
-    const response = await fetch(
-      `${API_URL}/db/init`,
-      {
-        method: "POST",
-      }
-    );
+      const response = await fetch(
+        `${API_URL}/db/init`,
+        {
+          method: "POST",
+        }
+      );
 
-    const data = await response.json();
+      const data = await response.json();
 
-    addLog("Banco inicializado", data);
+      addLog("Banco inicializado", data);
 
-    alert("Banco criado com sucesso!");
-  } catch (error) {
-    console.error(error);
-    addLog("Erro ao inicializar banco", error);
-  }
-}
- async function createDemoMatch() {
-  try {
-    addLog("1 - Iniciando requisição");
-
-    const response = await fetch(
-    `${API_URL}/match/create`,
-      {
-        method: "POST",
-      }
-    );
-
-    addLog(`2 - Status: ${response.status}`);
-
-    const data = await response.json();
-
-    addLog("3 - JSON recebido");
-
-    console.log(data);
-
-    if (data.match_id) {
-      addLog(`4 - Match ID: ${data.match_id}`);
-      setMatchId(String(data.match_id));
+      alert("Banco criado com sucesso!");
+    } catch (error) {
+      console.error(error);
+      addLog("Erro ao inicializar banco", error);
     }
-    if (data.players) {
-  setDemoPlayers(data.players);
-
-      if (data.players.length > 0) {
-        setPlayerId(data.players[0].player_id);
-      }
-}
-    addLog("5 - Finalizado");
-
-  } catch (error) {
-    console.error(error);
-    addLog(`ERRO: ${error.message}`);
   }
-}
+  async function createDemoMatch() {
+    try {
+      addLog("1 - Iniciando requisição");
+
+      const response = await fetch(
+        `${API_URL}/match/create`,
+        {
+          method: "POST",
+        }
+      );
+
+      addLog(`2 - Status: ${response.status}`);
+
+      const data = await response.json();
+
+      addLog("3 - JSON recebido");
+
+      console.log(data);
+
+      if (data.match_id) {
+        addLog(`4 - Match ID: ${data.match_id}`);
+        setMatchId(String(data.match_id));
+      }
+      if (data.players) {
+        setDemoPlayers(data.players);
+
+        if (data.players.length > 0) {
+          setPlayerId(data.players[0].player_id);
+        }
+      }
+      addLog("5 - Finalizado");
+
+    } catch (error) {
+      console.error(error);
+      addLog(`ERRO: ${error.message}`);
+    }
+  }
 
   function handleWinnerAlert(newMatchState) {
     if (
@@ -259,15 +259,15 @@ export default function DemoGameScreen({
     setPendingQuestion(null);
     setPendingActionInfo(null);
     ///
-const WS =
-  import.meta.env.VITE_WS_URL ||
-  "wss://tcc-polis-42o9.onrender.com";
+    const WS =
+      import.meta.env.VITE_WS_URL ||
+      "wss://tcc-polis-42o9.onrender.com";
 
-const ws = new WebSocket(
-  `${WS}/ws/match/${matchId}/${playerId}`
-);
+    const ws = new WebSocket(
+      `${WS}/ws/match/${matchId}/${playerId}`
+    );
 
-wsRef.current = ws;
+    wsRef.current = ws;
 
     ws.onopen = () => {
       setConnected(true);
@@ -287,7 +287,7 @@ wsRef.current = ws;
           territory_id: data.territory_id,
           territory_name: data.territory_name,
           option_id: data.option_id,
-          title: data.title,
+          title: "teste",
           success_chance: data.success_chance,
         });
 
@@ -392,28 +392,28 @@ wsRef.current = ws;
   }
 
   function answerAttackQuestion(answer) {
-  if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-    alert("WebSocket não está conectado.");
-    return;
-  }
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      alert("WebSocket não está conectado.");
+      return;
+    }
 
-  wsRef.current.send(
-    JSON.stringify({
-      type: "answer_attack_question",
+    wsRef.current.send(
+      JSON.stringify({
+        type: "answer_attack_question",
 
-      answer,
-
-      payload: {
         answer,
-      },
-    })
-  );
 
-  addLog(`Enviado answer_attack_question: ${answer ? "Verdadeiro" : "Falso"}`);
+        payload: {
+          answer,
+        },
+      })
+    );
 
-  setPendingQuestion(null);
-  setPendingActionInfo(null);
-}
+    addLog(`Enviado answer_attack_question: ${answer}`);
+
+    setPendingQuestion(null);
+    setPendingActionInfo(null);
+  }
 
   useEffect(() => {
     return () => {
@@ -446,18 +446,18 @@ wsRef.current = ws;
           </button>
 
           <label>
-              Player ID
-              <input value={playerId} readOnly />
-              <select
-                value={playerId}
-                onChange={(event) => setPlayerId(event.target.value)}
-              >
-                {demoPlayers.map((player) => (
-                  <option key={player.player_id} value={player.player_id}>
-                    {player.username}
-                  </option>
-                ))}
-              </select>
+            Player ID
+            <input value={playerId} readOnly />
+            <select
+              value={playerId}
+              onChange={(event) => setPlayerId(event.target.value)}
+            >
+              {demoPlayers.map((player) => (
+                <option key={player.player_id} value={player.player_id}>
+                  {player.username}
+                </option>
+              ))}
+            </select>
           </label>
 
           <button onClick={connect}>
@@ -472,14 +472,14 @@ wsRef.current = ws;
             Criar Partida Demo
           </button>
 
-           <input
+          <input
             type="text"
             placeholder="Nome do jogador"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
 
-           
+
           <button onClick={createPlayer}>
             Criar Jogador
           </button>
@@ -730,33 +730,17 @@ wsRef.current = ws;
             <p className="question-description">
               {pendingQuestion.description}
             </p>
-
-            {pendingActionInfo && (
-              <div className="question-action-info">
-                <p>
-                  <strong>Ação:</strong> {pendingActionInfo.title}
-                </p>
-
-                <p>
-                  <strong>Território:</strong>{" "}
-                  {pendingActionInfo.territory_name}
-                </p>
-
-                <p>
-                  <strong>Chance base:</strong>{" "}
-                  {pendingActionInfo.success_chance}%
-                </p>
-              </div>
-            )}
-
             <div className="question-buttons">
-              <button onClick={() => answerAttackQuestion(true)}>
-                Verdadeiro
-              </button>
-
-              <button onClick={() => answerAttackQuestion(false)}>
-                Falso
-              </button>
+              {Object.entries(pendingQuestion?.options ?? {}).map(
+                ([letter, text]) => (
+                  <center><button 
+                    key={letter}
+                    onClick={() => answerAttackQuestion(letter)}
+                  >
+                    {letter}) {text}
+                  </button></center>
+                )
+              )}
             </div>
           </div>
         </div>

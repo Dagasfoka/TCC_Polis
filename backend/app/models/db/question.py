@@ -1,6 +1,6 @@
 # backend/app/models/db/question.py
 
-from sqlalchemy import Boolean, Integer, String
+from sqlalchemy import Integer, String, Text, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.db.base import Base
@@ -11,22 +11,43 @@ class Question(Base):
 
     question_id: Mapped[int] = mapped_column(
         Integer,
-        primary_key=True
+        primary_key=True,
+        autoincrement=True
     )
 
     subject: Mapped[str] = mapped_column(
         String(50),
-        nullable=False
+        nullable=False,
     )
 
     description: Mapped[str] = mapped_column(
-        String(500),
-        nullable=False
+        Text,
+        nullable=False,
     )
 
-    answer: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False
+    exam_board: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    options: Mapped[dict[str, str]] = mapped_column(
+        JSON,
+        nullable=False,
+    )
+
+    answer: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+
+    difficulty: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    explanation: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
     )
 
     def to_dict(self) -> dict:
@@ -34,5 +55,9 @@ class Question(Base):
             "question_id": self.question_id,
             "subject": self.subject,
             "description": self.description,
-            "answer": self.answer
+            "exam_board": self.exam_board,
+            "options": self.options,
+            "answer": self.answer,
+            "difficulty": self.difficulty,
+            "explanation": self.explanation,
         }
