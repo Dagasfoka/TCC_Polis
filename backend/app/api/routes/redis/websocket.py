@@ -92,11 +92,25 @@ async def match_websocket(
                         option_id=option_id,
                     )
 
-                    await manager.send_to_player(
-                        match_id=match_id,
-                        player_id=player_id,
-                        message=response["result"],
-                    )
+                    if response["result"]["type"] == "attack_question":
+                        await manager.send_to_player(
+                            match_id=match_id,
+                            player_id=player_id,
+                            message=response["result"],
+                        )
+                    elif response['result']['type'] == "attack_no_question":
+                        updated_match = response["match"]
+
+                        await manager.send_to_all(
+                            match_id,
+                            lambda recipient_id: {
+                                "type": "match_state",
+                                "payload": prepare_match_for_player(
+                                    updated_match,
+                                    recipient_id,
+                                ),
+                            },
+                        )
 
                 elif event_type == "answer_attack_question":
                     answer = data.get("answer")

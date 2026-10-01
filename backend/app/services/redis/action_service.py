@@ -90,13 +90,15 @@ def prepare_attack_action(
             },
         }
     else:
-        return resolve_action_no_question(match_id,player_id,action,target_territory_id)
+        type="attack_no_question"
+        return resolve_action_no_question(match_id,player_id,action,target_territory_id,type)
 
 def resolve_action_no_question(
     match_id : int,
     player_id: str,
     action : dict,
     target_territory_id: str,
+    type : str,
 ):
 
     match = match_gateway.get_match(match_id)
@@ -154,6 +156,7 @@ def resolve_action_no_question(
     return {
         "match": match,
         "result": {
+            "type":type,
             **action_result,
             "next_turn_player_id": match["current_turn_player_id"],
             "round": match["round"],
