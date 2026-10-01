@@ -120,6 +120,7 @@ def resolve_action_no_question(
         target_territory_id=target_territory_id,
         option=action,
         base_success_chance=base_success_chance,
+        type=type,
     )
 
     match["last_action_result"] = action_result
@@ -156,7 +157,6 @@ def resolve_action_no_question(
     return {
         "match": match,
         "result": {
-            "type":type,
             **action_result,
             "next_turn_player_id": match["current_turn_player_id"],
             "round": match["round"],
@@ -198,13 +198,14 @@ def resolve_attack_action(
     base_success_chance = action["success_chance"]
 
     adjusted_success_chance = clamp_success_chance(question_was_correct,base_success_chance)
-
+    type="attack_result"
     action_result = execute_attack_roll(
         match=match,
         player_id=player_id,
         target_territory_id=target_territory_id,
         option=action,
         base_success_chance=base_success_chance,
+        type=type,
         adjusted_success_chance=adjusted_success_chance,
         question_was_correct=question_was_correct,
         correct_answer=correct_answer,
@@ -265,6 +266,7 @@ def execute_attack_roll(
     target_territory_id: str,
     option: dict,
     base_success_chance: int,
+    type,
     adjusted_success_chance: int | None=None,
     question_was_correct: bool | None=None,
     correct_answer: bool | None=None,
@@ -311,7 +313,7 @@ def execute_attack_roll(
             target["current_influence"] = current_influence - influence_generated
 
     action_result = {
-        "type": "attack_result",
+        "type": type,
 
         "success": success,
         "roll": roll,
