@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-
 import BrazilMapSvg from "../components/BrazilMapSvg.jsx";
 
 const PARTY_COLORS = {
@@ -10,65 +9,159 @@ const PARTY_COLORS = {
   PD: "#F1C40F",
 };
 
-const API_URL = (
-  import.meta.env.VITE_API_URL ||
-  "https://tcc-polis-42o9.onrender.com"
-).replace(/\/$/, "");
-function formatMission(mission) {
-  if (!mission) return "Missão não encontrada.";
+function getPlayerNameById(playerId, players) {
+  const player = players.find((item) => item.player_id === playerId);
+  return player?.username ?? playerId ?? "jogador desconhecido";
+}
+
+function formatMission(mission, players = []) {
+  if (!mission) {
+    return "Missão não encontrada.";
+  }
+
+  const content = mission.content ?? {};
 
   if (mission.type === "state") {
-    return `Conquiste os territórios: ${mission.content.state.join(", ")}.`;
+    const states = content.state ?? [];
+
+    if (states.length === 0) {
+      return "Conquiste os territórios indicados pela sua missão.";
+    }
+
+    return `Conquiste os territórios: ${states.join(", ")}.`;
   }
 
   if (mission.type === "region") {
-    return mission.content.region
-      .map((item) => `Conquiste ${item.quantity} território(s) em ${item.region}`)
+    const regions = content.region ?? [];
+
+    if (regions.length === 0) {
+      return "Conquiste os territórios indicados pela sua missão.";
+    }
+
+    return regions
+      .map(
+        (item) =>
+          `Conquiste ${item.quantity} território(s) em ${item.region}`
+      )
       .join(" + ");
   }
 
   if (mission.type === "destruction") {
-    return `Destrua o jogador ${mission.content.destruction}. Se outro jogador destruí-lo antes, conquiste: ${mission.content.state.join(", ")}.`;
+    const targetPlayerId = content.destruction;
+    const alternativeStates = content.state ?? [];
+
+    if (targetPlayerId) {
+      const targetName = getPlayerNameById(targetPlayerId, players);
+
+      if (alternativeStates.length > 0) {
+        return `Destrua o jogador ${targetName}. Se essa missão for convertida, conquiste: ${alternativeStates.join(
+          ", "
+        )}.`;
+      }
+
+      return `Destrua o jogador ${targetName}.`;
+    }
+
+    if (alternativeStates.length > 0) {
+      return `Conquiste os territórios: ${alternativeStates.join(", ")}.`;
+    }
+
+    return "Elimine o jogador indicado pela sua missão.";
   }
 
   return "Tipo de missão desconhecido.";
 }
 
-function summarizeEvent(data) {
-  if (!data?.payload) return data;
+function PlayerCard({
+  player,
+  isCurrentTurn,
+  isNext,
+  isMe,
+  partyColors,
+}) {
+  if (!player) {
+    return null;
+  }
 
-  return {
-    type: data.type,
-    current_turn_player_id: data.payload.current_turn_player_id,
-    round: data.payload.round,
-    status: data.payload.status,
-    winner_id: data.payload.winner_id,
-    last_action_result: data.payload.last_action_result,
-  };
-}
+  const partyColor = partyColors[player.party_id] ?? "#7f8c8d";
 
-function getPlayerNameById(playerId, players) {
-  const player = players.find((player) => player.player_id === playerId);
+  const initials =
+    player.username
+      ?.trim()
+      .split(/\s+/)
+      .map((name) => name[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "?";
 
-  return player ? `${player.username} (${player.player_id})` : playerId;
+  const influence = Number(player.match_influence ?? 0);
+
+  return (
+    <div
+      className={[
+        "polis-player-card",
+        isCurrentTurn ? "polis-player-current" : "",
+        isMe ? "polis-player-me" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={{ "--party-color": partyColor }}
+    >
+      {isNext && <div className="polis-next-label">Próximo</div>}
+
+      {isMe && <div className="polis-you-label">Você</div>}
+
+      <div className="polis-player-main">
+        <div className="polis-player-avatar">{initials}</div>
+
+        <div className="polis-player-stats">
+          <div className="polis-stat-row">
+            <span className="polis-stat-icon">◆</span>
+
+            <div className="polis-stat-track polis-influence-track">
+              <div
+                className="polis-stat-fill"
+                style={{
+                  width: `${Math.max(0, Math.min(influence, 100))}%`,
+                }}
+              />
+              <strong>{player.match_influence ?? 0}%</strong>
+            </div>
+          </div>
+
+          <div className="polis-stat-row">
+            <span className="polis-stat-icon">$</span>
+
+            <div className="polis-stat-track polis-money-track">
+              <strong>{player.match_money ?? 0}$</strong>
+            </div>
+          </div>
+
+          <div className="polis-stat-row">
+            <span className="polis-stat-icon">●</span>
+
+            <div className="polis-stat-track polis-corruption-track">
+              <strong>{player.match_corruption ?? 0}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="polis-player-name">{player.username}</div>
+    </div>
+  );
 }
 
 export default function DemoGameScreen({
   initialMatchId,
-  initialPlayerId
+  initialPlayerId,
 }) {
-  const [matchId, setMatchId] = useState(
-    String(initialMatchId ?? "")
-  );
-  const [playerId, setPlayerId] = useState(
-    initialPlayerId ?? ""
-  );
-  const [username, setUsername] = useState("");
-  const [demoPlayers, setDemoPlayers] = useState([]);
+  const [matchId] = useState(String(initialMatchId ?? ""));
+  const [playerId] = useState(initialPlayerId ?? "");
+
   const [connected, setConnected] = useState(false);
   const [matchState, setMatchState] = useState(null);
   const [selectedTerritory, setSelectedTerritory] = useState(null);
-  const [logs, setLogs] = useState([]);
 
   const [pendingQuestion, setPendingQuestion] = useState(null);
   const [pendingActionInfo, setPendingActionInfo] = useState(null);
@@ -81,157 +174,90 @@ export default function DemoGameScreen({
   const attackOptions = matchState?.available_attack_options ?? [];
 
   const currentPlayer = useMemo(() => {
-    if (!matchState) return null;
+    if (!matchState) {
+      return null;
+    }
 
-    return players.find(
-      (player) => player.player_id === matchState.current_turn_player_id
+    return (
+      players.find(
+        (player) =>
+          player.player_id === matchState.current_turn_player_id
+      ) ?? null
     );
   }, [matchState, players]);
 
   const me = useMemo(() => {
-    if (!matchState) return null;
+    if (!matchState) {
+      return null;
+    }
 
-    return players.find((player) => player.player_id === matchState.your_player_id);
+    return (
+      players.find(
+        (player) => player.player_id === matchState.your_player_id
+      ) ?? null
+    );
   }, [matchState, players]);
 
   const isMyTurn =
-    matchState &&
+    Boolean(matchState) &&
     matchState.status === "running" &&
     matchState.current_turn_player_id === matchState.your_player_id;
 
-  function addLog(message, data = null) {
-    setLogs((currentLogs) => [
-      {
-        id: crypto.randomUUID(),
-        message,
-        data,
-        createdAt: new Date().toLocaleTimeString(),
-      },
-      ...currentLogs,
-    ]);
-  }
-  async function createPlayer() {
-    try {
-      const response = await fetch(
-        `${API_URL}/players`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      console.log(data);
-
-      if (data.player_id) {
-        setPlayerId(data.player_id);
-      }
-
-      addLog("Jogador criado", data);
-    } catch (error) {
-      console.error(error);
-      addLog("Erro ao criar jogador", error);
+  const nextPlayer = useMemo(() => {
+    if (players.length === 0 || !matchState?.current_turn_player_id) {
+      return null;
     }
-  }
-  async function searchPlayers() {
-    try {
-      const response = await fetch(
-        `${API_URL}/matches/${matchId}`,
-        {
-          method: "GET",
-        }
-      );
 
-      const data = await response.json();
+    const currentIndex = players.findIndex(
+      (player) =>
+        player.player_id === matchState.current_turn_player_id
+    );
 
-      addLog("JSON recebido", data);
-
-      console.log(data);
-
-      if (data && data.players) {
-        setDemoPlayers(data.players);
-
-        if (data.players.length > 0) {
-          setPlayerId(data.players[0].player_id);
-        }
-      }
-
-      addLog("Jogadores encontrados", data.players);
-
-    } catch (error) {
-      console.error(error);
-      addLog("Erro ao procurar jogadores da partida", error);
+    if (currentIndex === -1) {
+      return null;
     }
-  }
-  async function initializeDatabase() {
-    try {
-      addLog("Inicializando banco...");
 
-      const response = await fetch(
-        `${API_URL}/db/init`,
-        {
-          method: "POST",
-        }
-      );
+    return players[(currentIndex + 1) % players.length] ?? null;
+  }, [players, matchState?.current_turn_player_id]);
 
-      const data = await response.json();
-
-      addLog("Banco inicializado", data);
-
-      alert("Banco criado com sucesso!");
-    } catch (error) {
-      console.error(error);
-      addLog("Erro ao inicializar banco", error);
+  const playerPositions = useMemo(() => {
+    if (players.length === 0) {
+      return [];
     }
-  }
-  async function createDemoMatch() {
-    try {
-      addLog("1 - Iniciando requisição");
 
-      const response = await fetch(
-        `${API_URL}/match/create`,
-        {
-          method: "POST",
-        }
-      );
+    const currentIndex = players.findIndex(
+      (player) =>
+        player.player_id === matchState?.current_turn_player_id
+    );
 
-      addLog(`2 - Status: ${response.status}`);
-
-      const data = await response.json();
-
-      addLog("3 - JSON recebido");
-
-      console.log(data);
-
-      if (data.match_id) {
-        addLog(`4 - Match ID: ${data.match_id}`);
-        setMatchId(String(data.match_id));
-      }
-      if (data.players) {
-        setDemoPlayers(data.players);
-
-        if (data.players.length > 0) {
-          setPlayerId(data.players[0].player_id);
-        }
-      }
-      addLog("5 - Finalizado");
-
-    } catch (error) {
-      console.error(error);
-      addLog(`ERRO: ${error.message}`);
+    if (currentIndex === -1) {
+      return players.slice(0, 4);
     }
-  }
+
+    const ordered = Array.from(
+      { length: Math.min(players.length, 4) },
+      (_, offset) => players[(currentIndex + offset) % players.length]
+    );
+
+    // Distribuição inspirada na tela de referência:
+    // atual = superior esquerdo
+    // próximo = inferior esquerdo
+    // demais = lado direito
+    if (ordered.length === 4) {
+      return [ordered[0], ordered[2], ordered[1], ordered[3]];
+    }
+
+    if (ordered.length === 3) {
+      return [ordered[0], ordered[2], ordered[1]];
+    }
+
+    return ordered;
+  }, [players, matchState?.current_turn_player_id]);
 
   function handleWinnerAlert(newMatchState) {
     if (
-      newMatchState.status === "finished" &&
-      newMatchState.winner_id &&
+      newMatchState?.status === "finished" &&
+      newMatchState?.winner_id &&
       !winnerAlertShownRef.current
     ) {
       winnerAlertShownRef.current = true;
@@ -247,18 +273,24 @@ export default function DemoGameScreen({
 
   function connect() {
     if (!matchId.trim() || !playerId.trim()) {
-      alert("Preencha match_id e player_id.");
+      console.error(
+        "Não foi possível conectar: match_id ou player_id ausente."
+      );
       return;
     }
 
-    if (wsRef.current) {
-      wsRef.current.close();
+    if (
+      wsRef.current &&
+      (wsRef.current.readyState === WebSocket.OPEN ||
+        wsRef.current.readyState === WebSocket.CONNECTING)
+    ) {
+      return;
     }
 
     winnerAlertShownRef.current = false;
     setPendingQuestion(null);
     setPendingActionInfo(null);
-    ///
+
     const WS =
       import.meta.env.VITE_WS_URL ||
       "wss://tcc-polis-42o9.onrender.com";
@@ -271,13 +303,10 @@ export default function DemoGameScreen({
 
     ws.onopen = () => {
       setConnected(true);
-      addLog(`Conectado como ${playerId} na partida ${matchId}`);
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-
-      addLog(`Recebido evento: ${data.type ?? data.result?.type ?? "sem_tipo"}`, data);
 
       if (data.type === "attack_question") {
         setPendingQuestion(data.question);
@@ -287,7 +316,7 @@ export default function DemoGameScreen({
           territory_id: data.territory_id,
           territory_name: data.territory_name,
           option_id: data.option_id,
-          title: "teste",
+          title: data.title,
           success_chance: data.success_chance,
         });
 
@@ -299,13 +328,15 @@ export default function DemoGameScreen({
 
         setMatchState(newMatchState);
 
-        if (newMatchState?.last_action_result?.type === "attack_result") {
+        if (
+          newMatchState?.last_action_result?.type ===
+          "attack_result"
+        ) {
           setPendingQuestion(null);
           setPendingActionInfo(null);
         }
 
         handleWinnerAlert(newMatchState);
-
         return;
       }
 
@@ -332,33 +363,32 @@ export default function DemoGameScreen({
       }
 
       if (data.type === "error") {
-        alert(data.payload?.message ?? data.message ?? "Erro desconhecido.");
+        alert(
+          data.payload?.message ??
+            data.message ??
+            "Erro desconhecido."
+        );
       }
     };
 
     ws.onerror = () => {
-      addLog("Erro no WebSocket.");
+      console.error("Erro no WebSocket da partida.");
     };
 
     ws.onclose = () => {
+      if (wsRef.current === ws) {
+        wsRef.current = null;
+      }
+
       setConnected(false);
-      addLog("Conexão fechada.");
     };
   }
 
-  function disconnect() {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-
-    setConnected(false);
-    setPendingQuestion(null);
-    setPendingActionInfo(null);
-  }
-
   function sendAttack(optionId) {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+    if (
+      !wsRef.current ||
+      wsRef.current.readyState !== WebSocket.OPEN
+    ) {
       alert("WebSocket não está conectado.");
       return;
     }
@@ -384,15 +414,14 @@ export default function DemoGameScreen({
       })
     );
 
-    addLog(
-      `Enviado choose_attack_option: ${optionId} em ${selectedTerritory.territory_id}`
-    );
-
     setSelectedTerritory(null);
   }
 
   function answerAttackQuestion(answer) {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+    if (
+      !wsRef.current ||
+      wsRef.current.readyState !== WebSocket.OPEN
+    ) {
       alert("WebSocket não está conectado.");
       return;
     }
@@ -400,7 +429,6 @@ export default function DemoGameScreen({
     wsRef.current.send(
       JSON.stringify({
         type: "answer_attack_question",
-
         answer,
 
         payload: {
@@ -409,340 +437,276 @@ export default function DemoGameScreen({
       })
     );
 
-    addLog(`Enviado answer_attack_question: ${answer}`);
-
     setPendingQuestion(null);
     setPendingActionInfo(null);
   }
 
   useEffect(() => {
+    if (matchId && playerId) {
+      connect();
+    }
+
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
+        wsRef.current = null;
       }
     };
+    // A conexão deve ser aberta apenas ao entrar nesta tela.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const missionText = formatMission(
+    matchState?.your_mission,
+    players
+  );
+
   return (
-    <main className="demo-game-page">
-      <section className="demo-topbar">
-        <div>
-          <h1>Polis — Protótipo da Partida</h1>
-          <p>Conexão direta na partida via WebSocket.</p>
-        </div>
+    <main className="polis-game-screen">
+      <div className="polis-turn-title">
+        Vez de{" "}
+        <span
+          style={{
+            color:
+              PARTY_COLORS[currentPlayer?.party_id] ?? "#ffffff",
+          }}
+        >
+          {currentPlayer?.username ?? "..."}
+        </span>
+      </div>
 
-        <div className="demo-connect-panel">
-          <label>
-            Match ID
-            <input
-              value={matchId}
-              onChange={(event) => setMatchId(event.target.value)}
-              placeholder="ex: 39"
-            />
-          </label>
+      <div className="polis-position polis-position-top-left">
+        <PlayerCard
+          player={playerPositions[0]}
+          isCurrentTurn={
+            playerPositions[0]?.player_id ===
+            matchState?.current_turn_player_id
+          }
+          isNext={
+            playerPositions[0]?.player_id ===
+            nextPlayer?.player_id
+          }
+          isMe={
+            playerPositions[0]?.player_id ===
+            matchState?.your_player_id
+          }
+          partyColors={PARTY_COLORS}
+        />
+      </div>
 
-          <button onClick={searchPlayers}>
-            Buscar Jogadores
-          </button>
+      <div className="polis-position polis-position-top-right">
+        <PlayerCard
+          player={playerPositions[1]}
+          isCurrentTurn={
+            playerPositions[1]?.player_id ===
+            matchState?.current_turn_player_id
+          }
+          isNext={
+            playerPositions[1]?.player_id ===
+            nextPlayer?.player_id
+          }
+          isMe={
+            playerPositions[1]?.player_id ===
+            matchState?.your_player_id
+          }
+          partyColors={PARTY_COLORS}
+        />
+      </div>
 
-          <label>
-            Player ID
-            <input value={playerId} readOnly />
-            <select
-              value={playerId}
-              onChange={(event) => setPlayerId(event.target.value)}
+      <div className="polis-position polis-position-bottom-left">
+        <PlayerCard
+          player={playerPositions[2]}
+          isCurrentTurn={
+            playerPositions[2]?.player_id ===
+            matchState?.current_turn_player_id
+          }
+          isNext={
+            playerPositions[2]?.player_id ===
+            nextPlayer?.player_id
+          }
+          isMe={
+            playerPositions[2]?.player_id ===
+            matchState?.your_player_id
+          }
+          partyColors={PARTY_COLORS}
+        />
+      </div>
+
+      <div className="polis-position polis-position-bottom-right">
+        <PlayerCard
+          player={playerPositions[3]}
+          isCurrentTurn={
+            playerPositions[3]?.player_id ===
+            matchState?.current_turn_player_id
+          }
+          isNext={
+            playerPositions[3]?.player_id ===
+            nextPlayer?.player_id
+          }
+          isMe={
+            playerPositions[3]?.player_id ===
+            matchState?.your_player_id
+          }
+          partyColors={PARTY_COLORS}
+        />
+      </div>
+
+      <section className="polis-map-container">
+        <BrazilMapSvg
+          territories={territories}
+          players={players}
+          partyColors={PARTY_COLORS}
+          selectedTerritoryId={
+            selectedTerritory?.territory_id
+          }
+          onSelectTerritory={setSelectedTerritory}
+          className="polis-main-map"
+        />
+      </section>
+
+      <aside className="polis-mission-card">
+        <div className="polis-mission-heading">
+          <span>Sua missão</span>
+
+          {me?.party_id && (
+            <span
+              className="polis-mission-party"
+              style={{
+                backgroundColor:
+                  PARTY_COLORS[me.party_id] ?? "#7f8c8d",
+              }}
             >
-              {demoPlayers.map((player) => (
-                <option key={player.player_id} value={player.player_id}>
-                  {player.username}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <button onClick={connect}>
-            {connected ? "Reconectar" : "Conectar"}
-          </button>
-
-          <button onClick={disconnect} disabled={!connected}>
-            Desconectar
-          </button>
-
-          <button onClick={createDemoMatch}>
-            Criar Partida Demo
-          </button>
-
-          <input
-            type="text"
-            placeholder="Nome do jogador"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-
-
-          <button onClick={createPlayer}>
-            Criar Jogador
-          </button>
-
-          <button onClick={initializeDatabase}>
-            Inicializar Banco
-          </button>
+              {me.party_id}
+            </span>
+          )}
         </div>
 
-      </section>
+        <p>{missionText}</p>
+      </aside>
 
-      <section className="demo-layout">
-        <aside className="demo-sidebar">
-          <div className="demo-card">
-            <h2>Você</h2>
-            <p>
-              <strong>Jogador:</strong>{" "}
-              {me ? `${me.username} (${me.player_id})` : "Não conectado"}
-            </p>
-            <p>
-              <strong>Partido:</strong> {me?.party_id ?? "-"}
-            </p>
-            <p>
-              <strong>Status:</strong> {connected ? "Conectado" : "Desconectado"}
-            </p>
-          </div>
+      {selectedTerritory && (
+        <div className="polis-territory-popup">
+          <button
+            type="button"
+            className="polis-close-popup"
+            onClick={() => setSelectedTerritory(null)}
+            aria-label="Fechar"
+          >
+            ×
+          </button>
 
-          <div className="demo-card">
-            <h2>Turno</h2>
-            <p>
-              <strong>Rodada:</strong> {matchState?.round ?? "-"}
-            </p>
-            <p>
-              <strong>Jogador da vez:</strong>{" "}
-              {currentPlayer
-                ? `${currentPlayer.username} (${currentPlayer.player_id})`
-                : "-"}
-            </p>
-            <p>
-              <strong>É sua vez?</strong> {isMyTurn ? "Sim" : "Não"}
-            </p>
-            <p>
-              <strong>Status da partida:</strong> {matchState?.status ?? "-"}
-            </p>
-            <p>
-              <strong>Vencedor:</strong>{" "}
-              {matchState?.winner_id
-                ? getPlayerNameById(matchState.winner_id, players)
-                : "Nenhum"}
-            </p>
-          </div>
+          <h2>
+            {selectedTerritory.name ??
+              selectedTerritory.territory_id}
+          </h2>
 
-          <div className="demo-card">
-            <h2>Sua missão</h2>
-            <p>{formatMission(matchState?.your_mission)}</p>
-            <pre>{JSON.stringify(matchState?.your_mission ?? null, null, 2)}</pre>
-          </div>
-
-          <div className="demo-card">
-            <h2>Território selecionado</h2>
-
-            {selectedTerritory ? (
-              <>
-                <p>
-                  <strong>{selectedTerritory.name}</strong> (
-                  {selectedTerritory.territory_id})
-                </p>
-                <p>
-                  <strong>Região:</strong> {selectedTerritory.region}
-                </p>
-                <p>
-                  <strong>Dono:</strong> {selectedTerritory.owner_id}
-                </p>
-                <p>
-                  <strong>Influência:</strong>{" "}
-                  {selectedTerritory.current_influence}
-                </p>
-
-                <div className="demo-actions-box">
-                  <h3>Ações disponíveis</h3>
-
-                  {attackOptions.length === 0 && (
-                    <p>Nenhuma ação disponível.</p>
-                  )}
-
-                  {attackOptions.map((option) => (
-                    <button
-                      key={option.option_id}
-                      className="demo-action-button"
-                      onClick={() => sendAttack(option.option_id)}
-                      disabled={!isMyTurn}
-                    >
-                      {option.title}
-                      <span>
-                        +{option.influence_generated} influência •{" "}
-                        {option.success_chance}% sucesso • risco{" "}
-                        {option.risk_level}
-                      </span>
-                      <small>{option.description}</small>
-                    </button>
-                  ))}
-                </div>
-
-                {!isMyTurn && (
-                  <small>Você só pode agir quando for sua vez.</small>
-                )}
-              </>
-            ) : (
-              <p>Clique em um território no mapa.</p>
-            )}
-          </div>
-
-          <div className="demo-card">
-            <h2>Última ação</h2>
-
-            {matchState?.last_action_result ? (
-              <>
-                <p>
-                  <strong>Ação:</strong> {matchState.last_action_result.title}
-                </p>
-                <p>
-                  <strong>Território:</strong>{" "}
-                  {matchState.last_action_result.territory_name} (
-                  {matchState.last_action_result.territory_id})
-                </p>
-
-                {matchState.last_action_result.question_was_correct !== undefined && (
-                  <p>
-                    <strong>Pergunta:</strong>{" "}
-                    {matchState.last_action_result.question_was_correct
-                      ? "Acertou"
-                      : "Errou"}
-                  </p>
-                )}
-
-                {matchState.last_action_result.base_success_chance !== undefined && (
-                  <p>
-                    <strong>Chance base:</strong>{" "}
-                    {matchState.last_action_result.base_success_chance}%
-                  </p>
-                )}
-
-                {matchState.last_action_result.adjusted_success_chance !== undefined && (
-                  <p>
-                    <strong>Chance após pergunta:</strong>{" "}
-                    {matchState.last_action_result.adjusted_success_chance}%
-                  </p>
-                )}
-
-                <p>
-                  <strong>Resultado:</strong>{" "}
-                  {matchState.last_action_result.success ? "Sucesso" : "Falha"}
-                </p>
-                <p>
-                  <strong>Conquistou?</strong>{" "}
-                  {matchState.last_action_result.conquered ? "Sim" : "Não"}
-                </p>
-                <p>
-                  <strong>Influência:</strong>{" "}
-                  {matchState.last_action_result.previous_influence} →{" "}
-                  {matchState.last_action_result.new_influence}
-                </p>
-                <p>
-                  <strong>Dono:</strong>{" "}
-                  {matchState.last_action_result.previous_owner_id} →{" "}
-                  {matchState.last_action_result.new_owner_id}
-                </p>
-                <p>
-                  <strong>Rolagem:</strong>{" "}
-                  {matchState.last_action_result.roll}
-                </p>
-                <p>
-                  <strong>Necessário:</strong>{" "}
-                  {matchState.last_action_result.minimum_roll_to_succeed ??
-                    100 - matchState.last_action_result.success_chance}{" "}
-                  ou mais
-                </p>
-                <p>
-                  <strong>Chance de sucesso:</strong>{" "}
-                  {matchState.last_action_result.success_chance}%
-                </p>
-              </>
-            ) : (
-              <p>Nenhuma ação realizada ainda.</p>
-            )}
-          </div>
-
-          <div className="demo-card">
-            <h2>Jogadores</h2>
-
-            <div className="demo-players">
-              {players.map((player) => (
-                <div key={player.player_id} className="demo-player">
-                  <span
-                    className="demo-color-dot"
-                    style={{
-                      backgroundColor: PARTY_COLORS[player.party_id] ?? "#999",
-                    }}
-                  />
-                  <span>
-                    {player.username} — {player.player_id} — {player.party_id}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </aside>
-
-        <section className="demo-map-area">
-          <BrazilMapSvg
-            territories={territories}
-            players={players}
-            partyColors={PARTY_COLORS}
-            selectedTerritoryId={selectedTerritory?.territory_id}
-            onSelectTerritory={setSelectedTerritory}
-            className="demo-map"
-          />
-        </section>
-
-        <aside className="demo-log-panel">
-          <h2>Log</h2>
-
-          {logs.map((log) => (
-            <div key={log.id} className="demo-log-item">
+          <div className="polis-territory-info">
+            <span>
+              Região
               <strong>
-                [{log.createdAt}] {log.message}
+                {selectedTerritory.region ?? "-"}
               </strong>
+            </span>
 
-              {log.data?.payload && (
-                <pre>{JSON.stringify(summarizeEvent(log.data), null, 2)}</pre>
-              )}
+            <span>
+              Influência
+              <strong>
+                {selectedTerritory.current_influence ?? 0}
+              </strong>
+            </span>
+          </div>
 
-              {!log.data?.payload && log.data && (
-                <pre>{JSON.stringify(log.data, null, 2)}</pre>
-              )}
-            </div>
-          ))}
-        </aside>
-      </section>
+          {isMyTurn ? (
+            <>
+              <h3>Ações</h3>
+
+              <div className="polis-attack-actions">
+                {attackOptions.length === 0 && (
+                  <p>Nenhuma ação disponível.</p>
+                )}
+
+                {attackOptions.map((option) => (
+                  <button
+                    type="button"
+                    key={option.option_id}
+                    onClick={() =>
+                      sendAttack(option.option_id)
+                    }
+                  >
+                    <strong>{option.title}</strong>
+
+                    {option.influence_generated !==
+                      undefined && (
+                      <span>
+                        +
+                        {option.influence_generated} influência
+                      </span>
+                    )}
+
+                    {option.success_chance !== undefined && (
+                      <small>
+                        {option.success_chance}% de sucesso
+                      </small>
+                    )}
+
+                    {option.description && (
+                      <small>{option.description}</small>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="polis-not-your-turn">
+              Aguarde sua vez para realizar uma ação.
+            </p>
+          )}
+        </div>
+      )}
 
       {pendingQuestion && (
         <div className="question-modal-backdrop">
-          <div className="question-modal">
-            <h2>Pergunta</h2>
+          <div className="question-modal polis-question-modal">
+            <h2>
+              {pendingQuestion.subject ?? "Pergunta"}
+            </h2>
 
-            <p className="question-subject">{pendingQuestion.subject}</p>
+            {pendingActionInfo?.territory_name && (
+              <p className="polis-question-territory">
+                Ação em{" "}
+                <strong>
+                  {pendingActionInfo.territory_name}
+                </strong>
+              </p>
+            )}
 
             <p className="question-description">
               {pendingQuestion.description}
             </p>
+
             <div className="question-buttons">
-              {Object.entries(pendingQuestion?.options ?? {}).map(
-                ([letter, text]) => (
-                  <center><button 
-                    key={letter}
-                    onClick={() => answerAttackQuestion(letter)}
-                  >
-                    {letter}) {text}
-                  </button></center>
-                )
-              )}
+              {Object.entries(
+                pendingQuestion?.options ?? {}
+              ).map(([letter, text]) => (
+                <button
+                  type="button"
+                  key={letter}
+                  onClick={() =>
+                    answerAttackQuestion(letter)
+                  }
+                >
+                  <strong>{letter}</strong>
+                  <span>{text}</span>
+                </button>
+              ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {!connected && (
+        <div className="polis-connection-warning">
+          Conectando à partida...
         </div>
       )}
     </main>
