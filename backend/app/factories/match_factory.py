@@ -97,11 +97,7 @@ class MatchFactory:
             put_name_list_questions="questions_1"
         pop_list : list[dict]=match_dict[pop_name_list_questions]
         put_list : list [dict]=match_dict[put_name_list_questions]
-        print("Pre pop list", pop_list, flush=True)
-        print("Pre put list", put_list, flush=True)
         pop_list.remove(question)
         put_list.append(question)
-        print("Pos pop list", pop_list, flush=True)
-        print("Pos put list", put_list, flush=True)
         match_dict["activate_questions_list"] = pop_name_list_questions
         self.update_match(match_dict)

@@ -66,9 +66,7 @@ def prepare_attack_action(
         )
     if (round%1)==0:
         question,name_list_questions = match_gateway.get_next_question(match_id)
-        print("Pre switch list", question, flush=True)
         match_factory.switch_question_list(match,question,name_list_questions)
-        print("Pos switch list", question, flush=True)
         newPendingValue= PendingAction.create_dict(
             player_id=player_id,
             target_territory_id=target_territory_id,

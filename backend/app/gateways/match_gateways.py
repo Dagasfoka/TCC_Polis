@@ -24,7 +24,6 @@ class MatchGateway:
     def get_questions(self, match_id):
         match_dict = match_validator.match_exist(self.get_match(match_id))
         name_list_questions = match_dict["activate_questions_list"]
-        print("activate_questions_list",match_dict["activate_questions_list"], flush=True )
         questions = match_dict[name_list_questions]
 
         if not questions:
