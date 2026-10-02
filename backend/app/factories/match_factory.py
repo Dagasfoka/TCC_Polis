@@ -89,12 +89,19 @@ class MatchFactory:
         match["winner_id"] = player_id
         match["last_action_result"] = action_result
         return match
-    def find_your_mission(self,match: dict, player_id: str):
-        missions = match.get("missions", [])
-
-        for mission in missions:
-            if mission.get("owner_id") == player_id:
-                return mission.get("mission") or mission
-
-        return None
-
+    def switch_question_list(self,match_dict,question,pop_name_list_questions):
+        if pop_name_list_questions == "questions_1":
+            put_name_list_questions="questions_2"
+        else:
+            pop_name_list_questions = "questions_2"
+            put_name_list_questions="questions_1"
+        pop_list : list[dict]=match_dict[pop_name_list_questions]
+        put_list : list [dict]=match_dict[put_name_list_questions]
+        print("Pre pop list", pop_list, flush=True)
+        print("Pre put list", put_list, flush=True)
+        pop_list.remove(question)
+        put_list.append(question)
+        print("Pos pop list", pop_list, flush=True)
+        print("Pos put list", put_list, flush=True)
+        match_dict["activate_questions_list"] = pop_name_list_questions
+        self.update_match(match_dict)

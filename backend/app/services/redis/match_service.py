@@ -2,6 +2,7 @@
 from backend.app.factories.match_factory import MatchFactory
 from backend.app.gateways.match_gateways import MatchGateway
 
+from backend.app.gateways.questions_gateways import QuestionGateways
 from backend.app.gateways.room_gateways import RoomGateway
 from backend.app.validators.room_validators import RoomValidator
 
@@ -17,7 +18,7 @@ class MatchService:
         room_gateway=RoomGateway()
         #factories
         match_mission_factory= MatchMissionFactory()
-        match_question_factory=MatchQuestionFactory(db)
+        question_gateways=QuestionGateways(db)
         match_territory_factory=MatchTerritoryFactory()
         #validators
         room_validator=RoomValidator()
@@ -33,7 +34,8 @@ class MatchService:
         )
         
         match_dict['players']=match_territory_factory.distribute_territories(match_dict['players'],match_dict['territories'])
-        match_dict["players"]=match_question_factory.distribute_questions(match_dict['players'])
+        match_dict["questions_1"]=question_gateways.get_all_questions()
+        match_dict["activate_questions_list"]="questions_1"
         match_dict['missions']=match_mission_factory.distribute_match_missions(
             match_id=match_dict["match_id"],
             players=match_dict['players'],
