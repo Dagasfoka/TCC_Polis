@@ -156,8 +156,8 @@ export default function DemoGameScreen({
   initialMatchId,
   initialPlayerId,
 }) {
-  const [matchId] = useState(String(initialMatchId ?? ""));
-  const [playerId] = useState(initialPlayerId ?? "");
+  const matchId = String(initialMatchId ?? "");
+  const playerId = initialPlayerId ?? "";
 
   const [connected, setConnected] = useState(false);
   const [matchState, setMatchState] = useState(null);
@@ -221,38 +221,11 @@ export default function DemoGameScreen({
   }, [players, matchState?.current_turn_player_id]);
 
   const playerPositions = useMemo(() => {
-    if (players.length === 0) {
-      return [];
-    }
-
-    const currentIndex = players.findIndex(
-      (player) =>
-        player.player_id === matchState?.current_turn_player_id
-    );
-
-    if (currentIndex === -1) {
-      return players.slice(0, 4);
-    }
-
-    const ordered = Array.from(
-      { length: Math.min(players.length, 4) },
-      (_, offset) => players[(currentIndex + offset) % players.length]
-    );
-
-    // Distribuição inspirada na tela de referência:
-    // atual = superior esquerdo
-    // próximo = inferior esquerdo
-    // demais = lado direito
-    if (ordered.length === 4) {
-      return [ordered[0], ordered[2], ordered[1], ordered[3]];
-    }
-
-    if (ordered.length === 3) {
-      return [ordered[0], ordered[2], ordered[1]];
-    }
-
-    return ordered;
-  }, [players, matchState?.current_turn_player_id]);
+    // IMPORTANTE:
+    // os cards ficam sempre nas mesmas posições.
+    // A troca de turno altera apenas o destaque e o rótulo "Próximo".
+    return players.slice(0, 4);
+  }, [players]);
 
   function handleWinnerAlert(newMatchState) {
     if (
@@ -442,9 +415,11 @@ export default function DemoGameScreen({
   }
 
   useEffect(() => {
-    if (matchId && playerId) {
-      connect();
+    if (!matchId || !playerId) {
+      return undefined;
     }
+
+    connect();
 
     return () => {
       if (wsRef.current) {
@@ -452,9 +427,11 @@ export default function DemoGameScreen({
         wsRef.current = null;
       }
     };
-    // A conexão deve ser aberta apenas ao entrar nesta tela.
+    // A conexão precisa acompanhar os IDs recebidos do App.
+    // Isso evita depender de recarregar a página quando match/player
+    // só ficam disponíveis depois que a tela já montou.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [matchId, playerId]);
 
   const missionText = formatMission(
     matchState?.your_mission,
@@ -564,7 +541,7 @@ export default function DemoGameScreen({
         />
       </section>
 
-      <aside className="polis-mission-card">
+      <aside className="polis-mission-card polis-mission-right">
         <div className="polis-mission-heading">
           <span>Sua missão</span>
 
@@ -585,7 +562,7 @@ export default function DemoGameScreen({
       </aside>
 
       {selectedTerritory && (
-        <div className="polis-territory-popup">
+        <div className="polis-territory-popup polis-territory-left">
           <button
             type="button"
             className="polis-close-popup"
