@@ -1,8 +1,8 @@
-from backend.app.gateways.match_gateways import MatchGateway
+from backend.app.repositories.redis.match_repo import MatchRepo
 
 class MatchValidator:
     def __init__(self) -> None:
-        self.match_gateway=MatchGateway()
+        self.match_repository=MatchRepo()
 #_________________________________________________ Simples
     def match_exist(self,match_dict):
         if match_dict is None:
@@ -24,9 +24,13 @@ class MatchValidator:
         if round is None:
            raise Exception("Round não encontrado") 
         return round
+    def questions_exist(self,questions):
+        if questions is None:
+           raise Exception("Questões não encontradas") 
+        return questions
 #_________________________________________________ AUX
     def is_alive(self,match_id, target_id):
-        match_dict = self.match_gateway.get_match(match_id)
+        match_dict = self.match_repository.get_match(match_id)
         match_dict=self.match_exist(match_dict)
         territories = match_dict["territories"]
 
@@ -38,10 +42,10 @@ class MatchValidator:
 
 
     def verify_state(self,states_id: list[str], owner_id: str, match_id: str):
-        match_dict = self.match_gateway.get_match(match_id)
+        match_dict = self.match_repository.get_match(match_id)
 
         for state_id in states_id:
-            state=self.match_gateway.get_territory_by_id(match_dict, state_id)
+            state=self.match_repository.get_territory_by_id(match_dict, state_id)
             state=self.territory_exist(state)
             if state["owner_id"] != owner_id:
                 return False
@@ -50,9 +54,9 @@ class MatchValidator:
 
 
     def verify_region(self,region: str, quantity: int, match_id, owner_id: str) -> bool:
-        match_dict = self.match_gateway.get_match(match_id)
+        match_dict = self.match_repository.get_match(match_id)
 
-        territories = self.match_gateway.get_territory_by_region(match_dict, region)
+        territories = self.match_repository.get_territory_by_region(match_dict, region)
 
         owned_territories = [
             territory for territory in territories

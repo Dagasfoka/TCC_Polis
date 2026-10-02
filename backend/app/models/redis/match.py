@@ -8,6 +8,9 @@ class Match:
         status: str,
         current_turn_player_id: str,
         round,
+        activate_questions_list : str | None = None,
+        questions_1 : list[dict] | None = None,
+        questions_2 : list[dict] | None = None,
         missions: list[dict] | None = None,
         pending_action : dict | None = None,
         winner_id : str | None = None,
@@ -22,6 +25,9 @@ class Match:
         self.missions = missions or []
         self.pending_action= pending_action,
         self.winner_id=winner_id
+        self.questions_1=questions_1 or []
+        self.questions_2=questions_2 or []
+        self.activate_questions_list = activate_questions_list
 
     def to_dict(self):
         return {
@@ -35,7 +41,10 @@ class Match:
             "missions": self.missions,
             "pending_action" :self.pending_action ,
             "winner_id" : self.winner_id,
-        }
+            "activate_questions_list": self.activate_questions_list,
+            "questions_1" : self.questions_1,
+            "questions_2" : self.questions_2,
+                }
 
     @classmethod
     def create_dict(
@@ -47,6 +56,9 @@ class Match:
         status: str,
         current_turn_player_id: str,
         round,
+        activate_questions_list: str | None=None,
+        questions_1: list[dict] | None=None,
+        questions_2: list[dict] | None=None,
         missions: list[dict] | None = None,
         pending_action : dict | None = None,
         winner_id : str | None = None,
@@ -59,6 +71,9 @@ class Match:
             status,
             current_turn_player_id,
             round,
+            activate_questions_list,
+            questions_1,
+            questions_2,
             missions,
             pending_action,
             winner_id,

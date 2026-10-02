@@ -1,6 +1,5 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from backend.app.factories.match_factory import MatchFactory
 from backend.app.gateways.match_gateways import MatchGateway
 from backend.app.services.redis.action_service import (
     get_attack_actions,
@@ -12,12 +11,11 @@ from backend.app.websocket.manager import manager
 router_websocket = APIRouter()
 
 match_gateway=MatchGateway()
-match_factory=MatchFactory()
 
 def prepare_match_for_player(match: dict, player_id: str):
     match_for_player = match.copy()
     match_for_player["your_player_id"] = player_id
-    match_for_player["your_mission"] = match_factory.find_your_mission(match, player_id)
+    match_for_player["your_mission"] = match_gateway.find_your_mission(match, player_id)
     match_for_player["available_attack_options"] = get_attack_actions()
 
     return match_for_player
