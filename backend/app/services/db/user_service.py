@@ -21,3 +21,8 @@ def get_all_users():
 
 def get_user_by_username(username):
     return user_gateway.get_user_by_username(username)
+
+def login_user(username, password):
+    user = user_gateway.get_user_by_username(username)
+    user = user_validator.validate_login(user, password)
+    return user.to_dict()

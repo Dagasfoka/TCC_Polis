@@ -288,3 +288,39 @@ export function chooseParty(
     }
   )
 }
+
+// ==============================
+// USUÁRIOS
+// ==============================
+
+
+// Criar uma conta.
+export function createUser(username, password) {
+  return request("/users", {
+    method: "POST",
+    body: JSON.stringify({
+      username,
+      password,
+    }),
+  });
+}
+
+
+// Entrar em uma conta existente.
+export function loginUser(username, password) {
+  return request("/users/login", {
+    method: "POST",
+    body: JSON.stringify({
+      username,
+      password,
+    }),
+  });
+}
+
+
+// Buscar usuário pelo ID.
+export function getUser(userId) {
+  return request(
+    `/users/${encodeURIComponent(userId)}`
+  );
+}
