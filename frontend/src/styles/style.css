@@ -419,12 +419,12 @@ html,
 }
 
 .polis-position-bottom-left {
-  bottom: 0;
+  bottom: 25px;
   left: 0;
 }
 
 .polis-position-bottom-right {
-  bottom: 0;
+  bottom: 25px;
   right: 0;
 }
 
@@ -1122,4 +1122,129 @@ html,
     width: 62vw;
   }
 
+}
+
+.question-modal-backdrop {
+  position: fixed;
+
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.58);
+
+  z-index: 9999;
+}
+
+.question-modal {
+  width: min(560px, 90vw);
+
+  max-height: 80vh;
+
+  overflow-y: auto;
+
+  padding: 28px;
+
+  border-radius: 18px;
+
+  background: rgba(18, 32, 52, 0.98);
+
+  color: white;
+
+  border: 2px solid rgba(255, 255, 255, 0.15);
+
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.6);
+
+  z-index: 10000;
+}
+
+.polis-question-modal h2 {
+  margin-top: 0;
+
+  text-align: center;
+
+  font-size: 24px;
+}
+
+.polis-question-territory {
+  text-align: center;
+
+  opacity: 0.8;
+
+  margin-bottom: 18px;
+}
+
+.question-description {
+  font-size: 18px;
+
+  line-height: 1.5;
+
+  text-align: center;
+
+  margin-bottom: 22px;
+}
+
+.question-buttons {
+  display: grid;
+
+  gap: 12px;
+}
+
+.question-buttons button {
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 14px 16px;
+
+  border: 0;
+
+  border-radius: 10px;
+
+  background: #263c58;
+
+  color: white;
+
+  cursor: pointer;
+
+  font-size: 15px;
+
+  text-align: left;
+
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+
+.question-buttons button:hover {
+  transform: translateY(-2px);
+
+  background: #315176;
+}
+
+.question-buttons button strong {
+  min-width: 32px;
+
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.15);
+
+  font-size: 16px;
+}
+
+.question-buttons button span {
+  flex: 1;
 }
