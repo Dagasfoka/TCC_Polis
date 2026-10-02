@@ -89,3 +89,12 @@ class MatchFactory:
         match["winner_id"] = player_id
         match["last_action_result"] = action_result
         return match
+    def find_your_mission(self,match: dict, player_id: str):
+        missions = match.get("missions", [])
+
+        for mission in missions:
+            if mission.get("owner_id") == player_id:
+                return mission.get("mission") or mission
+
+        return None
+
