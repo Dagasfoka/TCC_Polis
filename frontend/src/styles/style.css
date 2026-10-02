@@ -805,8 +805,8 @@ html,
   cursor: pointer;
 
   transition:
-    transform 0.15s ease,
-    background 0.15s ease;
+  transform 0.15s ease,
+  background 0.15s ease;
 }
 
 .polis-attack-actions button:hover {
@@ -975,6 +975,151 @@ html,
     width: 82vw;
 
     height: 70vh;
+  }
+
+}
+
+.polis-territory-left {
+  position: absolute;
+
+  left: 24px;
+  top: 50%;
+
+  bottom: auto;
+
+  transform: translateY(-50%);
+
+  width: min(330px, 27vw);
+  max-height: 68vh;
+
+  overflow-y: auto;
+
+  z-index: 100;
+}
+
+
+/* MISSÃO À DIREITA */
+
+.polis-mission-right {
+  position: absolute;
+
+  right: 24px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  width: min(320px, 26vw);
+  max-height: 56vh;
+
+  overflow-y: auto;
+
+  z-index: 90;
+
+  padding: 18px;
+
+  border-radius: 16px;
+
+  background: rgba(14, 26, 43, 0.94);
+
+  border: 2px solid rgba(255, 255, 255, 0.14);
+
+  box-shadow:
+    0 15px 40px rgba(0, 0, 0, 0.4);
+
+  backdrop-filter: blur(8px);
+}
+
+
+/* CABEÇALHO DA MISSÃO */
+
+.polis-mission-heading {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 10px;
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.polis-mission-party {
+  padding: 4px 9px;
+
+  border-radius: 999px;
+
+  color: white;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.polis-mission-card p {
+  margin: 0;
+
+  line-height: 1.45;
+}
+
+
+/* MAPA UM POUCO MENOR PARA CABER ENTRE OS PAINÉIS */
+
+.polis-map-container {
+  width: min(52vw, 760px);
+
+  height: min(78vh, 720px);
+}
+
+
+/* CARDS DOS JOGADORES NÃO SE MOVEM */
+
+.polis-position {
+  transition: none !important;
+}
+
+.polis-player-card {
+  transform: none !important;
+}
+
+.polis-player-current {
+  transform: none !important;
+}
+
+
+/* RESPONSIVO */
+
+@media (max-width: 1050px) {
+
+  .polis-territory-left {
+    left: 12px;
+
+    width: 240px;
+  }
+
+  .polis-mission-right {
+    right: 12px;
+
+    width: 230px;
+  }
+
+  .polis-map-container {
+    width: 55vw;
+  }
+
+}
+
+
+@media (max-width: 800px) {
+
+  .polis-territory-left,
+  .polis-mission-right {
+    width: 210px;
+  }
+
+  .polis-map-container {
+    width: 62vw;
   }
 
 }
