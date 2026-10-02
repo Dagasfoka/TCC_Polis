@@ -168,6 +168,9 @@ export default function DemoGameScreen({
 
   const wsRef = useRef(null);
   const winnerAlertShownRef = useRef(false);
+  const reconnectTimerRef = useRef(null);
+  const shouldReconnectRef = useRef(true);
+  const isUnmountingRef = useRef(false);
 
   const players = matchState?.players ?? [];
   const territories = matchState?.territories ?? [];
@@ -245,117 +248,198 @@ export default function DemoGameScreen({
   }
 
   function connect() {
-    if (!matchId.trim() || !playerId.trim()) {
+  if (!matchId || !playerId) {
+    console.error("matchId ou playerId não disponíveis.");
+    return;
+  }
+
+  // Não cria outra conexão se já existir uma ativa.
+  if (
+    wsRef.current &&
+    (
+      wsRef.current.readyState === WebSocket.OPEN ||
+      wsRef.current.readyState === WebSocket.CONNECTING
+    )
+  ) {
+    return;
+  }
+
+  const WS =
+    import.meta.env.VITE_WS_URL ||
+    "wss://tcc-polis-42o9.onrender.com";
+
+  console.log(
+    `Conectando na partida ${matchId} como ${playerId}...`
+  );
+
+  const ws = new WebSocket(
+    `${WS}/ws/match/${matchId}/${playerId}`
+  );
+
+  wsRef.current = ws;
+
+  ws.onopen = () => {
+    console.log("WebSocket conectado.");
+
+    setConnected(true);
+
+    // Se havia uma tentativa de reconexão pendente,
+    // ela não é mais necessária.
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+  };
+
+  ws.onmessage = (event) => {
+    let data;
+
+    try {
+      data = JSON.parse(event.data);
+    } catch (error) {
       console.error(
-        "Não foi possível conectar: match_id ou player_id ausente."
+        "Erro ao interpretar mensagem WebSocket:",
+        error
       );
+
       return;
     }
 
-    if (
-      wsRef.current &&
-      (wsRef.current.readyState === WebSocket.OPEN ||
-        wsRef.current.readyState === WebSocket.CONNECTING)
-    ) {
+    console.log("Evento recebido:", data);
+
+    if (data.type === "attack_question") {
+      setPendingQuestion(data.question);
+
+      setPendingActionInfo({
+        target_territory_id:
+          data.target_territory_id,
+
+        territory_id:
+          data.territory_id,
+
+        territory_name:
+          data.territory_name,
+
+        option_id:
+          data.option_id,
+
+        title:
+          data.title,
+
+        success_chance:
+          data.success_chance,
+      });
+
       return;
     }
 
-    winnerAlertShownRef.current = false;
-    setPendingQuestion(null);
-    setPendingActionInfo(null);
+    if (data.type === "match_state") {
+      const newMatchState = data.payload;
 
-    const WS =
-      import.meta.env.VITE_WS_URL ||
-      "wss://tcc-polis-42o9.onrender.com";
+      setMatchState(newMatchState);
 
-    const ws = new WebSocket(
-      `${WS}/ws/match/${matchId}/${playerId}`
+      if (
+        newMatchState?.last_action_result?.type ===
+        "attack_result"
+      ) {
+        setPendingQuestion(null);
+        setPendingActionInfo(null);
+      }
+
+      handleWinnerAlert(newMatchState);
+
+      return;
+    }
+
+    if (data.result?.type === "attack_result") {
+      const newMatchState = data.match;
+
+      setMatchState(newMatchState);
+
+      setPendingQuestion(null);
+      setPendingActionInfo(null);
+
+      handleWinnerAlert(newMatchState);
+
+      return;
+    }
+
+    if (data.match && data.result) {
+      const newMatchState = data.match;
+
+      setMatchState(newMatchState);
+
+      setPendingQuestion(null);
+      setPendingActionInfo(null);
+
+      handleWinnerAlert(newMatchState);
+
+      return;
+    }
+
+    if (data.type === "error") {
+      const message =
+        data.payload?.message ??
+        data.message ??
+        "Erro desconhecido.";
+
+      console.error("Erro recebido do servidor:", message);
+
+      /*
+       * IMPORTANTE:
+       *
+       * Um erro de jogada NÃO deve derrubar a conexão.
+       * Apenas mostramos o erro.
+       */
+      alert(message);
+
+      return;
+    }
+  };
+
+  ws.onerror = (error) => {
+    console.error("Erro no WebSocket:", error);
+
+    /*
+     * Não chamamos ws.close() aqui.
+     *
+     * Deixamos o navegador disparar onclose
+     * caso a conexão realmente tenha caído.
+     */
+  };
+
+  ws.onclose = (event) => {
+    console.log(
+      "WebSocket fechado:",
+      event.code,
+      event.reason
     );
 
-    wsRef.current = ws;
+    setConnected(false);
 
-    ws.onopen = () => {
-      setConnected(true);
-    };
+    if (wsRef.current === ws) {
+      wsRef.current = null;
+    }
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+    /*
+     * Se a tela ainda está aberta e não foi uma
+     * desconexão intencional, tenta reconectar.
+     */
+    if (
+      shouldReconnectRef.current &&
+      !isUnmountingRef.current
+    ) {
+      console.log(
+        "Tentando reconectar em 2 segundos..."
+      );
 
-      if (data.type === "attack_question") {
-        setPendingQuestion(data.question);
-
-        setPendingActionInfo({
-          target_territory_id: data.target_territory_id,
-          territory_id: data.territory_id,
-          territory_name: data.territory_name,
-          option_id: data.option_id,
-          title: data.title,
-          success_chance: data.success_chance,
-        });
-
-        return;
-      }
-
-      if (data.type === "match_state") {
-        const newMatchState = data.payload;
-
-        setMatchState(newMatchState);
-
-        if (
-          newMatchState?.last_action_result?.type ===
-          "attack_result"
-        ) {
-          setPendingQuestion(null);
-          setPendingActionInfo(null);
-        }
-
-        handleWinnerAlert(newMatchState);
-        return;
-      }
-
-      if (data.result?.type === "attack_result") {
-        const newMatchState = data.match;
-
-        setMatchState(newMatchState);
-        setPendingQuestion(null);
-        setPendingActionInfo(null);
-        handleWinnerAlert(newMatchState);
-
-        return;
-      }
-
-      if (data.match && data.result) {
-        const newMatchState = data.match;
-
-        setMatchState(newMatchState);
-        setPendingQuestion(null);
-        setPendingActionInfo(null);
-        handleWinnerAlert(newMatchState);
-
-        return;
-      }
-
-      if (data.type === "error") {
-        alert(
-          data.payload?.message ??
-            data.message ??
-            "Erro desconhecido."
-        );
-      }
-    };
-
-    ws.onerror = () => {
-      console.error("Erro no WebSocket da partida.");
-    };
-
-    ws.onclose = () => {
-      if (wsRef.current === ws) {
-        wsRef.current = null;
-      }
-
-      setConnected(false);
-    };
-  }
+      reconnectTimerRef.current =
+        setTimeout(() => {
+          connect();
+        }, 2000);
+    }
+  };
+}
 
   function sendAttack(optionId) {
     if (
@@ -415,23 +499,32 @@ export default function DemoGameScreen({
   }
 
   useEffect(() => {
-    if (!matchId || !playerId) {
-      return undefined;
+  if (!matchId || !playerId) {
+    return;
+  }
+
+  isUnmountingRef.current = false;
+  shouldReconnectRef.current = true;
+
+  connect();
+
+  return () => {
+    isUnmountingRef.current = true;
+    shouldReconnectRef.current = false;
+
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+
+      reconnectTimerRef.current = null;
     }
 
-    connect();
+    if (wsRef.current) {
+      wsRef.current.close();
 
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-    };
-    // A conexão precisa acompanhar os IDs recebidos do App.
-    // Isso evita depender de recarregar a página quando match/player
-    // só ficam disponíveis depois que a tela já montou.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matchId, playerId]);
+      wsRef.current = null;
+    }
+  };
+}, [matchId, playerId]);
 
   const missionText = formatMission(
     matchState?.your_mission,
