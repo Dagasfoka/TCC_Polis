@@ -2,8 +2,8 @@
 from fastapi import APIRouter
 from fastapi.templating import Jinja2Templates
 
-from backend.app.schemas.db.user import UserCreate
-from backend.app.services.db.user_service import create_user,get_user_by_id, get_all_users
+from backend.app.schemas.db.user import UserCreate, UserLogin
+from backend.app.services.db.user_service import create_user,get_user_by_id, get_all_users, login_user
 
 router_user = APIRouter()
 templates = Jinja2Templates(directory='templates')
@@ -19,3 +19,10 @@ async def get_user_route(user_id:str):
 @router_user.get("/users")
 async def get_all_users_route():
     return get_all_users()
+
+@router_user.post("/users/login")
+async def login_user_route(data: UserLogin):
+    return login_user(
+        username=data.username,
+        password=data.password
+    )
