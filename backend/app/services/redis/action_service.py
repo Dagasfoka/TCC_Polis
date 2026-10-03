@@ -52,7 +52,7 @@ def prepare_attack_action(
     round=match_gateway.get_round(match)
     round=match_validator.round_exist(round)
     
-    action = match_action_gateway.get_match_action_by_id(option_id)
+    action = match_action_gateway.get_match_action_by_id(match_id,option_id)
     action = action_validator.action_exist(action)
 
     target = match_gateway.find_territory(match, target_territory_id)
