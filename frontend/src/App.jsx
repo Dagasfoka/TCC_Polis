@@ -12,19 +12,26 @@ import {
 } from "./service/lobbySession.js";
 
 import {
+  saveMatchID,
+  clearMatchID,
+  getSavedMatchID,
+
+} from "./service/matchSession.js"
+import {
   getPlayer,
 } from "./service/api.jsx";
 
 import { RoomValidator } from "./validators/RoomValidator.js";
 import { PlayerValidator } from "./validators/PlayerValidator.js";
+import { MatchValidator } from "./validators/MatchValidator.js";
 
 
 export default function App() {
-
+  const matchValidator = new MatchValidator()
   const roomValidator = new RoomValidator();
   const playerValidator = new PlayerValidator();
 
-  const [screen, setScreen] = useState("login");
+  const [screen, setScreen] = useState();
 
   const [player, setPlayer] = useState(null);
   const [room, setRoom] = useState(null);
@@ -37,7 +44,7 @@ export default function App() {
 
   useEffect(() => {
 
-    async function restorePlayer() {
+    async function restoreSession() {
 
       const playerId =
         localStorage.getItem("player_id");
@@ -45,7 +52,8 @@ export default function App() {
       if (
         !playerValidator.playerIdExists(playerId)
       ) {
-        return;
+        setScreen("login");
+        return
       }
 
       try {
@@ -63,31 +71,30 @@ export default function App() {
         // ==========================
         // RECUPERAR SALA
         // ==========================
-
         try {
-
-          const currentRoom =
-            await restoreRoom();
+          const currentRoom = await restoreRoom();
 
           if (
-            roomValidator.roomExists(
-              currentRoom
-            ) &&
-            roomValidator.playerInRoom(
-              currentRoom,
-              savedPlayer
-            )
+            !roomValidator.roomExists(currentRoom) ||
+            !roomValidator.playerInRoom(currentRoom, savedPlayer)
           ) {
-
-            setRoom(currentRoom);
-            setScreen("lobby");
-
-          } else {
-
             clearRoomCode();
+            clearMatchID();
             setScreen("menu");
+            return;
           }
 
+          setRoom(currentRoom);
+
+          const matchID = getSavedMatchID();
+
+          if (matchValidator.MatchIDExists(matchID)) {
+            setMatchId(matchID);
+            setScreen("game");
+          } else {
+            clearMatchID();
+            setScreen("lobby");
+          }
         } catch (error) {
 
           console.error(
@@ -96,6 +103,7 @@ export default function App() {
           );
 
           clearRoomCode();
+          clearMatchID()
           setScreen("menu");
         }
 
@@ -113,7 +121,7 @@ export default function App() {
     }
 
 
-    restorePlayer();
+    restoreSession();
 
   }, []);
 
@@ -121,7 +129,12 @@ export default function App() {
   // ==============================
   // LOGIN / GUEST / CADASTRO
   // ==============================
-
+  // No App
+  function handleMatchNotFound() {
+    clearMatchID();
+    setMatchId(null);
+    setScreen("lobby");
+  }
   function handleLogin(playerData) {
 
     setPlayer(playerData);
@@ -175,6 +188,7 @@ export default function App() {
     setMatchId(newMatchId);
 
     setScreen("game");
+    saveMatchID(newMatchId)
   }
 
 
@@ -191,41 +205,42 @@ export default function App() {
       {screen === "menu" &&
         player && (
 
-        <MenuScreen
-          player={player}
-          onEnterRoom={handleEnterRoom}
-        />
+          <MenuScreen
+            player={player}
+            onEnterRoom={handleEnterRoom}
+          />
 
-      )}
+        )}
 
 
       {screen === "lobby" &&
         player &&
         room && (
 
-        <LobbyScreen
-          player={player}
-          room={room}
-          onRoomUpdate={setRoom}
-          onLeave={handleLeaveRoom}
-          onStart={handleStartGame}
-        />
+          <LobbyScreen
+            player={player}
+            room={room}
+            onRoomUpdate={setRoom}
+            onLeave={handleLeaveRoom}
+            onStart={handleStartGame}
+          />
 
-      )}
+        )}
 
 
       {screen === "game" &&
         player &&
         matchId != null && (
 
-        <DemoGameScreen
-          initialMatchId={matchId}
-          initialPlayerId={
-            player.player_id
-          }
-        />
+          <DemoGameScreen
+            onMatchNotFound={handleMatchNotFound}
+            initialMatchId={matchId}
+            initialPlayerId={
+              player.player_id
+            }
+          />
 
-      )}
+        )}
 
     </>
   );
