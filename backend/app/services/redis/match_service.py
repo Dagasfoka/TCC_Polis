@@ -7,7 +7,7 @@ from backend.app.gateways.room_gateways import RoomGateway
 from backend.app.validators.room_validators import RoomValidator
 
 from backend.app.factories.match_mission_factory import MatchMissionFactory
-from backend.app.factories.actions_factory import ActionsFactory
+from backend.app.factories.action_factory import ActionsFactory
 from backend.app.factories.match_question_factory import MatchQuestionFactory
 from backend.app.factories.match_territory_factory import MatchTerritoryFactory
 class MatchService:
