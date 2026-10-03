@@ -444,7 +444,7 @@ export default function DemoGameScreen({
     };
   }
 
-  function sendAttack(optionId) {
+  function sendAttack(optionId, action_type) {
     console.log("ACTION ID:", optionId);
     if (
       !wsRef.current ||
@@ -466,11 +466,13 @@ export default function DemoGameScreen({
         target_territory_id: selectedTerritory.territory_id,
         territory_id: selectedTerritory.territory_id,
         action_id: optionId,
+        action_type:action_type,
 
         payload: {
           target_territory_id: selectedTerritory.territory_id,
           territory_id: selectedTerritory.territory_id,
           action_id: optionId,
+          action_type:action_type,
         },
       })
     );
@@ -704,7 +706,7 @@ export default function DemoGameScreen({
                     type="button"
                     key={option.action_id}
                     onClick={() =>
-                      sendAttack(option.action_id)
+                      sendAttack(option.action_id, option.action_type)
                     }
                   >
                     <strong>{option.title}</strong>

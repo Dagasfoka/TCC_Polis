@@ -73,6 +73,7 @@ async def match_websocket(
                     )
 
                     option_id = data.get("action_id") or payload.get("action_id")
+                    action_type = data.get("action_type") or payload.get("action_type")
 
                     print("DATA RECEBIDA:", data)
                     print("PAYLOAD:", payload)
@@ -83,6 +84,7 @@ async def match_websocket(
                         player_id=player_id,
                         target_territory_id=target_territory_id,
                         option_id=option_id,
+                        action_type=action_type
                     )
 
                     if response["result"]["type"] == "attack_question":

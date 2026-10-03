@@ -39,7 +39,11 @@ class MatchTerritoryValidator:
         if territory is None:
             raise Exception("Território não existe")
         return territory
-    def verify_territory_owner_id(self,target,player_id):
+    def verify_territory_owner_id(self,target,player_id, action_type):
         if target["owner_id"] == player_id:
-            return "defense"
-        return "attack"
+            if action_type == "attack":
+                raise ValueError("Você já controla esse território, não poderá atacar ele.")
+            return target
+        if action_type == "defense":
+            raise ValueError("Você não controla esse território, não poderá defender ele.")
+        return target

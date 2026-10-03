@@ -41,7 +41,8 @@ def prepare_attack_action(
     match_id,
     player_id: str,
     target_territory_id: str,
-    option_id: str
+    option_id: str,
+    action_type:str
 ):
     status="running"
     
@@ -54,9 +55,9 @@ def prepare_attack_action(
 
     target = match_gateway.find_territory(match, target_territory_id)
     target=match_territory_validator.territory_exist(target)
-    action_type=match_territory_validator.verify_territory_owner_id(target,player_id)
+    target=match_territory_validator.verify_territory_owner_id(target,player_id,action_type)
 
-    action = match_action_gateway.get_match_action_by_id(match_id,option_id, action_type)
+    action = match_action_gateway.get_match_action_by_id(match_id,int(option_id), action_type)
     action = action_validator.action_exist(action)
     
     player = match_gateway.find_player(match, player_id)
