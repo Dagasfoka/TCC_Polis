@@ -46,12 +46,7 @@ def seed_actions():
         # Apaga todas as ações antigas.
         db.execute(delete(Action))
 
-        options = [
-            Action(**options_data)
-            for options_data in OPTIONS
-        ]
-
-        db.add_all(options)
+        db.add_all(OPTIONS)
 
     print("Ações antigas apagadas.")
     print("Ações de demonstração criadas com sucesso.")
