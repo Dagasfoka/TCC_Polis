@@ -14,7 +14,7 @@ OPTIONS = [
         responses= {
         "high_critical": "O Paulo muzy gostou da sua ideia e resolveu te apoiar."
         ,
-        "normal_sucess": "Você construiu o hospital e já está funcionando"
+        "normal_success": "Você construiu o hospital e já está funcionando"
         ,
          "normal_fail": "Você contratou pedreiros duvidosos e a obra falhou"
        ,
@@ -30,7 +30,7 @@ OPTIONS = [
         responses= {
         "high_critical": "Você conseguiu ganhar eleitores sem pagar nada."
         ,
-        "normal_sucess": "Você pagou por cada eleitor conquistado"
+        "normal_success": "Você pagou por cada eleitor conquistado"
         ,
          "normal_fail": "Nenhum eleitor aceitou seu suborno."
        ,
