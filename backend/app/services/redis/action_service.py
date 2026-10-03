@@ -65,7 +65,7 @@ def prepare_attack_action(
         player_id=player_id,
         match_territories=match['territories'],
         )
-    if (round%1)==0:
+    if (round%2)==0:
         question,name_list_questions = match_gateway.get_next_question(match_id)
         match_factory.switch_question_list(match,question,name_list_questions)
         newPendingValue= PendingAction.create_dict(
