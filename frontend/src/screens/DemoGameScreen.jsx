@@ -464,12 +464,12 @@ export default function DemoGameScreen({
 
         target_territory_id: selectedTerritory.territory_id,
         territory_id: selectedTerritory.territory_id,
-        option_id: optionId,
+        action_id: optionId,
 
         payload: {
           target_territory_id: selectedTerritory.territory_id,
           territory_id: selectedTerritory.territory_id,
-          option_id: optionId,
+          action_id: optionId,
         },
       })
     );
