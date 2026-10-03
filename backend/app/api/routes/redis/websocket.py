@@ -72,7 +72,7 @@ async def match_websocket(
                         or payload.get("territory_id")
                     )
 
-                    option_id = data.get("option_id") or payload.get("option_id")
+                    option_id = data.get("action_id") or payload.get("action_id")
 
                     response = prepare_attack_action(
                         match_id=match_id,
