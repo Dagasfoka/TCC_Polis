@@ -1,7 +1,6 @@
 # Busca/salva usuários no banco.
 from sqlalchemy import select
 from backend.app.db.database import SessionLocal
-from backend.app.api.deps import get_db
 from backend.app.models.db.user import User
 
 class UsersRepository:
