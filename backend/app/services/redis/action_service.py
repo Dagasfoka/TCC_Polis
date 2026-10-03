@@ -6,6 +6,7 @@ from backend.app.gateways.player_gateways import PlayerGateway
 from backend.app.validators.action_validators import ActionValidator
 from backend.app.validators.match_mission_validators import MatchMissionValidator
 from backend.app.gateways.db.action_gateway import ActionGateway
+from backend.app.gateways.match_action_gateway import MatchActionGateway
 from backend.app.factories.action_factory import ActionsFactory
 from backend.app.validators.match_territory_validator import MatchTerritoryValidator
 from backend.app.validators.match_validators import MatchValidator
@@ -29,6 +30,7 @@ player_gateway=PlayerGateway()
 player_validator=PlayerValidator()
 
 action_gateway=ActionGateway()
+match_action_gateway = MatchActionGateway()
 action_validator=ActionValidator()
 
 pending_action_validator=PendingActionValidator()
@@ -50,7 +52,7 @@ def prepare_attack_action(
     round=match_gateway.get_round(match)
     round=match_validator.round_exist(round)
     
-    action = action_gateway.get_action_by_id(option_id)
+    action = match_action_gateway.get_match_action_by_id(option_id)
     action = action_validator.action_exist(action)
 
     target = match_gateway.find_territory(match, target_territory_id)
