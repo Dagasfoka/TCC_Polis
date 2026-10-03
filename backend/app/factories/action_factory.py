@@ -76,7 +76,7 @@ class ActionsFactory:
                             )
             else:
                 positive_critical = POSITIVE_CRITICAL[action.risk_level]
-                negative_critial = NEGATIVE_CRITICAL[action.risk_level]
+                negative_critical = NEGATIVE_CRITICAL[action.risk_level]
                 success_chance = self.randomizar_valores(SUCCESS_CHANCE[action.action_type][action.risk_level])
 
                 redis_action = self.make_action(action = action, 
@@ -85,7 +85,7 @@ class ActionsFactory:
                                            money = money,
                                            corruption = corruption,
                                            positive_critical = positive_critical,
-                                           negative_critial = negative_critial,
+                                           negative_critical = negative_critical,
                                            success_chance = success_chance)
                 
             redis_actions.append(redis_action)
