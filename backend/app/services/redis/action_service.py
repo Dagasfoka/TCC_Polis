@@ -111,6 +111,7 @@ def resolve_action_no_question(
     action_type:str
 ):
 
+    print("Chegou até aqui")
     match = match_gateway.get_match(match_id)
     match=match_validator.match_exist(match)
 
@@ -290,15 +291,15 @@ def execute_attack_roll(
     A diferença é que agora ela usa adjusted_success_chance
     em vez de option["success_chance"] diretamente.
     """
-
+    print("Chegou até aqui 2")
     target = match_gateway.find_territory(match, target_territory_id)
     target=match_territory_validator.territory_exist(target)
 
-    roll = random.randint(1, 100)
+    roll = random.randint(1, 20)
     if adjusted_success_chance:
-        minimum_roll_to_succeed = 100 - adjusted_success_chance
+        minimum_roll_to_succeed = 20 - adjusted_success_chance
     else:
-        minimum_roll_to_succeed = 100 - base_success_chance
+        minimum_roll_to_succeed = 20 - base_success_chance
     success = roll >= minimum_roll_to_succeed
 
     influence_generated = 0
@@ -307,6 +308,8 @@ def execute_attack_roll(
 
     old_owner_id = target["owner_id"]
     old_current_influence = target["current_influence"]
+
+    print("Chegou até aqui 3")
 
     if success:
         influence_generated = option["influence_generated"]
