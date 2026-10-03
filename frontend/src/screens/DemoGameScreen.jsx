@@ -445,6 +445,7 @@ export default function DemoGameScreen({
   }
 
   function sendAttack(optionId) {
+    console.log("ACTION ID:", optionId);
     if (
       !wsRef.current ||
       wsRef.current.readyState !== WebSocket.OPEN
@@ -701,9 +702,9 @@ export default function DemoGameScreen({
                 {attackOptions.map((option) => (
                   <button
                     type="button"
-                    key={option.option_id}
+                    key={option.action_id}
                     onClick={() =>
-                      sendAttack(option.option_id)
+                      sendAttack(option.action_id)
                     }
                   >
                     <strong>{option.title}</strong>
