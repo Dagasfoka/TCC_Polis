@@ -8,3 +8,6 @@ class ActionGateway:
     
     def get_actions_by_type(self,action_type: str):
         return self.action_repository.get_actions_by_type(action_type)
+
+    def get_action_by_id(self,action_id: str):
+        return self.action_repository.get_actions_by_id(action_id)
