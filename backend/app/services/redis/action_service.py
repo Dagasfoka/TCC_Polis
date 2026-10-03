@@ -100,7 +100,7 @@ def prepare_attack_action(
         }
     else:
         type="attack_no_question"
-        return resolve_action_no_question(match_id,player_id,action,target_territory_id,type)
+        return resolve_action_no_question(match_id,player_id,action,target_territory_id,type,action_type)
 
 def resolve_action_no_question(
     match_id : int,
@@ -108,6 +108,7 @@ def resolve_action_no_question(
     action : dict,
     target_territory_id: str,
     type : str,
+    action_type:str
 ):
 
     match = match_gateway.get_match(match_id)
@@ -117,7 +118,7 @@ def resolve_action_no_question(
 
     target = match_gateway.find_territory(match, target_territory_id)
     target = match_territory_validator.territory_exist(target)
-    target = match_territory_validator.verify_territory_owner_id(target,player_id)
+    target = match_territory_validator.verify_territory_owner_id(target,player_id,action_type)
 
 
 
@@ -178,6 +179,7 @@ def resolve_attack_action(
     match_id,
     player_id: str,
     answer: bool,
+    action_type:str
 ):
     status="running"
     match = match_gateway.get_match(match_id)
@@ -199,7 +201,7 @@ def resolve_attack_action(
 
     target = match_gateway.find_territory(match, target_territory_id)
     target = match_territory_validator.territory_exist(target)
-    target = match_territory_validator.verify_territory_owner_id(target,player_id)
+    target = match_territory_validator.verify_territory_owner_id(target,player_id,action_type)
 
 
     correct_answer = pending_action["correct_answer"]
