@@ -28,7 +28,7 @@ async function request(path, options = {}) {
 
 
   throw new Error(
-    "Não foi possível conectar ao servidor. Verifique o Console (F12)."
+    "Não foi possível conectar ao servidor."
   );
 }
 
