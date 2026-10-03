@@ -74,6 +74,10 @@ async def match_websocket(
 
                     option_id = data.get("action_id") or payload.get("action_id")
 
+                    print("DATA RECEBIDA:", data)
+                    print("PAYLOAD:", payload)
+                    print("OPTION_ID:", option_id)
+
                     response = prepare_attack_action(
                         match_id=match_id,
                         player_id=player_id,
