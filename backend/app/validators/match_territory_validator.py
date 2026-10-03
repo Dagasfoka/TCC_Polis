@@ -41,5 +41,5 @@ class MatchTerritoryValidator:
         return territory
     def verify_territory_owner_id(self,target,player_id):
         if target["owner_id"] == player_id:
-            raise ValueError("Você já controla esse território")
-        return target
+            return "defense"
+        return "attack"

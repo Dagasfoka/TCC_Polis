@@ -41,23 +41,23 @@ def prepare_attack_action(
     match_id,
     player_id: str,
     target_territory_id: str,
-    option_id: str,
+    option_id: str
 ):
     status="running"
     
-    match = match_gateway.get_match(match_id)
+    match =match_gateway.get_match(match_id)
     match=match_validator.match_exist(match)
     match=match_validator.verify_match_status(match,status)
     match=match_validator.verify_current_turn_player_id(match,player_id)
     round=match_gateway.get_round(match)
     round=match_validator.round_exist(round)
     
-    action = match_action_gateway.get_match_action_by_id(match_id,option_id)
+    action = match_action_gateway.get_match_action_by_id(match_id,option_id, action_type)
     action = action_validator.action_exist(action)
 
     target = match_gateway.find_territory(match, target_territory_id)
     target=match_territory_validator.territory_exist(target)
-    target=match_territory_validator.verify_territory_owner_id(target,player_id)
+    action_type=match_territory_validator.verify_territory_owner_id(target,player_id)
     
     player = match_gateway.find_player(match, player_id)
     player=player_validator.not_exist(player)

@@ -7,20 +7,21 @@ class MatchActionRepo:
         self.match_gateway = MatchGateway()
         self.match_factory = MatchFactory()
 
-    def get_all_match_actions(self, match_id):
+    def get_all_match_actions(self, match_id, action_type):
         match_dict = self.match_gateway.get_match(match_id)
 
         if match_dict is None:
             raise ValueError("Partida não encontrada.")
 
-        return match_dict.get("actions", [])
+        return match_dict.get( f"{action_type}_actions",[],)
 
     def get_match_action_by_id(
         self,
         match_id,
         action_id,
+        action_type
     ):
-        for action in self.get_all_match_actions(match_id):
+        for action in self.get_all_match_actions(match_id,action_type):
             if action["action_id"] == action_id:
                 return action
 

@@ -18,10 +18,12 @@ class MatchActionGateway:
         self,
         match_id: int,
         action_id: int,
+        action_type: str
     ):
         return self.repository.get_match_action_by_id(
             match_id,
             action_id,
+            action_type
         )
 
     def save_match_actions(
