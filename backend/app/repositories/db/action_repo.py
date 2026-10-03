@@ -1,44 +1,13 @@
-from backend.app.models.db.action_option import ActionOption
-
-ATTACK_OPTIONS = [
-    ActionOption(
-        option_id="safe_company",
-        action_type="attack",
-        title="Contratar empresa consolidada",
-        description=(
-            "Você contrata uma empresa grande e reconhecida. "
-            "A ação custa mais, mas tem menor risco e gera influência moderada."
-        ),
-        cost_money=80,
-        success_chance=80,
-        influence_generated=4,
-        risk_level="baixo",
-    ),
-    ActionOption(
-        option_id="small_company",
-        action_type="attack",
-        title="Contratar empresa menor",
-        description=(
-            "Você contrata uma empresa menor e mais barata. "
-            "A ação tem maior risco, mas pode gerar muito mais influência."
-        ),
-        cost_money=40,
-        success_chance=45,
-        influence_generated=8,
-        risk_level="alto",
-    ),
-]
+from backend.app.models.db.action import Action
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 class ActionRepo:
-    def list_options_by_action(self,action_type: str):
-        return [
-            option.to_dict()
-            for option in ATTACK_OPTIONS
-            if option.action_type == action_type
-        ]
-    def get_option_by_id(self,option_id: str):
-        for option in ATTACK_OPTIONS:
-            if option.option_id == option_id:
-                return option.to_dict()
 
-        return None
+    def get_all_action(self,db: Session) -> list[Action]:
+            return list(db.scalars(select(Action)).all())
+    
+    
+    def get_actions_by_type(self,db: Session, action_type: str) -> Action | None:
+        actions = select(Action).where(Action.action_type == action_type)
+        return list(db.scalars(actions).all())

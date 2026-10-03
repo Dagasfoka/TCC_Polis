@@ -38,12 +38,7 @@ class Action(Base):
         nullable=False,
     )
 
-    cost: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-    )
-
-    content: Mapped[dict] = mapped_column(
+    responses: Mapped[dict] = mapped_column(
         JSON,
         nullable=False,
     )
@@ -56,6 +51,5 @@ class Action(Base):
             "title": self.title,
             "description": self.description,
             "risk_level": self.risk_level,
-            "cost": self.cost,
-            "content": self.content,
+            "responses": self.responses,
         }

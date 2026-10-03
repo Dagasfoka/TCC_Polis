@@ -5,7 +5,8 @@ from backend.app.gateways.match_gateways import MatchGateway
 from backend.app.gateways.player_gateways import PlayerGateway
 from backend.app.validators.action_validators import ActionValidator
 from backend.app.validators.match_mission_validators import MatchMissionValidator
-from backend.app.gateways.action_gateway import ActionGateway
+from backend.app.gateways.db.action_gateway import ActionGateway
+from backend.app.factories.action_factory import ActionsFactory
 from backend.app.validators.match_territory_validator import MatchTerritoryValidator
 from backend.app.validators.match_validators import MatchValidator
 from backend.app.validators.pending_action_validators import PendingActionValidator
@@ -23,7 +24,7 @@ match_territory_validator=MatchTerritoryValidator()
 match_gateway=MatchGateway()
 match_factory=MatchFactory()
 match_validator=MatchValidator()
-
+action_factory = ActionsFactory()
 player_gateway=PlayerGateway()
 player_validator=PlayerValidator()
 
@@ -32,7 +33,7 @@ action_validator=ActionValidator()
 
 pending_action_validator=PendingActionValidator()
 def get_attack_actions():
-    return action_gateway.list_action_by_type("attack")
+    return action_factory.get_actions_by_type("attack")
 
 def prepare_attack_action(
     match_id,
