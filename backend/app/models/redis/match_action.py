@@ -21,7 +21,7 @@ class MatchAction:
     money: int
     corruption: int = 0
     positive_critical: int | None = None
-    negative_critial: int | None = None
+    negative_critical: int | None = None
     success_chance: int | None = None
 
     def to_dict(self):
