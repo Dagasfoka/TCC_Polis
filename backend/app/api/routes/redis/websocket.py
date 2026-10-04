@@ -69,39 +69,6 @@ async def match_websocket(
                 event_type = data.get("type")
                 payload = data.get("payload", {})
 
-                if event_type == "select_territory":
-                    territory_id = (
-                        data.get("territory_id")
-                        or payload.get("territory_id")
-                    )
-
-                    match = match_gateway.get_match(match_id)
-
-                    territory = match_gateway.get_territory_by_id(
-                        match,
-                        territory_id,
-                    )
-
-                    owner_id = territory["owner_id"]
-
-                    is_my_territory = owner_id == player_id
-
-                    action_type = "defense" if is_my_territory else "attack"
-                    available_actions = get_match_defense_actions(match_id) if is_my_territory else get_match_attack_actions(match_id)
-
-                    await manager.send_to_player(
-                        match_id=match_id,
-                        player_id=player_id,
-                        message={
-                            "type": "territory_selected",
-                            "payload": {
-                                "action_type": action_type,
-                                "territory": territory,
-                                "available_actions": available_actions,
-                            },
-                        },
-                    )
-
 
                 if event_type == "choose_attack_option":
                     target_territory_id = (
@@ -145,6 +112,39 @@ async def match_websocket(
                                 ),
                             },
                         )
+
+                elif event_type == "select_territory":
+                    territory_id = (
+                        data.get("territory_id")
+                        or payload.get("territory_id")
+                    )
+
+                    match = match_gateway.get_match(match_id)
+
+                    territory = match_gateway.get_territory_by_id(
+                        match,
+                        territory_id,
+                    )
+
+                    owner_id = territory["owner_id"]
+
+                    is_my_territory = owner_id == player_id
+
+                    action_type = "defense" if is_my_territory else "attack"
+                    available_actions = get_match_defense_actions(match_id) if is_my_territory else get_match_attack_actions(match_id)
+
+                    await manager.send_to_player(
+                        match_id=match_id,
+                        player_id=player_id,
+                        message={
+                            "type": "territory_selected",
+                            "payload": {
+                                "action_type": action_type,
+                                "territory": territory,
+                                "available_actions": available_actions,
+                            },
+                        },
+                    )
 
                 elif event_type == "answer_attack_question":
                     answer = data.get("answer")
