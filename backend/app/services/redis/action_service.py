@@ -13,11 +13,11 @@ from backend.app.validators.match_validators import MatchValidator
 from backend.app.validators.pending_action_validators import PendingActionValidator
 from backend.app.validators.player_validators import PlayerValidator
 from backend.app.models.redis.pending_action import PendingAction
-QUESTION_CORRECT_BONUS = 20
-QUESTION_WRONG_PENALTY = 20
+QUESTION_CORRECT_BONUS = 2
+QUESTION_WRONG_PENALTY = 2
 
-MIN_SUCCESS_CHANCE = 5
-MAX_SUCCESS_CHANCE = 95
+MIN_SUCCESS_CHANCE = 1
+MAX_SUCCESS_CHANCE = 19
 
 match_mission_validator=MatchMissionValidator()
 match_territory_validator=MatchTerritoryValidator()
@@ -297,9 +297,9 @@ def execute_attack_roll(
 
     roll = random.randint(1, 20)
     if adjusted_success_chance:
-        minimum_roll_to_succeed = 20 - adjusted_success_chance
+        minimum_roll_to_succeed = adjusted_success_chance
     else:
-        minimum_roll_to_succeed = 20 - base_success_chance
+        minimum_roll_to_succeed = base_success_chance
     success = roll >= minimum_roll_to_succeed
 
     influence_generated = 0
@@ -371,7 +371,7 @@ def execute_attack_roll(
 
 def clamp_success_chance(question_was_correct,base_success_chance):
     if question_was_correct:
-        adjusted_success_chance = base_success_chance + QUESTION_CORRECT_BONUS
+        adjusted_success_chance = base_success_chance - QUESTION_CORRECT_BONUS
     else:
-        adjusted_success_chance = base_success_chance - QUESTION_WRONG_PENALTY
+        adjusted_success_chance = base_success_chance + QUESTION_WRONG_PENALTY
     return max(MIN_SUCCESS_CHANCE, min(MAX_SUCCESS_CHANCE, adjusted_success_chance))
