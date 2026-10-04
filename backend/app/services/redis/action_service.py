@@ -306,39 +306,69 @@ def execute_attack_roll(
     em vez de option["success_chance"] diretamente.
     """
     print("Chegou até aqui 2")
+    player = match_gateway.find_player(match, player_id)
+    player=player_validator.not_exist(player)
+    
     target = match_gateway.find_territory(match, target_territory_id)
     target=match_territory_validator.territory_exist(target)
 
     roll = random.randint(1, 20)
-    if adjusted_success_chance:
+    if adjusted_success_chance is not None:
         minimum_roll_to_succeed = adjusted_success_chance
     else:
         minimum_roll_to_succeed = base_success_chance
     success = roll >= minimum_roll_to_succeed
 
     influence_generated = 0
+    money_generated = -option["cost"]
+    
+    
+    corruption_generated = option["corruption"]
+    if success:
+        money_generated = option["money"]
+        influence_generated = option["influence"]
+        response = option["responses"]["normal_success"]
+        if roll >= option["positive_critical"]:
+            influence_generated += influence_generated/2
+            money_generated += option["cost"]
+            response = option["responses"]["high_critical"]
+    else:
+        response = option["responses"]["normal_fail"]
+        if roll <= option["negative_critical"]:
+            influence_generated = -option["influence"]/2
+            money_generated -= option["cost"]
+            response = option["responses"]["low_critical"]
+
+    money_generated = money_generated 
     conquered = False
     leftover = 0
 
     old_owner_id = target["owner_id"]
     old_current_influence = target["current_influence"]
 
-    print("Chegou até aqui 3")
 
     if success:
-        influence_generated = option["influence"]
+        
 
         current_influence = target["current_influence"]
         base_influence = target["base_influence"]
 
-        if influence_generated >= current_influence:
-            conquered = True
-            leftover = influence_generated - current_influence
+        if option["action_type"] == "attack":
+            if influence_generated >= current_influence:
+                conquered = True
+                leftover = influence_generated - current_influence
 
-            target["owner_id"] = player_id
-            target["current_influence"] = base_influence + leftover
+                target["owner_id"] = player_id
+                target["current_influence"] = base_influence + leftover
+            else:
+                target["current_influence"] = current_influence - influence_generated
         else:
-            target["current_influence"] = current_influence - influence_generated
+            conquered = False
+            target["current_influence"] = current_influence + influence_generated
+
+    player["match_money"] += money_generated
+    player["match_corruption"] += corruption_generated
+    player["match_influence"] += influence_generated
 
     action_result = {
         "type": type,
@@ -353,7 +383,11 @@ def execute_attack_roll(
 
         "base_success_chance": base_success_chance,
         "adjusted_success_chance": adjusted_success_chance,
-        "success_chance": adjusted_success_chance,
+        "success_chance": (
+            adjusted_success_chance
+            if adjusted_success_chance is not None
+            else base_success_chance
+        ),
         "minimum_roll_to_succeed": minimum_roll_to_succeed,
 
         "option": option,
@@ -362,6 +396,12 @@ def execute_attack_roll(
         "description": option["description"],
         "risk_level": option["risk_level"],
         "cost_money": option["cost"],
+        "money_generated":money_generated,
+        "new_money_player":player["match_money"],
+        "new_corruption_player":player["match_corruption"],
+        "new_influence_player":player["match_influence"],
+        "response": response,
+        "corruption_generated":corruption_generated,
 
         "target_territory_id": target_territory_id,
         "territory_id": target_territory_id,
