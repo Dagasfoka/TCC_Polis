@@ -312,7 +312,7 @@ def execute_attack_roll(
     print("Chegou até aqui 3")
 
     if success:
-        influence_generated = option["influence_generated"]
+        influence_generated = option["influence"]
 
         current_influence = target["current_influence"]
         base_influence = target["base_influence"]
@@ -343,11 +343,11 @@ def execute_attack_roll(
         "minimum_roll_to_succeed": minimum_roll_to_succeed,
 
         "option": option,
-        "option_id": option["option_id"],
+        "option_id": option["action_id"],
         "title": option["title"],
         "description": option["description"],
         "risk_level": option["risk_level"],
-        "cost_money": option["cost_money"],
+        "cost_money": option["cost"],
 
         "target_territory_id": target_territory_id,
         "territory_id": target_territory_id,
