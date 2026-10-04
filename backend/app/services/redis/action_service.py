@@ -8,6 +8,7 @@ from backend.app.validators.match_mission_validators import MatchMissionValidato
 from backend.app.gateways.db.action_gateway import ActionGateway
 from backend.app.gateways.match_action_gateway import MatchActionGateway
 from backend.app.factories.action_factory import ActionsFactory
+from backend.app.factories.match_action_factory import MatchActionFactory
 from backend.app.validators.match_territory_validator import MatchTerritoryValidator
 from backend.app.validators.match_validators import MatchValidator
 from backend.app.validators.pending_action_validators import PendingActionValidator
@@ -32,10 +33,23 @@ player_validator=PlayerValidator()
 action_gateway=ActionGateway()
 match_action_gateway = MatchActionGateway()
 action_validator=ActionValidator()
+match_action_factory = MatchActionFactory()
 
 pending_action_validator=PendingActionValidator()
+
+
+
 def get_attack_actions():
     return action_factory.get_actions_by_type("attack")
+
+def get_defense_actions():
+    return action_factory.get_actions_by_type("defense")
+
+def get_match_attack_actions(match_id : int):
+    return match_action_factory.get_actions_by_type(match_id,"attack")
+
+def get_match_defense_actions(match_id : int):
+    return match_action_factory.get_actions_by_type(match_id,"defense")
 
 def prepare_attack_action(
     match_id,
@@ -57,7 +71,7 @@ def prepare_attack_action(
     target=match_territory_validator.territory_exist(target)
     target=match_territory_validator.verify_territory_owner_id(target,player_id,action_type)
 
-    action = match_action_gateway.get_match_action_by_id(match_id,int(option_id), action_type)
+    action = match_action_factory.get_action_by_id(match_id,int(option_id), action_type)
     action = action_validator.action_exist(action)
     
     player = match_gateway.find_player(match, player_id)

@@ -14,6 +14,7 @@ function getPlayerNameById(playerId, players) {
   return player?.username ?? playerId ?? "jogador desconhecido";
 }
 
+
 function formatMission(mission, players = []) {
   if (!mission) {
     return "Missão não encontrada.";
@@ -163,6 +164,8 @@ export default function DemoGameScreen({
   const [connected, setConnected] = useState(false);
   const [matchState, setMatchState] = useState(null);
   const [selectedTerritory, setSelectedTerritory] = useState(null);
+  const [availableActions, setAvailableActions] = useState([]);
+  const [actionType, setActionType] = useState(null);
 
   const [pendingQuestion, setPendingQuestion] = useState(null);
   const [pendingActionInfo, setPendingActionInfo] = useState(null);
@@ -175,7 +178,6 @@ export default function DemoGameScreen({
 
   const players = matchState?.players ?? [];
   const territories = matchState?.territories ?? [];
-  const attackOptions = matchState?.available_attack_options ?? [];
 
   const currentPlayer = useMemo(() => {
     if (!matchState) {
@@ -307,6 +309,24 @@ export default function DemoGameScreen({
       }
 
       console.log("Evento recebido:", data);
+
+      if (data.type === "territory_selected") {
+        console.log("Território selecionado:", data.payload);
+
+        setSelectedTerritory(
+          data.payload.territory
+        );
+
+        setAvailableActions(
+          data.payload.available_actions
+        );
+
+        setActionType(
+          data.payload.action_type
+        );
+
+        return;
+      }
 
       if (data.type === "attack_question") {
         setPendingQuestion(data.question);
@@ -442,6 +462,28 @@ export default function DemoGameScreen({
           }, 2000);
       }
     };
+  }
+
+  function handleTerritorySelection(territory) {
+    setSelectedTerritory(territory);
+
+    if (
+      !wsRef.current ||
+      wsRef.current.readyState !== WebSocket.OPEN
+    ) {
+      return;
+    }
+
+    wsRef.current.send(
+      JSON.stringify({
+        type: "select_territory",
+        territory_id: territory.territory_id,
+
+        payload: {
+          territory_id: territory.territory_id,
+        },
+      })
+    );
   }
 
   function sendAttack(optionId, action_type) {
@@ -635,7 +677,7 @@ export default function DemoGameScreen({
           selectedTerritoryId={
             selectedTerritory?.territory_id
           }
-          onSelectTerritory={setSelectedTerritory}
+          onSelectTerritory={handleTerritorySelection}
           className="polis-main-map"
         />
       </section>
@@ -694,14 +736,18 @@ export default function DemoGameScreen({
 
           {isMyTurn ? (
             <>
-              <h3>Ações</h3>
+              <h3>
+                {actionType === "attack"
+                  ? "Ações de Ataque"
+                  : "Ações de Defesa"}
+              </h3>
 
               <div className="polis-attack-actions">
                 {attackOptions.length === 0 && (
                   <p>Nenhuma ação disponível.</p>
                 )}
 
-                {attackOptions.map((option) => (
+                {availableActions.map((option) => (
                   <button
                     type="button"
                     key={option.action_id}

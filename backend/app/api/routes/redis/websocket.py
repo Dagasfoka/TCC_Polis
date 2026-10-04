@@ -5,7 +5,11 @@ from backend.app.services.redis.action_service import (
     get_attack_actions,
     prepare_attack_action,
     resolve_attack_action,
+    get_defense_actions,
+    get_match_attack_actions,
+    get_match_defense_actions
 )
+
 from backend.app.websocket.manager import manager
 
 router_websocket = APIRouter()
@@ -17,6 +21,7 @@ def prepare_match_for_player(match: dict, player_id: str):
     match_for_player["your_player_id"] = player_id
     match_for_player["your_mission"] = match_gateway.find_your_mission(match, player_id)
     match_for_player["available_attack_options"] = get_attack_actions()
+    match_for_player["available_defense_options"] = get_defense_actions()
 
     return match_for_player
 
@@ -63,6 +68,40 @@ async def match_websocket(
             try:
                 event_type = data.get("type")
                 payload = data.get("payload", {})
+
+                if event_type == "select_territory":
+                    territory_id = (
+                        data.get("territory_id")
+                        or payload.get("territory_id")
+                    )
+
+                    match = match_gateway.get_match(match_id)
+
+                    territory = match_gateway.get_territory_by_id(
+                        match,
+                        territory_id,
+                    )
+
+                    owner_id = territory["owner_id"]
+
+                    is_my_territory = owner_id == player_id
+
+                    action_type = "defense" if is_my_territory else "attack"
+                    available_actions = get_match_defense_actions() if is_my_territory else get_match_attack_actions()
+
+                    await manager.send_to_player(
+                        match_id=match_id,
+                        player_id=player_id,
+                        message={
+                            "type": "territory_selected",
+                            "payload": {
+                                "action_type": action_type,
+                                "territory": territory,
+                                "available_actions": available_actions,
+                            },
+                        },
+                    )
+
 
                 if event_type == "choose_attack_option":
                     target_territory_id = (

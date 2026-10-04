@@ -31,13 +31,14 @@ class MatchActionRepo:
         self,
         match_id,
         actions,
+        action_type
     ):
         match_dict = self.match_gateway.get_match(match_id)
 
         if match_dict is None:
             raise ValueError("Partida não encontrada.")
 
-        match_dict["actions"] = actions
+        match_dict[f"{action_type}_actions"] = actions
 
         self.match_factory.update_match(match_dict)
 
@@ -47,13 +48,17 @@ class MatchActionRepo:
         self,
         match_id,
         updated_action,
+        action_type
     ):
         match_dict = self.match_gateway.get_match(match_id)
 
         if match_dict is None:
             raise ValueError("Partida não encontrada.")
 
-        actions = match_dict.get("actions", [])
+        actions = self.get_all_match_actions(
+                        match_id,
+                        action_type
+                    )
 
         for index, action in enumerate(actions):
             if action["action_id"] == updated_action["action_id"]:

@@ -1,5 +1,5 @@
 from backend.app.repositories.redis.match_mission_repo import MatchMissionRepo
-from backend.app.services.redis.action_service import get_attack_actions
+from backend.app.services.redis.action_service import get_attack_actions, get_defense_actions
 
 match_mission_repo=MatchMissionRepo()
 def build_personal_match_state(match_dict: dict, player_id: str):
@@ -19,6 +19,7 @@ def build_personal_match_state(match_dict: dict, player_id: str):
             "winner_id": match_dict.get("winner_id"),
             "last_action_result": match_dict.get("last_action_result"),
             "available_attack_options": get_attack_actions(),
+            "available_defense_options": get_defense_actions(),
             "your_player_id": player_id,
             "your_mission": your_mission,
         },
