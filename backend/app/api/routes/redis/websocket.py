@@ -87,7 +87,7 @@ async def match_websocket(
                     is_my_territory = owner_id == player_id
 
                     action_type = "defense" if is_my_territory else "attack"
-                    available_actions = get_match_defense_actions() if is_my_territory else get_match_attack_actions()
+                    available_actions = get_match_defense_actions(match_id) if is_my_territory else get_match_attack_actions(match_id)
 
                     await manager.send_to_player(
                         match_id=match_id,
