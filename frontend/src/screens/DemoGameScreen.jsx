@@ -743,7 +743,7 @@ export default function DemoGameScreen({
               </h3>
 
               <div className="polis-attack-actions">
-                {attackOptions.length === 0 && (
+                {availableActions.length === 0 && (
                   <p>Nenhuma ação disponível.</p>
                 )}
 
