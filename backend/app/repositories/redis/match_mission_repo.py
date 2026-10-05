@@ -37,9 +37,6 @@ class MatchMissionRepo:
     def save_match_missions(self,match_id, match_missions):
         match_dict = self.match_gateway.get_match(match_id)
 
-        if match_dict is None:
-            raise ValueError("Partida não encontrada.")
-
         match_dict["missions"] = match_missions
 
         self.match_factory.update_match(match_dict)
@@ -48,9 +45,6 @@ class MatchMissionRepo:
 
     def update_match_mission(self,match_id, updated_match_mission):
         match_dict = self.match_gateway.get_match(match_id)
-
-        if match_dict is None:
-            raise ValueError("Partida não encontrada.")
 
         missions = match_dict.get("missions", [])
 

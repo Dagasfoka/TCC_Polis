@@ -1,1 +1,0 @@
-# Valida token de sessão e liga token → player → sala.

@@ -10,9 +10,6 @@ class MatchActionRepo:
     def get_all_match_actions(self, match_id, action_type):
         match_dict = self.match_gateway.get_match(match_id)
 
-        if match_dict is None:
-            raise ValueError("Partida não encontrada.")
-
         return match_dict.get( f"{action_type}_actions",[],)
 
     def get_match_action_by_id(
@@ -35,37 +32,8 @@ class MatchActionRepo:
     ):
         match_dict = self.match_gateway.get_match(match_id)
 
-        if match_dict is None:
-            raise ValueError("Partida não encontrada.")
-
         match_dict[f"{action_type}_actions"] = actions
 
         self.match_factory.update_match(match_dict)
 
         return actions
-
-    def update_match_action(
-        self,
-        match_id,
-        updated_action,
-        action_type
-    ):
-        match_dict = self.match_gateway.get_match(match_id)
-
-        if match_dict is None:
-            raise ValueError("Partida não encontrada.")
-
-        actions = self.get_all_match_actions(
-                        match_id,
-                        action_type
-                    )
-
-        for index, action in enumerate(actions):
-            if action["action_id"] == updated_action["action_id"]:
-                actions[index] = updated_action
-
-                self.match_factory.update_match(match_dict)
-
-                return updated_action
-
-        raise ValueError("Ação não encontrada.")

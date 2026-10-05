@@ -1,6 +1,6 @@
 from backend.app.db.base import Base
 from backend.app.db.database import engine
-from backend.app.models.db.action_option import ActionOption
+from backend.app.models.db.action import Action
 from backend.app.models.db.mission import Mission
 from backend.app.models.db.party import Party
 from backend.app.models.db.territory import Territory

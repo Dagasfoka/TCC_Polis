@@ -6,6 +6,7 @@ from backend.app.gateways.player_gateways import PlayerGateway
 from backend.app.validators.action_validators import ActionValidator
 from backend.app.validators.match_mission_validators import MatchMissionValidator
 from backend.app.gateways.db.action_gateway import ActionGateway
+from backend.app.gateways.db.territory_gateway import TerritoryGateway
 from backend.app.gateways.match_action_gateway import MatchActionGateway
 from backend.app.factories.action_factory import ActionsFactory
 from backend.app.factories.match_action_factory import MatchActionFactory
@@ -24,6 +25,7 @@ match_mission_validator=MatchMissionValidator()
 match_territory_validator=MatchTerritoryValidator()
 
 match_gateway=MatchGateway()
+territory_gateway=TerritoryGateway()
 match_factory=MatchFactory()
 match_validator=MatchValidator()
 action_factory = ActionsFactory()
@@ -55,7 +57,7 @@ def prepare_attack_action(
     match_id,
     player_id: str,
     target_territory_id: str,
-    option_id: str,
+    option_id: int,
     action_type:str
 ):
     status="running"
@@ -71,17 +73,18 @@ def prepare_attack_action(
     target=match_territory_validator.territory_exist(target)
     target=match_territory_validator.verify_territory_owner_id(target,player_id,action_type)
 
-    action = match_action_factory.get_action_by_id(match_id,int(option_id), action_type)
+    action = match_action_factory.get_action_by_id(match_id,option_id, action_type)
     action = action_validator.action_exist(action)
     
     player = match_gateway.find_player(match, player_id)
     player=player_validator.not_exist(player)
-    
-    match_territory_validator.frontier_verify(
-        target_territory_id=target_territory_id,
-        player_id=player_id,
-        match_territories=match['territories'],
-        )
+
+    if action_type == "attack":
+        match_territory_validator.frontier_verify(
+            target_territory_id=target_territory_id,
+            player_id=player_id,
+            match_territories=match['territories'],
+            )
     if (round%2)==0:
         question,name_list_questions = match_gateway.get_next_question(match_id)
         match_factory.switch_question_list(match,question,name_list_questions)
@@ -91,6 +94,7 @@ def prepare_attack_action(
             option_id=option_id,
             question_id=question["question_id"],
             correct_answer=question["answer"],
+            action_type = action_type
         )
         key="pending_action"
         match=match_factory.change_key_value(match,key,newPendingValue)
@@ -345,14 +349,11 @@ def execute_attack_roll(
 
     old_owner_id = target["owner_id"]
     old_current_influence = target["current_influence"]
-
+    current_influence = target["current_influence"]
+    base_influence = target["base_influence"]
 
     if success:
         
-
-        current_influence = target["current_influence"]
-        base_influence = target["base_influence"]
-
         if option["action_type"] == "attack":
             if influence_generated >= current_influence:
                 conquered = True
@@ -363,8 +364,33 @@ def execute_attack_roll(
             else:
                 target["current_influence"] = current_influence - influence_generated
         else:
-            conquered = False
+            conquered = True
             target["current_influence"] = current_influence + influence_generated
+    elif influence_generated < 0:
+        negative_influence = influence_generated
+        if option["action_type"] == "attack":
+            conquered = False
+            territory = territory_gateway.get_territory_by_id(target_territory_id)
+            player_territories = match_gateway.get_your_territories(match,player_id)
+
+            frontier_player_territories = [
+                territory_player
+                for territory_player in player_territories
+                if territory_player["territory_id"] in territory.frontiers
+            ]
+            random.shuffle(frontier_player_territories)
+            for territory_player in frontier_player_territories:
+                if territory_player["current_influence"] > -negative_influence:
+                    territory_player["current_influence"] += negative_influence
+                    break
+                else:
+                    negative_influence += territory_player["current_influence"] - 1
+                    territory_player["current_influence"] = 1
+        else:
+            conquered = True
+            target["current_influence"] = current_influence + influence_generated
+            if target["current_influence"] <= 0:
+                    target["current_influence"] = 1
 
     player["match_money"] += money_generated
     player["match_corruption"] += corruption_generated

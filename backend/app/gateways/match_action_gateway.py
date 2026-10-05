@@ -39,15 +39,3 @@ class MatchActionGateway:
             actions,
             action_type
         )
-
-    def update_match_action(
-        self,
-        match_id: int,
-        updated_action: dict,
-        action_type: str
-    ):
-        return self.repository.update_match_action(
-            match_id,
-            updated_action,
-            action_type
-        )

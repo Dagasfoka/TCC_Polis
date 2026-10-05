@@ -6,12 +6,14 @@ class PendingAction:
         option_id: str,
         question_id: int,
         correct_answer: bool,
+        action_type : str
     ):
         self.player_id = player_id
         self.target_territory_id = target_territory_id
         self.option_id = option_id
         self.question_id = question_id
         self.correct_answer = correct_answer
+        self.action_type = action_type
 
     def to_dict(self):
         return {
@@ -20,6 +22,7 @@ class PendingAction:
             "option_id": self.option_id,
             "question_id": self.question_id,
             "correct_answer": self.correct_answer,
+            "action_type": self.action_type
         }
 
     @classmethod
@@ -30,6 +33,7 @@ class PendingAction:
         option_id: str,
         question_id: int,
         correct_answer: bool,
+        action_type:str,
     ):
         return cls(
             player_id,
@@ -37,4 +41,5 @@ class PendingAction:
             option_id,
             question_id,
             correct_answer,
+            action_type
         ).to_dict()

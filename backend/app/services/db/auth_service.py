@@ -1,1 +1,0 @@
-# Login, cadastro, criação de token.
