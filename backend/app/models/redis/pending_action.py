@@ -3,7 +3,7 @@ class PendingAction:
         self,
         player_id: str,
         target_territory_id: str,
-        option_id: str,
+        option_id: int,
         question_id: int,
         correct_answer: bool,
         action_type : str
@@ -30,7 +30,7 @@ class PendingAction:
         cls,
         player_id: str,
         target_territory_id: str,
-        option_id: str,
+        option_id: int,
         question_id: int,
         correct_answer: bool,
         action_type:str,

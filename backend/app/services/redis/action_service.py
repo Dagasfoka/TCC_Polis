@@ -6,7 +6,6 @@ from backend.app.gateways.player_gateways import PlayerGateway
 from backend.app.validators.action_validators import ActionValidator
 from backend.app.validators.db.territory_validator import TerritoryValidator
 from backend.app.validators.match_mission_validators import MatchMissionValidator
-from backend.app.gateways.db.action_gateway import ActionGateway
 from backend.app.gateways.db.territory_gateway import TerritoryGateway
 from backend.app.gateways.match_action_gateway import MatchActionGateway
 from backend.app.factories.action_factory import ActionsFactory
@@ -33,8 +32,7 @@ action_factory = ActionsFactory()
 player_gateway=PlayerGateway()
 player_validator=PlayerValidator()
 
-action_gateway=ActionGateway()
-match_action_gateway = MatchActionGateway()
+match_action_gateway=MatchActionGateway()
 action_validator=ActionValidator()
 match_action_factory = MatchActionFactory()
 
@@ -50,10 +48,10 @@ def get_defense_actions():
     return action_factory.get_actions_by_type("defense")
 
 def get_match_attack_actions(match_id : int):
-    return match_action_factory.get_actions_by_type(match_id,"attack")
+    return match_action_gateway.get_all_match_actions(match_id,"attack")
 
 def get_match_defense_actions(match_id : int):
-    return match_action_factory.get_actions_by_type(match_id,"defense")
+    return match_action_gateway.get_all_match_actions(match_id,"defense")
 
 def prepare_attack_action(
     match_id,
@@ -217,7 +215,7 @@ def resolve_attack_action(
     target_territory_id = pending_action["target_territory_id"]
     option_id = pending_action["option_id"]
 
-    action = action_gateway.get_action_by_id(option_id)
+    action = match_action_gateway.get_match_action_by_id(match_id,option_id,action_type)
     action = action_validator.action_exist(action)
 
     target = match_gateway.find_territory(match, target_territory_id)
