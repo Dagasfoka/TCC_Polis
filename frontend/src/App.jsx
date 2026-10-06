@@ -142,7 +142,18 @@ export default function App() {
     setScreen("menu");
   }
 
+  function handleLogout() {
+    localStorage.removeItem("player_id");
 
+    clearRoomCode();
+    clearMatchID();
+
+    setPlayer(null);
+    setRoom(null);
+    setMatchId(null);
+
+    setScreen("login");
+  }
   // ==============================
   // ENTROU OU CRIOU SALA
   // ==============================
@@ -208,6 +219,7 @@ export default function App() {
           <MenuScreen
             player={player}
             onEnterRoom={handleEnterRoom}
+            onLogout={handleLogout}
           />
 
         )}
