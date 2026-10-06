@@ -1248,3 +1248,286 @@ html,
 .question-buttons button span {
   flex: 1;
 }
+
+/* =========================================================
+   PÁGINA COMPLETA DA PARTIDA
+   ========================================================= */
+
+.polis-game-page {
+  width: 100%;
+  min-height: 100vh;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(28, 48, 72, 0.9) 0%,
+      rgba(10, 22, 38, 1) 70%
+    );
+
+  color: white;
+}
+
+
+/* =========================================================
+   ÚLTIMA AÇÃO
+   Fica literalmente DEPOIS da tela principal.
+   ========================================================= */
+
+.polis-last-action-section {
+  position: relative;
+
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 28px 40px 45px;
+
+  background: rgba(7, 16, 29, 0.98);
+}
+
+
+.polis-last-action-card {
+  width: min(1000px, 100%);
+
+  margin: 0 auto;
+
+  box-sizing: border-box;
+
+  padding: 24px 28px;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  border-radius: 14px;
+
+  background: rgba(19, 34, 52, 0.96);
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.28);
+}
+
+
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
+
+.polis-last-action-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding-bottom: 16px;
+
+  border-bottom:
+    1px solid rgba(255, 255, 255, 0.1);
+}
+
+
+.polis-last-action-label {
+  display: block;
+
+  margin-bottom: 5px;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1.5px;
+
+  opacity: 0.65;
+}
+
+
+.polis-last-action-header h2 {
+  margin: 0;
+
+  font-size: 22px;
+}
+
+
+.polis-last-action-status {
+  flex-shrink: 0;
+
+  padding: 8px 14px;
+
+  border-radius: 8px;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+
+/* =========================================================
+   SUCESSO / FALHA
+   ========================================================= */
+
+.polis-action-success {
+  border-left: 4px solid #2ecc71;
+}
+
+
+.polis-action-success
+.polis-last-action-status {
+  color: #7dffb2;
+
+  background: rgba(46, 204, 113, 0.15);
+
+  border: 1px solid rgba(46, 204, 113, 0.35);
+}
+
+
+.polis-action-failure {
+  border-left: 4px solid #e74c3c;
+}
+
+
+.polis-action-failure
+.polis-last-action-status {
+  color: #ff9a90;
+
+  background: rgba(231, 76, 60, 0.15);
+
+  border: 1px solid rgba(231, 76, 60, 0.35);
+}
+
+
+/* =========================================================
+   CONTEÚDO
+   ========================================================= */
+
+.polis-last-action-content {
+  padding-top: 16px;
+}
+
+
+.polis-last-action-content p {
+  margin: 7px 0;
+
+  line-height: 1.5;
+}
+
+
+.polis-last-action-response {
+  margin-top: 15px !important;
+
+  padding: 12px 15px;
+
+  border-radius: 8px;
+
+  background: rgba(255, 255, 255, 0.05);
+}
+
+
+/* =========================================================
+   VALORES DA AÇÃO
+   ========================================================= */
+
+.polis-last-action-values {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 12px;
+
+  margin-top: 18px;
+}
+
+
+.polis-last-action-values > div {
+  min-width: 130px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+
+  padding: 10px 14px;
+
+  border-radius: 8px;
+
+  background: rgba(255, 255, 255, 0.06);
+}
+
+
+.polis-last-action-values span {
+  font-size: 12px;
+
+  opacity: 0.7;
+}
+
+
+.polis-last-action-values strong {
+  font-size: 18px;
+}
+
+
+/* =========================================================
+   DETALHES
+   ========================================================= */
+
+.polis-last-action-details {
+  margin-top: 15px;
+}
+
+
+.polis-last-action-details p {
+  margin: 5px 0;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   SEM AÇÃO AINDA
+   ========================================================= */
+
+.polis-last-action-empty {
+  margin: 12px 0 0;
+
+  opacity: 0.65;
+}
+
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+  .polis-last-action-section {
+    padding:
+      20px
+      15px
+      35px;
+  }
+
+
+  .polis-last-action-card {
+    padding: 18px;
+  }
+
+
+  .polis-last-action-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+
+  .polis-last-action-values {
+    flex-direction: column;
+  }
+
+
+  .polis-last-action-values > div {
+    width: 100%;
+
+    box-sizing: border-box;
+  }
+}
