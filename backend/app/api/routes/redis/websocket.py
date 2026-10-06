@@ -10,11 +10,13 @@ from backend.app.services.redis.action_service import (
     get_match_defense_actions
 )
 
+from backend.app.validators.db.territory_validator import TerritoryValidator
 from backend.app.websocket.manager import manager
 
 router_websocket = APIRouter()
 
 match_gateway=MatchGateway()
+territory_validator=TerritoryValidator()
 
 def prepare_match_for_player(match: dict, player_id: str):
     match_for_player = match.copy()
@@ -125,6 +127,7 @@ async def match_websocket(
                         match,
                         territory_id,
                     )
+                    territory=territory_validator.territory_exist(territory)
 
                     owner_id = territory["owner_id"]
 
@@ -156,6 +159,7 @@ async def match_websocket(
                         match_id=match_id,
                         player_id=player_id,
                         answer=answer,
+                        action_type="attack"
                     )
 
                     updated_match = response["match"]

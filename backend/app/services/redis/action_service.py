@@ -4,6 +4,7 @@ from backend.app.factories.match_factory import MatchFactory
 from backend.app.gateways.match_gateways import MatchGateway
 from backend.app.gateways.player_gateways import PlayerGateway
 from backend.app.validators.action_validators import ActionValidator
+from backend.app.validators.db.territory_validator import TerritoryValidator
 from backend.app.validators.match_mission_validators import MatchMissionValidator
 from backend.app.gateways.db.action_gateway import ActionGateway
 from backend.app.gateways.db.territory_gateway import TerritoryGateway
@@ -39,6 +40,7 @@ match_action_factory = MatchActionFactory()
 
 pending_action_validator=PendingActionValidator()
 
+territory_validator=TerritoryValidator()
 
 
 def get_attack_actions():
@@ -371,6 +373,7 @@ def execute_attack_roll(
         if option["action_type"] == "attack":
             conquered = False
             territory = territory_gateway.get_territory_by_id(target_territory_id)
+            territory=territory_validator.territory_exist(territory)
             player_territories = match_gateway.get_your_territories(match,player_id)
 
             frontier_player_territories = [
