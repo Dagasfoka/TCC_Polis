@@ -13,6 +13,6 @@ class ActionRepo:
     def get_actions_by_id(self, action_id) -> Action:
         return self.db.get(Action, action_id)
     
-    def get_actions_by_type(self, action_type: str) -> Action | None:
+    def get_actions_by_type(self, action_type: str) -> list[Action] :
         actions = select(Action).where(Action.action_type == action_type)
         return list(self.db.scalars(actions).all())

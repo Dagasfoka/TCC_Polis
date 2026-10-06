@@ -73,12 +73,13 @@ def prepare_attack_action(
     target=match_territory_validator.territory_exist(target)
     target=match_territory_validator.verify_territory_owner_id(target,player_id,action_type)
 
-    action = match_action_factory.get_action_by_id(match_id,option_id, action_type)
+    action = match_action_gateway.get_match_action_by_id(match_id,option_id, action_type)
     action = action_validator.action_exist(action)
     
     player = match_gateway.find_player(match, player_id)
     player=player_validator.not_exist(player)
 
+    action = action_validator.player_have_money_to_action(action,player)
     if action_type == "attack":
         match_territory_validator.frontier_verify(
             target_territory_id=target_territory_id,
@@ -129,7 +130,6 @@ def resolve_action_no_question(
     action_type:str
 ):
 
-    print("Chegou até aqui")
     match = match_gateway.get_match(match_id)
     match=match_validator.match_exist(match)
 
@@ -309,7 +309,7 @@ def execute_attack_roll(
     A diferença é que agora ela usa adjusted_success_chance
     em vez de option["success_chance"] diretamente.
     """
-    print("Chegou até aqui 2")
+
     player = match_gateway.find_player(match, player_id)
     player=player_validator.not_exist(player)
     
@@ -343,7 +343,6 @@ def execute_attack_roll(
             money_generated -= option["cost"]
             response = option["responses"]["low_critical"]
 
-    money_generated = money_generated 
     conquered = False
     leftover = 0
 
@@ -351,7 +350,7 @@ def execute_attack_roll(
     old_current_influence = target["current_influence"]
     current_influence = target["current_influence"]
     base_influence = target["base_influence"]
-
+    negative_influence = 0
     if success:
         
         if option["action_type"] == "attack":
@@ -367,6 +366,8 @@ def execute_attack_roll(
             conquered = True
             target["current_influence"] = current_influence + influence_generated
     elif influence_generated < 0:
+        if corruption_generated < 0:
+            corruption_generated = 0
         negative_influence = influence_generated
         if option["action_type"] == "attack":
             conquered = False
@@ -383,6 +384,7 @@ def execute_attack_roll(
             for territory_player in frontier_player_territories:
                 if territory_player["current_influence"] > -negative_influence:
                     territory_player["current_influence"] += negative_influence
+                    negative_influence = 0
                     break
                 else:
                     negative_influence += territory_player["current_influence"] - 1
@@ -392,8 +394,11 @@ def execute_attack_roll(
             target["current_influence"] = current_influence + influence_generated
             if target["current_influence"] <= 0:
                     target["current_influence"] = 1
-
+    if negative_influence > 0:
+        influence_generated -= negative_influence
     player["match_money"] += money_generated
+    if player["match_money"] < 0:
+        player["match_money"] = 0
     player["match_corruption"] += corruption_generated
     player["match_influence"] += influence_generated
 

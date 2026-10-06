@@ -32,10 +32,12 @@ class MatchActionGateway:
         self,
         match_id: int,
         actions: list,
-        action_type: str
+        action_type: str,
+        active_action_list: str
     ):
         return self.repository.save_match_actions(
             match_id,
             actions,
-            action_type
+            action_type,
+            active_action_list
         )

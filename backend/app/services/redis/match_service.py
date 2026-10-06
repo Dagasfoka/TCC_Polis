@@ -37,14 +37,18 @@ class MatchService:
         
         match_dict['players']=match_territory_factory.distribute_territories(match_dict['players'],match_dict['territories'])
         match_dict["questions_1"]=question_gateways.get_all_questions()
-        match_dict["attack_actions"] = actions_factory.get_actions_by_type("attack")
-        match_dict["defense_actions"] = actions_factory.get_actions_by_type("defense")
         match_dict["activate_questions_list"]="questions_1"
         match_dict['missions']=match_mission_factory.distribute_match_missions(
             match_id=match_dict["match_id"],
             players=match_dict['players'],
             db= db,
         )
+        match_dict["attack_actions_1"] = actions_factory.get_actions_by_type("attack")
+        match_dict["defense_actions_1"] = actions_factory.get_actions_by_type("defense")
+        match_dict["attack_actions_2"] = []
+        match_dict["defense_actions_2"] = []
+        match_dict["activate_attack_actions_list"]="attack_actions_1"
+        match_dict["activate_defense_actions_list"]="defense_actions_1"
         self.match_factory.update_match(match_dict)
         return match_dict
 

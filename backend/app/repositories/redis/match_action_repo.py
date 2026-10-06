@@ -9,8 +9,11 @@ class MatchActionRepo:
 
     def get_all_match_actions(self, match_id, action_type):
         match_dict = self.match_gateway.get_match(match_id)
-
-        return match_dict.get( f"{action_type}_actions",[],)
+        if action_type == "attack":
+            active_list = match_dict['activate_attack_actions_list'][-2:]
+        else:
+            active_list = match_dict['activate_defense_actions_list'][-2:]
+        return match_dict.get( f"{action_type}_actions{active_list}",[],)
 
     def get_match_action_by_id(
         self,
@@ -28,11 +31,13 @@ class MatchActionRepo:
         self,
         match_id,
         actions,
-        action_type
+        action_type,
+        active_action_list,
     ):
         match_dict = self.match_gateway.get_match(match_id)
-
-        match_dict[f"{action_type}_actions"] = actions
+        active_action_list = active_action_list[-2:]
+    
+        match_dict[f"{action_type}_actions{active_action_list}"] = actions
 
         self.match_factory.update_match(match_dict)
 
