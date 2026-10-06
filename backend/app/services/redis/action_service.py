@@ -9,7 +9,6 @@ from backend.app.validators.match_mission_validators import MatchMissionValidato
 from backend.app.gateways.db.territory_gateway import TerritoryGateway
 from backend.app.gateways.match_action_gateway import MatchActionGateway
 from backend.app.factories.action_factory import ActionsFactory
-from backend.app.factories.match_action_factory import MatchActionFactory
 from backend.app.validators.match_territory_validator import MatchTerritoryValidator
 from backend.app.validators.match_validators import MatchValidator
 from backend.app.validators.pending_action_validators import PendingActionValidator
@@ -34,7 +33,6 @@ player_validator=PlayerValidator()
 
 match_action_gateway=MatchActionGateway()
 action_validator=ActionValidator()
-match_action_factory = MatchActionFactory()
 
 pending_action_validator=PendingActionValidator()
 
@@ -366,8 +364,6 @@ def execute_attack_roll(
             conquered = True
             target["current_influence"] = current_influence + influence_generated
     elif influence_generated < 0:
-        if corruption_generated < 0:
-            corruption_generated = 0
         negative_influence = influence_generated
         if option["action_type"] == "attack":
             conquered = False
@@ -394,8 +390,12 @@ def execute_attack_roll(
             target["current_influence"] = current_influence + influence_generated
             if target["current_influence"] <= 0:
                     target["current_influence"] = 1
+
     if negative_influence > 0:
         influence_generated -= negative_influence
+
+    if corruption_generated < 0 and not success:
+                corruption_generated = 0
     player["match_money"] += money_generated
     if player["match_money"] < 0:
         player["match_money"] = 0

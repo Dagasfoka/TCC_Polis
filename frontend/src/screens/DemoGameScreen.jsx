@@ -322,12 +322,16 @@ export default function DemoGameScreen({
 
   const [connected, setConnected] = useState(false);
   const [matchState, setMatchState] = useState(null);
+
+  const [lastActionResult, setLastActionResult] = useState(null);
+
   const [selectedTerritory, setSelectedTerritory] = useState(null);
   const [availableActions, setAvailableActions] = useState([]);
   const [actionType, setActionType] = useState(null);
 
   const [pendingQuestion, setPendingQuestion] = useState(null);
   const [pendingActionInfo, setPendingActionInfo] = useState(null);
+
 
   const wsRef = useRef(null);
   const winnerAlertShownRef = useRef(false);
@@ -518,6 +522,13 @@ export default function DemoGameScreen({
 
         setMatchState(newMatchState);
 
+        // Atualiza o painel de última ação
+        if (newMatchState?.last_action_result) {
+          setLastActionResult(
+            newMatchState.last_action_result
+          );
+        }
+
         if (
           newMatchState?.last_action_result?.type ===
           "attack_result"
@@ -531,10 +542,14 @@ export default function DemoGameScreen({
         return;
       }
 
+
       if (data.result?.type === "attack_result") {
         const newMatchState = data.match;
 
         setMatchState(newMatchState);
+
+        // Atualiza o painel imediatamente
+        setLastActionResult(data.result);
 
         setPendingQuestion(null);
         setPendingActionInfo(null);
@@ -544,10 +559,14 @@ export default function DemoGameScreen({
         return;
       }
 
+
       if (data.match && data.result) {
         const newMatchState = data.match;
 
         setMatchState(newMatchState);
+
+        // Atualiza o painel imediatamente
+        setLastActionResult(data.result);
 
         setPendingQuestion(null);
         setPendingActionInfo(null);
@@ -667,13 +686,13 @@ export default function DemoGameScreen({
         target_territory_id: selectedTerritory.territory_id,
         territory_id: selectedTerritory.territory_id,
         action_id: optionId,
-        action_type:action_type,
+        action_type: action_type,
 
         payload: {
           target_territory_id: selectedTerritory.territory_id,
           territory_id: selectedTerritory.territory_id,
           action_id: optionId,
-          action_type:action_type,
+          action_type: action_type,
         },
       })
     );
@@ -739,267 +758,267 @@ export default function DemoGameScreen({
   );
 
   return (
-  <div className="polis-game-page">
-    <main className="polis-game-screen">
-      <div className="polis-turn-title">
-        Vez de{" "}
-        <span
-          style={{
-            color:
-              PARTY_COLORS[currentPlayer?.party_id] ?? "#ffffff",
-          }}
-        >
-          {currentPlayer?.username ?? "..."}
-        </span>
-      </div>
-
-      <div className="polis-position polis-position-top-left">
-        <PlayerCard
-          player={playerPositions[0]}
-          isCurrentTurn={
-            playerPositions[0]?.player_id ===
-            matchState?.current_turn_player_id
-          }
-          isNext={
-            playerPositions[0]?.player_id ===
-            nextPlayer?.player_id
-          }
-          isMe={
-            playerPositions[0]?.player_id ===
-            matchState?.your_player_id
-          }
-          partyColors={PARTY_COLORS}
-        />
-      </div>
-
-      <div className="polis-position polis-position-top-right">
-        <PlayerCard
-          player={playerPositions[1]}
-          isCurrentTurn={
-            playerPositions[1]?.player_id ===
-            matchState?.current_turn_player_id
-          }
-          isNext={
-            playerPositions[1]?.player_id ===
-            nextPlayer?.player_id
-          }
-          isMe={
-            playerPositions[1]?.player_id ===
-            matchState?.your_player_id
-          }
-          partyColors={PARTY_COLORS}
-        />
-      </div>
-
-      <div className="polis-position polis-position-bottom-left">
-        <PlayerCard
-          player={playerPositions[2]}
-          isCurrentTurn={
-            playerPositions[2]?.player_id ===
-            matchState?.current_turn_player_id
-          }
-          isNext={
-            playerPositions[2]?.player_id ===
-            nextPlayer?.player_id
-          }
-          isMe={
-            playerPositions[2]?.player_id ===
-            matchState?.your_player_id
-          }
-          partyColors={PARTY_COLORS}
-        />
-      </div>
-
-      <div className="polis-position polis-position-bottom-right">
-        <PlayerCard
-          player={playerPositions[3]}
-          isCurrentTurn={
-            playerPositions[3]?.player_id ===
-            matchState?.current_turn_player_id
-          }
-          isNext={
-            playerPositions[3]?.player_id ===
-            nextPlayer?.player_id
-          }
-          isMe={
-            playerPositions[3]?.player_id ===
-            matchState?.your_player_id
-          }
-          partyColors={PARTY_COLORS}
-        />
-      </div>
-
-      <section className="polis-map-container">
-        <BrazilMapSvg
-          territories={territories}
-          players={players}
-          partyColors={PARTY_COLORS}
-          selectedTerritoryId={
-            selectedTerritory?.territory_id
-          }
-          onSelectTerritory={handleTerritorySelection}
-          className="polis-main-map"
-        />
-      </section>
-
-      <aside className="polis-mission-card polis-mission-right">
-        <div className="polis-mission-heading">
-          <span>Sua missão</span>
-
-          {me?.party_id && (
-            <span
-              className="polis-mission-party"
-              style={{
-                backgroundColor:
-                  PARTY_COLORS[me.party_id] ?? "#7f8c8d",
-              }}
-            >
-              {me.party_id}
-            </span>
-          )}
+    <div className="polis-game-page">
+      <main className="polis-game-screen">
+        <div className="polis-turn-title">
+          Vez de{" "}
+          <span
+            style={{
+              color:
+                PARTY_COLORS[currentPlayer?.party_id] ?? "#ffffff",
+            }}
+          >
+            {currentPlayer?.username ?? "..."}
+          </span>
         </div>
 
-        <p>{missionText}</p>
-      </aside>
+        <div className="polis-position polis-position-top-left">
+          <PlayerCard
+            player={playerPositions[0]}
+            isCurrentTurn={
+              playerPositions[0]?.player_id ===
+              matchState?.current_turn_player_id
+            }
+            isNext={
+              playerPositions[0]?.player_id ===
+              nextPlayer?.player_id
+            }
+            isMe={
+              playerPositions[0]?.player_id ===
+              matchState?.your_player_id
+            }
+            partyColors={PARTY_COLORS}
+          />
+        </div>
 
-      {selectedTerritory && (
-        <div className="polis-territory-popup polis-territory-left">
-          <button
-            type="button"
-            className="polis-close-popup"
-            onClick={() => setSelectedTerritory(null)}
-            aria-label="Fechar"
-          >
-            ×
-          </button>
+        <div className="polis-position polis-position-top-right">
+          <PlayerCard
+            player={playerPositions[1]}
+            isCurrentTurn={
+              playerPositions[1]?.player_id ===
+              matchState?.current_turn_player_id
+            }
+            isNext={
+              playerPositions[1]?.player_id ===
+              nextPlayer?.player_id
+            }
+            isMe={
+              playerPositions[1]?.player_id ===
+              matchState?.your_player_id
+            }
+            partyColors={PARTY_COLORS}
+          />
+        </div>
 
-          <h2>
-            {selectedTerritory.name ??
-              selectedTerritory.territory_id}
-          </h2>
+        <div className="polis-position polis-position-bottom-left">
+          <PlayerCard
+            player={playerPositions[2]}
+            isCurrentTurn={
+              playerPositions[2]?.player_id ===
+              matchState?.current_turn_player_id
+            }
+            isNext={
+              playerPositions[2]?.player_id ===
+              nextPlayer?.player_id
+            }
+            isMe={
+              playerPositions[2]?.player_id ===
+              matchState?.your_player_id
+            }
+            partyColors={PARTY_COLORS}
+          />
+        </div>
 
-          <div className="polis-territory-info">
-            <span>
-              Região
-              <strong>
-                {selectedTerritory.region ?? "-"}
-              </strong>
-            </span>
+        <div className="polis-position polis-position-bottom-right">
+          <PlayerCard
+            player={playerPositions[3]}
+            isCurrentTurn={
+              playerPositions[3]?.player_id ===
+              matchState?.current_turn_player_id
+            }
+            isNext={
+              playerPositions[3]?.player_id ===
+              nextPlayer?.player_id
+            }
+            isMe={
+              playerPositions[3]?.player_id ===
+              matchState?.your_player_id
+            }
+            partyColors={PARTY_COLORS}
+          />
+        </div>
 
-            <span>
-              Influência
-              <strong>
-                {selectedTerritory.current_influence ?? 0}
-              </strong>
-            </span>
+        <section className="polis-map-container">
+          <BrazilMapSvg
+            territories={territories}
+            players={players}
+            partyColors={PARTY_COLORS}
+            selectedTerritoryId={
+              selectedTerritory?.territory_id
+            }
+            onSelectTerritory={handleTerritorySelection}
+            className="polis-main-map"
+          />
+        </section>
+
+        <aside className="polis-mission-card polis-mission-right">
+          <div className="polis-mission-heading">
+            <span>Sua missão</span>
+
+            {me?.party_id && (
+              <span
+                className="polis-mission-party"
+                style={{
+                  backgroundColor:
+                    PARTY_COLORS[me.party_id] ?? "#7f8c8d",
+                }}
+              >
+                {me.party_id}
+              </span>
+            )}
           </div>
 
-          {isMyTurn ? (
-            <>
-              <h3>
-                {actionType === "attack"
-                  ? "Ações de Ataque"
-                  : "Ações de Defesa"}
-              </h3>
+          <p>{missionText}</p>
+        </aside>
 
-              <div className="polis-attack-actions">
-                {availableActions.length === 0 && (
-                  <p>Nenhuma ação disponível.</p>
-                )}
+        {selectedTerritory && (
+          <div className="polis-territory-popup polis-territory-left">
+            <button
+              type="button"
+              className="polis-close-popup"
+              onClick={() => setSelectedTerritory(null)}
+              aria-label="Fechar"
+            >
+              ×
+            </button>
 
-                {availableActions.map((option) => (
-                  <button
-                    type="button"
-                    key={option.action_id}
-                    onClick={() =>
-                      sendAttack(option.action_id, option.action_type)
-                    }
-                  >
-                    <strong>{option.title}</strong>
+            <h2>
+              {selectedTerritory.name ??
+                selectedTerritory.territory_id}
+            </h2>
 
-                    {option.influence_generated !==
-                      undefined && (
-                        <span>
-                          +
-                          {option.influence_generated} influência
-                        </span>
+            <div className="polis-territory-info">
+              <span>
+                Região
+                <strong>
+                  {selectedTerritory.region ?? "-"}
+                </strong>
+              </span>
+
+              <span>
+                Influência
+                <strong>
+                  {selectedTerritory.current_influence ?? 0}
+                </strong>
+              </span>
+            </div>
+
+            {isMyTurn ? (
+              <>
+                <h3>
+                  {actionType === "attack"
+                    ? "Ações de Ataque"
+                    : "Ações de Defesa"}
+                </h3>
+
+                <div className="polis-attack-actions">
+                  {availableActions.length === 0 && (
+                    <p>Nenhuma ação disponível.</p>
+                  )}
+
+                  {availableActions.map((option) => (
+                    <button
+                      type="button"
+                      key={option.action_id}
+                      onClick={() =>
+                        sendAttack(option.action_id, option.action_type)
+                      }
+                    >
+                      <strong>{option.title}</strong>
+
+                      {option.influence_generated !==
+                        undefined && (
+                          <span>
+                            +
+                            {option.influence_generated} influência
+                          </span>
+                        )}
+
+                      {option.success_chance !== undefined && (
+                        <small>
+                          {option.success_chance}% de sucesso
+                        </small>
                       )}
 
-                    {option.success_chance !== undefined && (
-                      <small>
-                        {option.success_chance}% de sucesso
-                      </small>
-                    )}
+                      {option.description && (
+                        <small>{option.description}</small>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="polis-not-your-turn">
+                Aguarde sua vez para realizar uma ação.
+              </p>
+            )}
+          </div>
+        )}
 
-                    {option.description && (
-                      <small>{option.description}</small>
-                    )}
+        {pendingQuestion && (
+          <div className="question-modal-backdrop">
+            <div className="question-modal polis-question-modal">
+              <h2>
+                {pendingQuestion.subject ?? "Pergunta"}
+              </h2>
+
+              {pendingActionInfo?.territory_name && (
+                <p className="polis-question-territory">
+                  Ação em{" "}
+                  <strong>
+                    {pendingActionInfo.territory_name}
+                  </strong>
+                </p>
+              )}
+
+              <p className="question-description">
+                {pendingQuestion.description}
+              </p>
+
+              <div className="question-buttons">
+                {Object.entries(
+                  pendingQuestion?.options ?? {}
+                ).map(([letter, text]) => (
+                  <button
+                    type="button"
+                    key={letter}
+                    onClick={() =>
+                      answerAttackQuestion(letter)
+                    }
+                  >
+                    <strong>{letter}</strong>
+                    <span>{text}</span>
                   </button>
                 ))}
               </div>
-            </>
-          ) : (
-            <p className="polis-not-your-turn">
-              Aguarde sua vez para realizar uma ação.
-            </p>
-          )}
-        </div>
-      )}
-
-      {pendingQuestion && (
-        <div className="question-modal-backdrop">
-          <div className="question-modal polis-question-modal">
-            <h2>
-              {pendingQuestion.subject ?? "Pergunta"}
-            </h2>
-
-            {pendingActionInfo?.territory_name && (
-              <p className="polis-question-territory">
-                Ação em{" "}
-                <strong>
-                  {pendingActionInfo.territory_name}
-                </strong>
-              </p>
-            )}
-
-            <p className="question-description">
-              {pendingQuestion.description}
-            </p>
-
-            <div className="question-buttons">
-              {Object.entries(
-                pendingQuestion?.options ?? {}
-              ).map(([letter, text]) => (
-                <button
-                  type="button"
-                  key={letter}
-                  onClick={() =>
-                    answerAttackQuestion(letter)
-                  }
-                >
-                  <strong>{letter}</strong>
-                  <span>{text}</span>
-                </button>
-              ))}
             </div>
           </div>
-        </div>
-      )}
+        )}
 
         {!connected && (
-        <div className="polis-connection-warning">
-          Conectando à partida...
-        </div>
-      )}
+          <div className="polis-connection-warning">
+            Conectando à partida...
+          </div>
+        )}
 
-    </main>
-
-
-    <LastActionResult
-      result={matchState?.last_action_result}
-    />
+      </main>
 
 
-  </div>
-);
+      <LastActionResult
+        result={lastActionResult}
+      />
+
+
+    </div>
+  );
 }
