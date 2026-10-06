@@ -153,6 +153,165 @@ function PlayerCard({
   );
 }
 
+function LastActionResult({ result }) {
+  if (!result) {
+    return (
+      <section className="polis-last-action-section">
+        <div className="polis-last-action-card">
+          <h2>Última ação</h2>
+
+          <p className="polis-last-action-empty">
+            Nenhuma ação realizada ainda.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  const formatValue = (value) => {
+    const number = Number(value ?? 0);
+
+    if (number > 0) {
+      return `+${number}`;
+    }
+
+    return String(number);
+  };
+
+  return (
+    <section className="polis-last-action-section">
+
+      <div
+        className={[
+          "polis-last-action-card",
+          result.success
+            ? "polis-action-success"
+            : "polis-action-failure",
+        ].join(" ")}
+      >
+
+        <div className="polis-last-action-header">
+
+          <div>
+            <span className="polis-last-action-label">
+              Última ação
+            </span>
+
+            <h2>
+              {result.title ?? "Ação realizada"}
+            </h2>
+          </div>
+
+          <span className="polis-last-action-status">
+            {result.success
+              ? "SUCESSO"
+              : "FALHA"}
+          </span>
+
+        </div>
+
+
+        <div className="polis-last-action-content">
+
+          {result.type && (
+            <p>
+              <strong>Tipo:</strong>{" "}
+              {result.type}
+            </p>
+          )}
+
+
+          {result.territory_name && (
+            <p>
+              <strong>Território:</strong>{" "}
+              {result.territory_name}
+            </p>
+          )}
+
+
+          {result.response && (
+            <p className="polis-last-action-response">
+              {result.response}
+            </p>
+          )}
+
+
+          <div className="polis-last-action-values">
+
+            {Number(result.influence_generated ?? 0) !== 0 && (
+              <div>
+                <span>Influência</span>
+
+                <strong>
+                  {formatValue(
+                    result.influence_generated
+                  )}
+                </strong>
+              </div>
+            )}
+
+
+            {Number(result.money_generated ?? 0) !== 0 && (
+              <div>
+                <span>Dinheiro</span>
+
+                <strong>
+                  {formatValue(
+                    result.money_generated
+                  )}
+                </strong>
+              </div>
+            )}
+
+
+            {Number(result.corruption_generated ?? 0) !== 0 && (
+              <div>
+                <span>Corrupção</span>
+
+                <strong>
+                  {formatValue(
+                    result.corruption_generated
+                  )}
+                </strong>
+              </div>
+            )}
+
+          </div>
+
+
+          <div className="polis-last-action-details">
+
+            {result.conquered === true && (
+              <p>
+                ✓ Território conquistado
+              </p>
+            )}
+
+
+            {result.question_was_correct === true && (
+              <p>
+                ✓ Pergunta respondida corretamente
+              </p>
+            )}
+
+
+            {result.question_was_correct === false && (
+              <p>
+                ✕ Pergunta respondida incorretamente
+              </p>
+            )}
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+  );
+}
+
+
 export default function DemoGameScreen({
   initialMatchId,
   initialPlayerId,
@@ -580,6 +739,7 @@ export default function DemoGameScreen({
   );
 
   return (
+  <div className="polis-game-page">
     <main className="polis-game-screen">
       <div className="polis-turn-title">
         Vez de{" "}
@@ -826,11 +986,20 @@ export default function DemoGameScreen({
         </div>
       )}
 
-      {!connected && (
+        {!connected && (
         <div className="polis-connection-warning">
           Conectando à partida...
         </div>
       )}
+
     </main>
-  );
+
+
+    <LastActionResult
+      result={matchState?.last_action_result}
+    />
+
+
+  </div>
+);
 }
