@@ -7,7 +7,7 @@ import {
   joinRoom,
 } from "../service/api.jsx";
 
-export default function Menu({ player, onEnterRoom }) {
+export default function Menu({ player, onEnterRoom, onLogout, }) {
   const [roomCode, setRoomCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,21 +31,21 @@ export default function Menu({ player, onEnterRoom }) {
   }
 
   async function handleCreatePublicRoom() {
-  try {
-    setLoading(true);
-    setError("");
+    try {
+      setLoading(true);
+      setError("");
 
-    const room = await createPublicRoom(
-      player.player_id
-    );
+      const room = await createPublicRoom(
+        player.player_id
+      );
 
-    onEnterRoom(room);
-  } catch (error) {
-    setError(error.message);
-  } finally {
-    setLoading(false);
+      onEnterRoom(room);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
   // Procurar sala pública aleatória
   async function handleRandomRoom() {
@@ -98,25 +98,32 @@ export default function Menu({ player, onEnterRoom }) {
       <h2>Bem-vindo, {player.username}!</h2>
 
       <button
-  onClick={handleCreatePublicRoom}
-  disabled={loading}
->
-  CRIAR SALA PÚBLICA
-</button>
+        onClick={onLogout}
+        disabled={loading}
+      >
+        SAIR
+      </button>
 
-<button
-  onClick={handleCreatePrivateRoom}
-  disabled={loading}
->
-  CRIAR SALA PRIVADA
-</button>
+      <button
+        onClick={handleCreatePublicRoom}
+        disabled={loading}
+      >
+        CRIAR SALA PÚBLICA
+      </button>
 
-<button
-  onClick={handleRandomRoom}
-  disabled={loading}
->
-  PARTIDA ALEATÓRIA
-</button>
+      <button
+        onClick={handleCreatePrivateRoom}
+        disabled={loading}
+      >
+        CRIAR SALA PRIVADA
+      </button>
+
+      <button
+        onClick={handleRandomRoom}
+        disabled={loading}
+      >
+        PARTIDA ALEATÓRIA
+      </button>
       <div className="join-room">
         <input
           type="text"
