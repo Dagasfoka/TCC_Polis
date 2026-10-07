@@ -14,6 +14,7 @@ from backend.app.validators.match_validators import MatchValidator
 from backend.app.validators.pending_action_validators import PendingActionValidator
 from backend.app.validators.player_validators import PlayerValidator
 from backend.app.models.redis.pending_action import PendingAction
+from backend.app.factories.match_action_factory import MatchActionFactory
 QUESTION_CORRECT_BONUS = 2
 QUESTION_WRONG_PENALTY = 2
 
@@ -37,6 +38,7 @@ action_validator=ActionValidator()
 pending_action_validator=PendingActionValidator()
 
 territory_validator=TerritoryValidator()
+match_action_factory = MatchActionFactory()
 
 
 def get_attack_actions():
@@ -50,6 +52,9 @@ def get_match_attack_actions(match_id : int):
 
 def get_match_defense_actions(match_id : int):
     return match_action_gateway.get_all_match_actions(match_id,"defense")
+
+def distribute_actions(actions : list[dict]):
+    return match_action_factory.distribute_actions(actions)
 
 def prepare_attack_action(
     match_id,

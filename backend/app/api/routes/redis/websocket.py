@@ -6,7 +6,8 @@ from backend.app.services.redis.action_service import (
     prepare_attack_action,
     resolve_attack_action,
     get_match_attack_actions,
-    get_match_defense_actions
+    get_match_defense_actions,
+    distribute_actions
 )
 
 from backend.app.validators.db.territory_validator import TerritoryValidator
@@ -131,6 +132,7 @@ async def match_websocket(
                     action_type = "defense" if is_my_territory else "attack"
                     available_actions = get_match_defense_actions(match_id) if is_my_territory else get_match_attack_actions(match_id)
                     random.shuffle(available_actions)
+                    player_available_actions = distribute_actions(available_actions)
 
                     await manager.send_to_player(
                         match_id=match_id,
@@ -140,7 +142,7 @@ async def match_websocket(
                             "payload": {
                                 "action_type": action_type,
                                 "territory": territory,
-                                "available_actions": available_actions,
+                                "available_actions": player_available_actions,
                             },
                         },
                     )

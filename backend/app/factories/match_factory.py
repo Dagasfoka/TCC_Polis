@@ -3,6 +3,7 @@ from backend.app.repositories.redis.match_repo import MatchRepo
 from backend.app.repositories.db.territory_repo import TerritoryRepo
 from backend.app.gateways.player_gateways import PlayerGateway
 from backend.app.models.redis.match import Match
+from backend.app.gateways.room_gateways import RoomGateway
 from backend.app.factories.action_factory import INITIAL_MONEY,INITIAL_INFLUENCE
 
 class MatchFactory:
@@ -10,6 +11,7 @@ class MatchFactory:
         self.match_repository=MatchRepo()
         self.territory_repo=TerritoryRepo()
         self.player_gateway=PlayerGateway()
+        self.room_gateway=RoomGateway()
         self.match_territory_factory= MatchTerritoryFactory()
     def update_match(self,match_dict):
         return self.match_repository.update_match(match_dict)
@@ -103,4 +105,7 @@ class MatchFactory:
         match_dict["activate_questions_list"] = pop_name_list_questions
         self.update_match(match_dict)
     def return_to_room(self,match_dict):
-        pass
+        room_code=match_dict['room_code']
+        room=self.room_gateway.get_room(room_code)
+        for player_id in room['players']:
+            room['players'][player_id]['ready']=False
