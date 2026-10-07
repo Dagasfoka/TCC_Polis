@@ -64,3 +64,7 @@ class MatchValidator:
         ]
 
         return len(owned_territories) >= quantity
+    def verify_match_finish(self,match_dict: dict) -> bool:
+        if match_dict["status"]=="finished":
+            return True
+        return False

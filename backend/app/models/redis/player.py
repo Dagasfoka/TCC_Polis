@@ -1,4 +1,5 @@
 # Jogador dentro de uma partida.
+from backend.app.factories.action_factory import INITIAL_MONEY,INITIAL_INFLUENCE
 class Player:
     def __init__(
         self,
@@ -8,8 +9,8 @@ class Player:
         player_token: str,
         username: str,
         questions: dict | None = None,
-        match_influence: int | None = 0,
-        match_money: int | None = 0,
+        match_influence: int | None = INITIAL_INFLUENCE,
+        match_money: int | None = INITIAL_MONEY,
         match_corruption: int | None = 0,
     ):
         self.player_id = player_id
@@ -44,8 +45,8 @@ class Player:
         player_token: str,
         username: str,
         questions: dict | None = None,
-        match_influence: int | None = 0,
-        match_money: int | None = 0,
+        match_influence: int | None = INITIAL_INFLUENCE,
+        match_money: int | None = INITIAL_MONEY,
         match_corruption: int | None = 0,
     ):
         return cls(

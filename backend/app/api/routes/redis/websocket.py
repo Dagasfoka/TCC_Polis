@@ -1,4 +1,5 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+import random
 
 from backend.app.gateways.match_gateways import MatchGateway
 from backend.app.services.redis.action_service import (
@@ -81,10 +82,6 @@ async def match_websocket(
                     option_id = data.get("action_id") or payload.get("action_id")
                     action_type = data.get("action_type") or payload.get("action_type")
 
-                    print("DATA RECEBIDA:", data)
-                    print("PAYLOAD:", payload)
-                    print("OPTION_ID:", option_id)
-
                     response = prepare_attack_action(
                         match_id=match_id,
                         player_id=player_id,
@@ -133,6 +130,7 @@ async def match_websocket(
 
                     action_type = "defense" if is_my_territory else "attack"
                     available_actions = get_match_defense_actions(match_id) if is_my_territory else get_match_attack_actions(match_id)
+                    random.shuffle(available_actions)
 
                     await manager.send_to_player(
                         match_id=match_id,
