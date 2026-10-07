@@ -127,12 +127,17 @@ def seed_actions():
     with SessionLocal.begin() as db:
         db.execute(delete(Action))
 
-        for action in ACTIONS:
-            print(action.title)
-            db.add(action)
-
-        db.flush()
-        print("new:", len(db.new))
+        db.add_all([
+            Action(
+                action_type=a.action_type,
+                alignment=a.alignment,
+                title=a.title,
+                description=a.description,
+                risk_level=a.risk_level,
+                responses=a.responses,
+            )
+            for a in ACTIONS
+        ])
 
     print("Após flush:", db.query(Action).count())
 
