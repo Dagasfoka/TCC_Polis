@@ -139,8 +139,6 @@ def seed_actions():
             for a in ACTIONS
         ])
 
-    print("Após flush:", db.query(Action).count())
-
 
 if __name__ == "__main__":
     seed_actions()
