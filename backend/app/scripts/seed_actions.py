@@ -138,6 +138,8 @@ def seed_actions():
             )
             for a in ACTIONS
         ])
+        #Lógica de criar um objetos novamente porque eles ficar *detached* ao criados a primeira vez em uma mesma sessão
+        #Ou seja, não mude.
 
 
 if __name__ == "__main__":
