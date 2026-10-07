@@ -124,21 +124,15 @@ OPTIONS = [
 
 def seed_actions():
     Base.metadata.create_all(bind=engine)
-    print(len(OPTIONS))
-    print(type(OPTIONS[0]))
-    print(OPTIONS[0])
+    with SessionLocal.begin() as db:
+        print("1")
+        db.execute(delete(Action))
+        print("2")
+        db.add_all(OPTIONS)
+        print("3")
 
-    try:
-        with SessionLocal.begin() as db:
-            db.execute(delete(Action))
-            db.add_all(OPTIONS)
+    print(f"{len(OPTIONS)} ações cadastradas.")
 
-        print(f"{len(OPTIONS)} ações cadastradas.")
-
-    except Exception as e:
-        print(type(e))
-        print(e)
-        raise
 
     print("Ações antigas apagadas.")
     print("Ações de demonstração criadas com sucesso.")
