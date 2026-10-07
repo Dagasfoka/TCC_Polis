@@ -4,7 +4,7 @@ from sqlalchemy import delete
 from backend.app.db.base import Base
 from backend.app.db.database import SessionLocal, engine
 
-OPTIONS = [
+ACTIONS = [
     Action(
         action_type= "attack",
         alignment= "good", 
@@ -125,20 +125,16 @@ OPTIONS = [
 def seed_actions():
     Base.metadata.create_all(bind=engine)
     with SessionLocal.begin() as db:
-        print("1")
         db.execute(delete(Action))
-        print("2")
-        db.add_all(OPTIONS)
-        print("3")
 
-    print(f"{len(OPTIONS)} ações cadastradas.")
+        for action in ACTIONS:
+            print(action.title)
+            db.add(action)
 
-    with SessionLocal() as db:
-        print(db.query(Action).count())
+        db.flush()
+        print("new:", len(db.new))
 
-
-    print("Ações antigas apagadas.")
-    print("Ações de demonstração criadas com sucesso.")
+    print("Após flush:", db.query(Action).count())
 
 
 if __name__ == "__main__":
