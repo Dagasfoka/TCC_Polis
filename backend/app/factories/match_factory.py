@@ -31,7 +31,7 @@ class MatchFactory:
 
     # Copia o partido escolhido no lobby para o jogador da partida
         for match_player in match_players:
-            player_id = match_player["player_id"]
+            player_id = match_player["player_id"] 
 
             room_player = room_dict["players"].get(player_id)
 

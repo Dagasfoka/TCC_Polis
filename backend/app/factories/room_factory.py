@@ -34,8 +34,8 @@ class RoomFactory:
         for player_id, player_data in players.items():
             player_data["host"] = player_id == new_host_id
         return room_dict
-    def return_to_room(self,room):
-        for player_id in room['players']:
-            room['players'][player_id]['ready']=False
+    def return_to_room(self, room):
+        for player in room["players"].values():
+            player["ready"] = False
         self.update_room(room)
     
