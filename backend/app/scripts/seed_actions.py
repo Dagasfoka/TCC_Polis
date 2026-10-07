@@ -133,6 +133,9 @@ def seed_actions():
 
     print(f"{len(OPTIONS)} ações cadastradas.")
 
+    with SessionLocal() as db:
+        print(db.query(Action).count())
+
 
     print("Ações antigas apagadas.")
     print("Ações de demonstração criadas com sucesso.")
