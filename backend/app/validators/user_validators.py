@@ -4,6 +4,14 @@ from backend.app.gateways.db.user_gateways import UsersGateway
 from backend.app.models.db.user import User
 from backend.app.utils.ids import verify_password
 
+from backend.app.utils.user_exceptions import (
+    UserNotFoundError,
+    UsernameAlreadyExistsError,
+    InvalidUsernameError,
+    InvalidPasswordError,
+    InvalidLoginError,
+)
+
 
 @dataclass
 class UserValidator:
@@ -14,64 +22,93 @@ class UserValidator:
 
     def not_exist(self, user: User):
         if user is None:
-            raise Exception("user não existe")
+            raise UserNotFoundError(
+                "Usuário não existe"
+            )
 
         return user
 
 
-    def validate_username_available(self, username: str):
-        user = self.user_gateway.get_user_by_username(username)
+    def validate_username_available(
+        self,
+        username: str
+    ):
+        user = (
+            self.user_gateway
+            .get_user_by_username(username)
+        )
 
         if user is not None:
-            raise ValueError(
+            raise UsernameAlreadyExistsError(
                 f'O username "{username}" já está sendo utilizado.'
             )
 
 
-    def validate_username(self, username: str) -> None:
+    def validate_username(
+        self,
+        username: str
+    ) -> None:
 
         if not username:
-            raise ValueError(
+            raise InvalidUsernameError(
                 "Username é obrigatório"
             )
 
         if len(username) < 3:
-            raise ValueError(
+            raise InvalidUsernameError(
                 "Username deve ter pelo menos 3 caracteres"
             )
 
         if len(username) > 30:
-            raise ValueError(
+            raise InvalidUsernameError(
                 "Username deve ter no máximo 30 caracteres"
             )
 
         if not username.isalnum():
-            raise ValueError(
+            raise InvalidUsernameError(
                 "Username deve conter apenas letras e números"
             )
 
 
-    def validate_password(self, password: str) -> None:
+    def validate_password(
+        self,
+        password: str
+    ) -> None:
+
+        if not password:
+            raise InvalidPasswordError(
+                "Senha é obrigatória"
+            )
 
         if len(password) < 8:
-            raise ValueError(
+            raise InvalidPasswordError(
                 "Senha deve ter pelo menos 8 caracteres"
             )
 
-        if not any(c.isupper() for c in password):
-            raise ValueError(
+        if not any(
+            c.isupper()
+            for c in password
+        ):
+            raise InvalidPasswordError(
                 "Senha deve possuir uma letra maiúscula"
             )
 
-        if not any(c.islower() for c in password):
-            raise ValueError(
+        if not any(
+            c.islower()
+            for c in password
+        ):
+            raise InvalidPasswordError(
                 "Senha deve possuir uma letra minúscula"
             )
 
-        if not any(c.isdigit() for c in password):
-            raise ValueError(
+        if not any(
+            c.isdigit()
+            for c in password
+        ):
+            raise InvalidPasswordError(
                 "Senha deve possuir um número"
             )
+
 
     def validate_login(
         self,
@@ -80,7 +117,7 @@ class UserValidator:
     ) -> User:
 
         if user is None:
-            raise ValueError(
+            raise InvalidLoginError(
                 "Username ou senha inválidos"
             )
 
@@ -88,7 +125,7 @@ class UserValidator:
             password,
             user.password_hash
         ):
-            raise ValueError(
+            raise InvalidLoginError(
                 "Username ou senha inválidos"
             )
 
