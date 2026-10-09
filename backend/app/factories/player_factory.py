@@ -4,3 +4,5 @@ class PlayerFactory:
         self.player_repository=PlayerRepo()
     def create_player(self,username,party_id=None):
         return self.player_repository.create_player(username,party_id)
+    def delete_player(self,player_id):
+        return self.player_repository.delete_player(player_id)
