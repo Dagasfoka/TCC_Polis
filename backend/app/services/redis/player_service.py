@@ -23,21 +23,17 @@ def create_user_player(user_id):
     existing_player = None
     if user.player_id is not None:
         existing_player = (player_gateway.get_player(user.player_id))
-    user_validator.user_can_create_player(user, existing_player)
-    # Existia player_id no SQL,
-    # mas o Player não existe mais no Redis.
+    user_validator.user_can_create_player(user,existing_player)
+    #Existe player_id no SQL,
+    # mas Player já não existe no Redis.
     if (user.player_id is not None and existing_player is None):
-        user_factory.update_player_id(user, None)
-    # Criar Player no Redis
+        user_factory.update_player_id(user.user_id, None)
     player = player_factory.create_player(username=user.username)
-    # Associar ao User
-    user_factory.update_player_id(user, player["player_id"])
+    user_factory.update_player_id(user.user_id, player["player_id"])
     return player
 
 def get_player(player_id):
-    return player_gateway.get_player(
-        player_id
-    )
+    return player_gateway.get_player(player_id)
 
 def delete_user_player(user_id):
     user = user_gateway.get_user_by_id(user_id)
@@ -45,9 +41,8 @@ def delete_user_player(user_id):
     if user.player_id is None:
         return user
     player_factory.delete_player(user.player_id)
-    user_factory.update_player_id(user,None)
+    user_factory.update_player_id(user.user_id, None)
     return user
-
 def delete_player(player_id):
     return player_factory.delete_player(
         player_id
