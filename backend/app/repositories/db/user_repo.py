@@ -39,3 +39,11 @@ class UsersRepository:
         except Exception:
             self.db.rollback()
             raise
+
+    def update_player_id(self,user: User,player_id: str | None):
+        user.player_id = player_id
+
+        self.db.commit()
+        self.db.refresh(user)
+
+        return user
