@@ -10,6 +10,7 @@ from backend.app.utils.user_exceptions import (
     InvalidUsernameError,
     InvalidPasswordError,
     InvalidLoginError,
+    UserAlreadyHasPlayerError,
 )
 
 
@@ -27,7 +28,21 @@ class UserValidator:
             )
 
         return user
+    
+    def user_can_create_player(
+        self,
+        user: User,
+        existing_player
+    ):
+        if (
+            user.player_id is not None
+            and existing_player is not None
+        ):
+            raise UserAlreadyHasPlayerError(
+                "Este usuário já possui um player ativo."
+            )
 
+        return user
 
     def validate_username_available(
         self,
