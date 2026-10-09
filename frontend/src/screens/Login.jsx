@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import {
   createPlayer,
+  createUserPlayer,
   createUser,
   loginUser,
 } from "../service/api.jsx";
@@ -90,10 +91,9 @@ export default function Login({ onLogin }) {
 
       // Cria o Player temporário no Redis
       // usando o username da conta.
-      const player = await createPlayer(
-        user.username
-      );
-
+      const player = await createUserPlayer(
+  user.user_id
+);
       localStorage.setItem(
         "user_id",
         user.user_id
@@ -144,9 +144,9 @@ export default function Login({ onLogin }) {
       );
 
       // Cria Player temporário no Redis.
-      const player = await createPlayer(
-        user.username
-      );
+      const player = await createUserPlayer(
+  user.user_id
+);
 
       localStorage.setItem(
         "user_id",
