@@ -26,7 +26,7 @@ class PlayerRepo:
         redis_client.set(key,player_id)
 
         return {
-            **player_dict,
+             **player_dict,
         }
     def get_player(self, player_id):
         key = f"player:{player_id}"
@@ -45,3 +45,14 @@ class PlayerRepo:
             return None
 
         return self.get_player(player_id)
+
+    def delete_player(self, player_id):
+        player = self.get_player(player_id)
+        if player is None:
+            return
+        player_token = player.get("player_token")
+        
+        redis_client.delete(f"player:{player_id}")
+        
+        if player_token:
+            redis_client.delete(f"player_token:{player_token}")
