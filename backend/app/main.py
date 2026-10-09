@@ -21,6 +21,7 @@ from backend.app.utils.user_exceptions import (
     InvalidUsernameError,
     InvalidPasswordError,
     InvalidLoginError,
+    UserAlreadyHasPlayerError,
 )
 
 
@@ -48,6 +49,18 @@ async def room_not_found_handler(
 async def room_full_handler(
     request: Request,
     exc: RoomFullError
+):
+    return JSONResponse(
+        status_code=409,
+        content={
+            "detail": str(exc)
+        }
+    )
+
+@app.exception_handler(UserAlreadyHasPlayerError)
+async def user_already_has_player_handler(
+    request: Request,
+    exc: UserAlreadyHasPlayerError
 ):
     return JSONResponse(
         status_code=409,
