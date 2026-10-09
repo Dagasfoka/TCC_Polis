@@ -40,10 +40,11 @@ class UsersRepository:
             self.db.rollback()
             raise
 
-    def update_player_id(self,user: User,player_id: str | None):
+    def update_player_id(self,user_id: int,player_id: str | None):
+        user = self.db.get(User,user_id)
+        if user is None:
+            return None
         user.player_id = player_id
-
         self.db.commit()
         self.db.refresh(user)
-
         return user
