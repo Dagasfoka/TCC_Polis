@@ -145,6 +145,13 @@ export default function Login({ onLogin }) {
     }
   }
 
+  function changeMode(newMode) {
+    setMode(newMode);
+    setError("");
+    setPassword("");
+  }
+
+
   return (
     <div className="login-container">
       <style>{`
