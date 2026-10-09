@@ -1,50 +1,107 @@
-# Busca/salva usuários no banco.
 from sqlalchemy import select
+
 from backend.app.db.database import SessionLocal
 from backend.app.models.db.user import User
 
+
 class UsersRepository:
-    def __init__(self):
-        self.db = SessionLocal()
 
     def get_all_users(self) -> list[User]:
-        return list(self.db.scalars(select(User)).all())
-
-    def get_user_by_id(self, user_id: int) -> User | None:
-        return self.db.get(User, user_id)
-
-    def get_user_by_username(self, username: str) -> User | None:
-        return self.db.scalar(
-            select(User).where(User.username == username)
-        )
-
-    
-    def create_user(self,username, password_hash):
-
-        try:
-            user = User(
-                username=username,
-                password_hash=password_hash,
-                player_id=None
+        with SessionLocal() as db:
+            users = list(
+                db.scalars(
+                    select(User)
+                ).all()
             )
 
-            self.db.add(user)
-            self.db.commit()
-            self.db.refresh(user)
-    
-            return {
-                **user.to_dict(),
-            }
-            
-        except Exception:
-            self.db.rollback()
-            raise
+            return users
 
-    def update_player_id(self,user_id: int,player_id: str | None):
-        user = self.db.get(User,user_id)
-        if user is None:
-            return None
-        user.player_id = player_id
-        self.db.commit()
-        self.db.refresh(user)
-        return user
+
+    def get_user_by_id(
+        self,
+        user_id: int
+    ) -> User | None:
+
+        with SessionLocal() as db:
+            user = db.get(
+                User,
+                user_id
+            )
+
+            if user is not None:
+                db.expunge(user)
+
+            return user
+
+
+    def get_user_by_username(
+        self,
+        username: str
+    ) -> User | None:
+
+        with SessionLocal() as db:
+            user = db.scalar(
+                select(User).where(
+                    User.username == username
+                )
+            )
+
+            if user is not None:
+                db.expunge(user)
+
+            return user
+
+
+    def create_user(
+        self,
+        username,
+        password_hash
+    ):
+        with SessionLocal() as db:
+            try:
+                user = User(
+                    username=username,
+                    password_hash=password_hash,
+                    player_id=None
+                )
+
+                db.add(user)
+                db.commit()
+                db.refresh(user)
+
+                return {
+                    **user.to_dict(),
+                }
+
+            except Exception:
+                db.rollback()
+                raise
+
+
+    def update_player_id(
+        self,
+        user_id: int,
+        player_id: str | None
+    ):
+        with SessionLocal() as db:
+            try:
+                user = db.get(
+                    User,
+                    user_id
+                )
+
+                if user is None:
+                    return None
+
+                user.player_id = player_id
+
+                db.commit()
+                db.refresh(user)
+
+                result = user.to_dict()
+
+                return result
+
+            except Exception:
+                db.rollback()
+                raise
