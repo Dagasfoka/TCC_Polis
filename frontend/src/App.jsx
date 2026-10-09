@@ -19,6 +19,8 @@ import {
 } from "./service/matchSession.js"
 import {
   getPlayer,
+  deleteGuestPlayer,
+  deleteUserPlayer,
 } from "./service/api.jsx";
 
 import { RoomValidator } from "./validators/RoomValidator.js";
@@ -142,8 +144,42 @@ export default function App() {
     setScreen("menu");
   }
 
-  function handleLogout() {
-    localStorage.removeItem("player_id");
+  async function handleLogout() {
+  const userId =
+    localStorage.getItem("user_id");
+
+  const playerId =
+    localStorage.getItem("player_id");
+
+  try {
+    // Usuário cadastrado
+    if (userId) {
+      await deleteUserPlayer(
+        Number(userId)
+      );
+    }
+
+    // Guest
+    else if (playerId) {
+      await deleteGuestPlayer(
+        playerId
+      );
+    }
+
+  } catch (error) {
+    console.error(
+      "Erro ao apagar player no logout:",
+      error
+    );
+
+  } finally {
+    localStorage.removeItem(
+      "user_id"
+    );
+
+    localStorage.removeItem(
+      "player_id"
+    );
 
     clearRoomCode();
     clearMatchID();
@@ -154,6 +190,7 @@ export default function App() {
 
     setScreen("login");
   }
+}
   // ==============================
   // ENTROU OU CRIOU SALA
   // ==============================
