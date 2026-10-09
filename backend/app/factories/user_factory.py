@@ -7,5 +7,5 @@ class UserFactory:
     def create_user(self,username,password):
         password_hash = generate_password_hash(password)
         return self.user_repository.create_user(username,password_hash)
-    def update_player_id(self,user,player_id):
-        return self.user_repository.update_player_id(user,player_id)
+    def update_player_id(self,user_id,player_id):
+        return self.user_repository.update_player_id(user_id,player_id)
