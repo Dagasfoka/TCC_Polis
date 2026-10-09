@@ -90,6 +90,17 @@ export function createPlayer(username) {
 }
 
 
+// Criar player ligado a um User cadastrado.
+export function createUserPlayer(userId) {
+  return request("/players/user", {
+    method: "POST",
+    body: JSON.stringify({
+      user_id: userId,
+    }),
+  });
+}
+
+
 // Buscar jogador pelo ID.
 export function getPlayer(playerId) {
   return request(
@@ -97,6 +108,28 @@ export function getPlayer(playerId) {
   );
 }
 
+
+// Apagar player de Guest.
+export function deleteGuestPlayer(playerId) {
+  return request("/players", {
+    method: "DELETE",
+    body: JSON.stringify({
+      player_id: playerId,
+    }),
+  });
+}
+
+
+// Logout de usuário cadastrado.
+// O backend apaga o Player e limpa User.player_id.
+export function deleteUserPlayer(userId) {
+  return request("/players/user", {
+    method: "DELETE",
+    body: JSON.stringify({
+      user_id: userId,
+    }),
+  });
+}
 
 // ==============================
 // SALAS
