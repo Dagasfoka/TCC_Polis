@@ -16,3 +16,6 @@ class InvalidPasswordError(Exception):
 
 class InvalidLoginError(Exception):
     pass
+
+class UserAlreadyHasPlayerError(Exception):
+    pass
