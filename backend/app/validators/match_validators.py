@@ -32,6 +32,12 @@ class MatchValidator:
         if match_influence<0:
             raise Exception("Influência geral do player menor que zero") 
         return match_influence
+    def verify_distributed_influence_is_on_limit(self,match_influence,distributed_influence):
+        if match_influence<distributed_influence:
+            raise Exception("Influência distribuída maior que a influência geral do player") 
+        if distributed_influence <= 0:
+            raise Exception("A influência distribuída deve ser maior que zero")
+        return distributed_influence
 #_________________________________________________ AUX
     def is_alive(self,match_id, target_id):
         match_dict = self.match_repository.get_match(match_id)
@@ -72,17 +78,3 @@ class MatchValidator:
         if match_dict["status"]=="finished":
             return True
         return False
-    def verify_distribute_match_influence(self,match_influence):
-        if match_influence >0:
-            return True
-        return False
-    """
-    def aux_writer(self,match_id,player_id): #To fazendo esse so pra poder digitar e pensar sem afetar algo que alguem possivelmente ta mexendo
-        match=match_id #get match
-        player= player_id #find match player
-        match_influence=player['match_influence']
-        match_influence=self.verify_player_match_influence_is_not_below_zero(match_influence,player)
-        if self.verify_distribute_match_influence(match_influence):
-            # do something
-        return "ainda nao sei"
-    """

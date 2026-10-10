@@ -74,7 +74,7 @@ def prepare_attack_action(
 
     target = match_gateway.find_territory(match, target_territory_id)
     target=match_territory_validator.territory_exist(target)
-    target=match_territory_validator.verify_territory_owner_id(target,player_id,action_type)
+    target=match_territory_validator.verify_territory_owner_id_action_type(target,player_id,action_type)
 
     action = match_action_gateway.get_match_action_by_id(match_id,option_id, action_type)
     action = action_validator.action_exist(action)
@@ -140,7 +140,7 @@ def resolve_action_no_question(
 
     target = match_gateway.find_territory(match, target_territory_id)
     target = match_territory_validator.territory_exist(target)
-    target = match_territory_validator.verify_territory_owner_id(target,player_id,action_type)
+    target = match_territory_validator.verify_territory_owner_id_action_type(target,player_id,action_type)
 
 
 
@@ -223,7 +223,7 @@ def resolve_attack_action(
 
     target = match_gateway.find_territory(match, target_territory_id)
     target = match_territory_validator.territory_exist(target)
-    target = match_territory_validator.verify_territory_owner_id(target,player_id,action_type)
+    target = match_territory_validator.verify_territory_owner_id_action_type(target,player_id,action_type)
 
 
     correct_answer = pending_action["correct_answer"]
@@ -405,7 +405,6 @@ def execute_attack_roll(
     if player["match_money"] < 0:
         player["match_money"] = 0
     player["match_corruption"] += corruption_generated
-    player["match_influence"] += influence_generated
 
     action_result = {
         "type": type,
@@ -436,7 +435,6 @@ def execute_attack_roll(
         "money_generated":money_generated,
         "new_money_player":player["match_money"],
         "new_corruption_player":player["match_corruption"],
-        "new_influence_player":player["match_influence"],
         "response": response,
         "corruption_generated":corruption_generated,
 
