@@ -1,5 +1,17 @@
 /* ═══════════════════════════════ RESET & TOKENS */
+@font-face {
+  font-family: "Coolvetica";
+  src: url("/Coolvetica.otf") format("opentype");
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+}
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html, body, body *, body *::before, body *::after {
+  font-family: "Coolvetica", sans-serif !important;
+  letter-spacing: 0.02em;
+}
 :root{
   --bg:#1b3840;
   --bg2:#2d5f6b;
@@ -371,7 +383,7 @@ html,
   left: 50%;
   top: 50%;
 
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(1.16);
 
   width: min(58vw, 850px);
   height: min(80vh, 760px);
@@ -394,6 +406,23 @@ html,
     drop-shadow(0 8px 15px rgba(0, 0, 0, 0.45));
 }
 
+.polis-america-backdrop {
+  position: absolute;
+  z-index: 0;
+  left: -15%;
+  top: 50%;
+  width: 130%;
+  height: auto;
+  transform: translateY(-50%);
+  pointer-events: none;
+  user-select: none;
+}
+
+.polis-main-map {
+  position: relative;
+  z-index: 1;
+  transform: translate(32px, 16px) scale(0.93);
+}
 
 /* =========================================================
    POSIÇÕES DOS JOGADORES
@@ -552,6 +581,14 @@ html,
     0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
+.polis-player-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 
 /* =========================================================
    STATUS
@@ -649,11 +686,14 @@ html,
   font-size: 18px;
   font-weight: 900;
 
+  -webkit-text-stroke: 1px #000;
+  paint-order: stroke fill;
+
   text-shadow:
-    -2px -2px 0 #111,
-    2px -2px 0 #111,
-    -2px 2px 0 #111,
-    2px 2px 0 #111;
+    2px 2px 0 #000,
+    -2px 2px 0 #000,
+    2px -2px 0 #000,
+    -2px -2px 0 #000;
 }
 
 
@@ -828,6 +868,221 @@ html,
   text-align: center;
 
   color: #f0c954;
+}
+
+/* Mesa de escolhas e cartas */
+.polis-choice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  box-sizing: border-box;
+  background: rgba(3, 8, 15, 0.72);
+}
+
+.polis-choice-board {
+  position: relative;
+  width: min(1280px, 96vw);
+  min-height: min(590px, 72vh);
+  box-sizing: border-box;
+  padding: 100px 42px 36px;
+  overflow: auto;
+  border: 10px solid #39251b;
+  border-radius: 18px;
+  background:
+    repeating-linear-gradient(4deg, transparent 0 34px, rgba(255,255,255,.035) 35px 37px),
+    linear-gradient(135deg, #895b3d, #68442f 48%, #795038);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, .6), inset 0 0 0 3px rgba(220, 178, 130, .25);
+}
+
+.polis-choice-board-header {
+  position: absolute;
+  top: 12px;
+  right: 30px;
+  left: 30px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 34px;
+  text-align: left;
+  text-shadow: 1px 2px 2px rgba(0, 0, 0, .65);
+}
+
+.polis-choice-territory h2,
+.polis-choice-territory span,
+.polis-choice-influence span,
+.polis-choice-influence strong {
+  display: block;
+  margin: 0;
+  color: #fff4df;
+}
+
+.polis-choice-territory h2 { font-size: 34px; }
+.polis-choice-territory span {
+  width: fit-content;
+  margin-top: 4px;
+  padding: 3px 9px;
+  border-radius: 3px;
+  background: #000;
+  font-size: 19px;
+}
+.polis-choice-influence {
+  padding: 5px 10px;
+  border-radius: 3px;
+  background: #000;
+}
+.polis-choice-influence span { font-size: 19px; }
+.polis-choice-influence strong {
+  display: block;
+  font-size: 23px;
+}
+.polis-choice-influence { text-align: right; }
+
+.polis-choice-board-header h2,
+.polis-choice-board-header span,
+.polis-choice-board-header strong,
+.polis-choice-card-title,
+.polis-no-choice,
+.polis-not-your-turn {
+  -webkit-text-stroke: 4.5px #000;
+  paint-order: stroke fill;
+  text-shadow: none;
+}
+
+.polis-choice-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  justify-items: center;
+  gap: clamp(10px, 2vw, 28px);
+  min-height: 420px;
+}
+
+.polis-choice-card {
+  position: relative;
+  width: min(100%, 270px);
+  aspect-ratio: 413 / 640;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 14px;
+  background-color: transparent;
+  background-image: url('/CARTALAYOUT.png?v=4');
+  background-position: center;
+  background-size: 100% 100%;
+  color: #17130f;
+  cursor: pointer;
+  text-align: center;
+  transition: transform .16s ease;
+}
+
+.polis-choice-card:hover {
+  z-index: 1;
+  transform: translateY(-8px) rotate(-1deg);
+}
+
+.polis-choice-card-title {
+  position: absolute;
+  top: 12%;
+  left: 11%;
+  width: 78%;
+  height: 19%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  box-sizing: border-box;
+  color: #fff;
+  font-size: clamp(17px, 1.75vw, 24px);
+  font-weight: 800;
+  line-height: 1.1;
+  text-shadow: none;
+}
+
+.polis-choice-card-title strong { font-weight: 900; }
+
+.polis-choice-card-risk {
+  position: absolute;
+  top: 37.5%;
+  left: 30%;
+  width: 40%;
+  height: 5.5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: clamp(11px, 1.2vw, 16px);
+  font-family: "Coolvetica", sans-serif !important;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  -webkit-text-stroke: 4px #000;
+  paint-order: stroke fill;
+  text-shadow: none;
+  pointer-events: none;
+}
+
+.polis-choice-card-details {
+  position: absolute;
+  top: 44%;
+  left: 12%;
+  width: 76%;
+  max-height: 58%;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  overflow: auto;
+  padding: 2px;
+  box-sizing: border-box;
+  font-size: clamp(12px, 1.15vw, 15px);
+  line-height: 1.25;
+}
+
+.polis-choice-card-details span { display: block; }
+.polis-choice-card-details .polis-choice-success { color: #284FB3; }
+.polis-choice-card-details .polis-choice-description { margin-top: 8px; }
+
+.polis-no-choice {
+  grid-column: 1 / -1;
+  color: white;
+  font-size: 20px;
+}
+
+.polis-choice-back {
+  min-width: 150px;
+  padding: 11px 30px;
+  border: 0;
+  border-radius: 0;
+  background-color: #284FB3 !important;
+  background-image: none !important;
+  box-shadow: none;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+
+.polis-choice-back:hover {
+  background-color: #284FB3 !important;
+  background-image: none !important;
+}
+
+@media (max-width: 800px) {
+  .polis-choice-overlay { justify-content: flex-start; overflow-y: auto; }
+  .polis-choice-board { width: 96vw; min-height: auto; padding: 100px 18px 24px; }
+  .polis-choice-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: 0; gap: 14px; }
+  .polis-choice-card { width: min(100%, 230px); }
+}
+
+@media (max-width: 420px) {
+  .polis-choice-cards { grid-template-columns: 1fr; }
 }
 
 
@@ -1132,7 +1387,7 @@ html,
   align-items: center;
   justify-content: center;
 
-  background: rgba(0, 0, 0, 0.58);
+  background: rgba(0, 0, 0, 0.68);
 
   z-index: 9999;
 }
@@ -1497,6 +1752,416 @@ html,
   opacity: 0.65;
 }
 
+/* Indicadores dos jogadores na tela de demonstração */
+.polis-player-main {
+  height: auto;
+  min-height: 92px;
+  align-items: center;
+  gap: 8px;
+}
+
+.polis-player-stats {
+  min-width: 0;
+  gap: 3px;
+}
+
+.polis-stat-row {
+  box-sizing: border-box;
+  height: 23px;
+  min-height: 23px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.polis-stat-row strong {
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 900;
+  -webkit-text-stroke: 2.2px #111;
+  paint-order: stroke fill;
+  text-shadow: 1px 1px 0 #111, -1px -1px 0 #111;
+}
+
+/* Aparência da partida alinhada aos assets do layout de referência */
+.polis-game-page {
+  background: #0b1120 url("/image 2(1).png") center / cover no-repeat;
+}
+
+.polis-game-screen {
+  background: transparent;
+}
+
+.polis-position-bottom-left,
+.polis-position-bottom-right {
+  bottom: 22px;
+}
+
+.polis-position {
+  width: 300px;
+}
+
+.polis-player-card {
+  width: 300px;
+  min-height: 138px;
+  height: 138px;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.polis-player-curtain {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  z-index: 0;
+  width: calc(100% - 14px);
+  height: calc(100% - 19px);
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.polis-player-card-right .polis-player-curtain {
+  transform: translateX(-37px) scaleX(-1);
+}
+
+.polis-player-card-left .polis-player-curtain {
+  transform-origin: right center;
+  transform: translateX(44px);
+}
+
+.polis-player-card::after {
+  content: none;
+}
+
+.polis-player-polygon {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 100%;
+  height: 54%;
+  background: var(--party-color);
+  -webkit-mask: url("/poligonoperfil.svg") center bottom / 100% 100% no-repeat;
+  mask: url("/poligonoperfil.svg") center bottom / 100% 100% no-repeat;
+}
+
+.polis-player-card-right .polis-player-polygon {
+  left: 0;
+  width: calc(100% + 16px);
+  transform: translateX(14px) scaleX(-1);
+}
+
+.polis-player-card-left .polis-player-polygon {
+  left: -44px;
+  width: calc(100% + 44px);
+}
+
+.polis-player-main {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  min-height: 0;
+  height: 100%;
+  padding: 8px 22px 14px;
+  justify-content: space-between;
+  transform: translateX(-16px);
+}
+
+.polis-player-card-right .polis-player-main {
+  transform: translateX(16px);
+}
+
+.polis-player-avatar {
+  width: 108px;
+  min-width: 108px;
+  height: 108px;
+  border: 4px solid #fff;
+  background: linear-gradient(145deg, #fff, #dadada);
+  box-shadow: 0 0 0 3px var(--party-color);
+}
+
+.polis-player-stats {
+  flex: 0 0 140px;
+  gap: 2px;
+  transform: translateY(-8px);
+}
+
+.polis-stat-row {
+  height: 25px;
+  min-height: 25px;
+  justify-content: flex-start;
+  padding-left: 29px;
+  background-position: center;
+}
+
+.polis-player-name {
+  z-index: 3;
+  bottom: 4px;
+  width: 58%;
+  font-size: 21px;
+  -webkit-text-stroke: 2.6px #000;
+  text-shadow:
+    2px 2px 0 #000,
+    -2px 2px 0 #000,
+    2px -2px 0 #000,
+    -2px -2px 0 #000;
+}
+
+.polis-next-label,
+.polis-you-label {
+  z-index: 3;
+}
+
+.polis-mission-right {
+  right: 0;
+  top: 50%;
+  width: 240px;
+  height: 280px;
+  max-height: none;
+  padding: 0;
+  overflow: visible;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.polis-mission-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+.polis-mission-copy {
+  position: absolute;
+  top: 128px;
+  left: 30px;
+  right: 22px;
+  z-index: 1;
+  color: #334155;
+  text-align: center;
+}
+
+.polis-mission-copy p {
+  margin: 8px 0 0;
+  padding: 0 8px 6px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.28;
+  letter-spacing: 0.15px;
+}
+
+.polis-mission-copy .polis-mission-party {
+  display: inline-block;
+  padding: 4px 11px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 13px;
+}
+
+@media (max-width: 750px) {
+  .polis-player-card {
+    height: 98px;
+    min-height: 98px;
+  }
+
+  .polis-player-main {
+    padding: 5px 10px 10px;
+  }
+
+  .polis-player-avatar {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+  }
+
+  .polis-player-stats {
+    flex-basis: 82px;
+  }
+
+  .polis-stat-row {
+    height: 18px;
+    min-height: 18px;
+    padding-left: 23px;
+  }
+
+  .polis-stat-row strong {
+    font-size: 10px;
+  }
+
+  .polis-player-name {
+    bottom: 4px;
+    font-size: 12px;
+  }
+
+  .polis-mission-right {
+    width: 150px;
+    height: 215px;
+  }
+
+  .polis-mission-copy {
+    top: 98px;
+    left: 18px;
+    right: 14px;
+  }
+
+  .polis-mission-copy p {
+    font-size: 12px;
+  }
+}
+
+.polis-position-top-right .polis-player-main,
+.polis-position-bottom-right .polis-player-main {
+  flex-direction: row-reverse;
+}
+
+.polis-position-top-right .polis-player-stats,
+.polis-position-bottom-right .polis-player-stats {
+  align-items: stretch;
+}
+
+@media (max-width: 750px) {
+  .polis-player-main {
+    min-height: 82px;
+    height: auto;
+  }
+
+  .polis-player-avatar {
+    display: flex;
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    font-size: 17px;
+  }
+
+  .polis-stat-row {
+    height: 20px;
+    min-height: 20px;
+  }
+
+  .polis-stat-row strong {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 1050px) {
+  .polis-position {
+    width: 250px;
+  }
+
+  .polis-player-card {
+    width: 250px;
+    min-height: 115px;
+    height: 115px;
+  }
+
+  .polis-player-main {
+    padding: 6px 18px 12px;
+  }
+
+  .polis-player-avatar {
+    width: 86px;
+    min-width: 86px;
+    height: 86px;
+  }
+
+  .polis-player-stats {
+    flex-basis: 118px;
+  }
+
+  .polis-stat-row {
+    height: 23px;
+    min-height: 23px;
+    padding-left: 26px;
+  }
+
+  .polis-player-name {
+    font-size: 18px;
+  }
+
+  .polis-mission-right {
+    width: 210px;
+    height: 245px;
+  }
+
+  .polis-mission-copy {
+    top: 112px;
+    left: 25px;
+    right: 20px;
+  }
+}
+
+@media (max-width: 750px) {
+  .polis-position {
+    width: 190px;
+  }
+
+  .polis-player-card {
+    width: 190px;
+    min-height: 88px;
+    height: 88px;
+  }
+
+  .polis-player-main {
+    padding: 4px 8px 8px;
+  }
+
+  .polis-player-avatar {
+    width: 58px;
+    min-width: 58px;
+    height: 58px;
+  }
+
+  .polis-player-stats {
+    flex-basis: 90px;
+  }
+
+  .polis-stat-row {
+    height: 19px;
+    min-height: 19px;
+    padding-left: 22px;
+  }
+
+  .polis-stat-row strong {
+    font-size: 11px;
+  }
+
+  .polis-player-curtain {
+    top: 4px;
+    height: calc(100% - 15px);
+  }
+
+  .polis-player-name {
+    bottom: 3px;
+    font-size: 14px;
+  }
+
+  .polis-mission-right {
+    width: 170px;
+    height: 200px;
+  }
+
+  .polis-mission-copy {
+    top: 92px;
+    left: 18px;
+    right: 14px;
+  }
+
+  .polis-mission-copy p {
+    font-size: 12px;
+  }
+}
+
 
 /* =========================================================
    RESPONSIVO
@@ -1534,4 +2199,224 @@ html,
 
     box-sizing: border-box;
   }
+}
+
+.polis-position-top-left .polis-player-card,
+.polis-position-bottom-left .polis-player-card {
+  transform: scale(1.15) !important;
+  transform-origin: left center;
+}
+
+.polis-position-top-right .polis-player-card,
+.polis-position-bottom-right .polis-player-card {
+  transform: scale(1.15) !important;
+  transform-origin: right center;
+}
+
+/* Ajustes finais de proporção e posicionamento dos painéis */
+.polis-position-top-left,
+.polis-position-top-right {
+  top: 18px;
+}
+
+.polis-position-top-left,
+.polis-position-bottom-left {
+  left: 28px;
+}
+
+.polis-position-top-right,
+.polis-position-bottom-right {
+  right: 28px;
+}
+
+.polis-position-bottom-left,
+.polis-position-bottom-right {
+  bottom: 36px;
+}
+
+.polis-position-top-left .polis-stat-row,
+.polis-position-bottom-left .polis-stat-row {
+  padding-left: 48px;
+}
+
+.polis-mission-right {
+  right: 16px;
+  width: 260px;
+  height: 228px;
+  transform: translateY(-50%) scale(1.15);
+  transform-origin: right center;
+}
+
+.polis-mission-copy {
+  top: 106px;
+  left: 36px;
+  right: 30px;
+}
+
+@media (max-width: 1050px) {
+  .polis-position-top-left,
+  .polis-position-bottom-left {
+    left: 20px;
+  }
+
+  .polis-position-top-right,
+  .polis-position-bottom-right {
+    right: 20px;
+  }
+
+  .polis-position-bottom-left,
+  .polis-position-bottom-right {
+    bottom: 30px;
+  }
+
+  .polis-position-top-left .polis-stat-row,
+  .polis-position-bottom-left .polis-stat-row {
+    padding-left: 38px;
+  }
+
+  .polis-mission-right {
+    width: 230px;
+    height: 202px;
+  }
+
+  .polis-mission-copy {
+    top: 95px;
+    left: 32px;
+    right: 26px;
+  }
+}
+
+@media (max-width: 750px) {
+  .polis-position-top-left,
+  .polis-position-bottom-left {
+    left: 12px;
+  }
+
+  .polis-position-top-right,
+  .polis-position-bottom-right {
+    right: 12px;
+  }
+
+  .polis-position-top-left .polis-stat-row,
+  .polis-position-bottom-left .polis-stat-row {
+    padding-left: 29px;
+  }
+
+  .polis-mission-right {
+    width: 180px;
+    height: 158px;
+  }
+
+  .polis-mission-copy {
+    top: 75px;
+    left: 19px;
+    right: 15px;
+  }
+
+  .polis-mission-copy .polis-mission-party {
+    padding: 3px 9px;
+    font-size: 12px;
+  }
+}
+
+.polis-player-card .polis-you-label,
+.polis-player-card .polis-next-label {
+  position: absolute;
+  z-index: 5;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  -webkit-text-stroke: 4.5px #000;
+  paint-order: stroke fill;
+  text-shadow: none;
+}
+
+.polis-player-card-left .polis-you-label {
+  left: 8px;
+  right: auto;
+  bottom: 4px;
+}
+
+.polis-player-card-right .polis-you-label {
+  right: 8px;
+  left: auto;
+  bottom: 4px;
+}
+
+/* Contorno direto dos nomes e valores na tela de jogo. */
+.polis-game-page .polis-player-name {
+  -webkit-text-stroke: 3px #000 !important;
+  text-shadow: none !important;
+}
+
+.polis-game-page .polis-stat-row strong {
+  -webkit-text-stroke: 2.8px #111 !important;
+  text-shadow: none !important;
+}
+
+.polis-position-top-left .polis-next-label,
+.polis-position-top-right .polis-next-label {
+  top: auto;
+  bottom: -22px;
+}
+
+.polis-position-top-left .polis-next-label {
+  left: 8px;
+}
+
+.polis-position-top-right .polis-next-label {
+  right: 8px;
+  left: auto;
+}
+
+.polis-position-bottom-left .polis-next-label,
+.polis-position-bottom-right .polis-next-label {
+  top: -24px;
+  bottom: auto;
+}
+
+.polis-position-bottom-left .polis-next-label {
+  left: 8px;
+}
+
+.polis-position-bottom-right .polis-next-label {
+  right: 8px;
+  left: auto;
+}
+
+.polis-game-page .polis-player-card-left .polis-player-name {
+  transform: translateX(calc(-50% + 44px));
+  text-align: left;
+  bottom: 10px;
+  font-size: 24px;
+  -webkit-text-stroke: 4.5px #000 !important;
+}
+
+.polis-game-page .polis-player-card-right .polis-player-name {
+  transform: translateX(calc(-50% - 44px));
+  text-align: right;
+  bottom: 10px;
+  font-size: 24px;
+  -webkit-text-stroke: 4.5px #000 !important;
+}
+
+.polis-game-page .polis-stat-row strong {
+  -webkit-text-stroke: 2.4px #111 !important;
+}
+
+.polis-game-page .polis-position-top-left .polis-stat-row,
+.polis-game-page .polis-position-bottom-left .polis-stat-row {
+  background-size: contain;
+}
+
+.polis-game-page .polis-turn-title,
+.polis-game-page .polis-turn-title span {
+  font-size: 28px;
+  -webkit-text-stroke: 4.5px #000;
+  paint-order: stroke fill;
+  text-shadow: none;
+}
+
+.polis-game-page .polis-turn-title {
+  top: 16px;
 }
