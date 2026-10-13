@@ -8,9 +8,9 @@
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html, body, body *, body *::before, body *::after {
+.polis-game-page, .polis-game-page *, .polis-game-page *::before, .polis-game-page *::after {
   font-family: "Coolvetica", sans-serif !important;
-  letter-spacing: 0.02em;
+  letter-spacing: calc(0.04em + 1px) !important;
 }
 :root{
   --bg:#1b3840;
@@ -887,8 +887,8 @@ html,
 
 .polis-choice-board {
   position: relative;
-  width: min(1280px, 96vw);
-  min-height: min(590px, 72vh);
+  width: min(1480px, 98vw);
+  min-height: min(680px, 80vh);
   box-sizing: border-box;
   padding: 100px 42px 36px;
   overflow: auto;
@@ -965,7 +965,7 @@ html,
 
 .polis-choice-card {
   position: relative;
-  width: min(100%, 270px);
+  width: min(100%, 310px);
   aspect-ratio: 413 / 640;
   padding: 0;
   overflow: hidden;
@@ -998,7 +998,7 @@ html,
   padding: 4px 10px;
   box-sizing: border-box;
   color: #fff;
-  font-size: clamp(17px, 1.75vw, 24px);
+  font-size: clamp(20px, 2.1vw, 30px);
   font-weight: 800;
   line-height: 1.1;
   text-shadow: none;
@@ -1008,19 +1008,22 @@ html,
 
 .polis-choice-card-risk {
   position: absolute;
-  top: 37.5%;
-  left: 30%;
-  width: 40%;
+  top: 39%;
+  transform: translateY(-2px);
+  left: 20%;
+  width: 60%;
   height: 5.5%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: clamp(11px, 1.2vw, 16px);
+  font-size: clamp(13px, 1.5vw, 19px);
   font-family: "Coolvetica", sans-serif !important;
+  letter-spacing: calc(0.04em + 1px);
   font-weight: 900;
   line-height: 1;
   text-align: center;
+  white-space: nowrap;
   -webkit-text-stroke: 4px #000;
   paint-order: stroke fill;
   text-shadow: none;
@@ -1029,7 +1032,7 @@ html,
 
 .polis-choice-card-details {
   position: absolute;
-  top: 44%;
+  top: 46%;
   left: 12%;
   width: 76%;
   max-height: 58%;
@@ -1046,6 +1049,22 @@ html,
 .polis-choice-card-details span { display: block; }
 .polis-choice-card-details .polis-choice-success { color: #284FB3; }
 .polis-choice-card-details .polis-choice-description { margin-top: 8px; }
+
+.polis-choice-card-cost {
+  position: absolute;
+  bottom: 5%;
+  left: 8%;
+  color: #fff;
+  font-size: clamp(13px, 1.5vw, 19px);
+  font-family: "Coolvetica", sans-serif !important;
+  letter-spacing: calc(0.04em + 1px);
+  font-weight: 900;
+  line-height: 1;
+  text-align: left;
+  -webkit-text-stroke: 4px #000;
+  paint-order: stroke fill;
+  text-shadow: none;
+}
 
 .polis-no-choice {
   grid-column: 1 / -1;
@@ -1078,7 +1097,7 @@ html,
   .polis-choice-overlay { justify-content: flex-start; overflow-y: auto; }
   .polis-choice-board { width: 96vw; min-height: auto; padding: 100px 18px 24px; }
   .polis-choice-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: 0; gap: 14px; }
-  .polis-choice-card { width: min(100%, 230px); }
+  .polis-choice-card { width: min(100%, 250px); }
 }
 
 @media (max-width: 420px) {
@@ -1144,6 +1163,53 @@ html,
     rgba(190, 42, 42, 0.9);
 
   font-size: 12px;
+}
+
+.polis-game-notice-backdrop {
+  position: fixed;
+  z-index: 15000;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, .88);
+  pointer-events: none;
+  animation: polis-game-notice-darken .22s ease both;
+}
+
+.polis-game-notice {
+  max-width: 90vw;
+  margin: 0;
+  font-size: clamp(20px, 3vw, 30px);
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+  -webkit-text-stroke: 1.5px #000;
+  paint-order: stroke fill;
+  text-shadow: 3px 3px 0 #000;
+  animation: polis-game-notice-pop 2.2s ease both;
+}
+
+.polis-game-notice-error {
+  color: #ff4b4b;
+}
+
+.polis-game-notice-success {
+  color: #45f08b;
+}
+
+@keyframes polis-game-notice-darken {
+  from { background: rgba(0, 0, 0, 0); }
+  to { background: rgba(0, 0, 0, .88); }
+}
+
+@keyframes polis-game-notice-pop {
+  0% { opacity: 0; transform: translateY(14px) scale(.84); }
+  12% { opacity: 1; transform: translateY(-4px) scale(1.05); }
+  20% { opacity: 1; transform: translateY(0) scale(1); }
+  82% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-12px) scale(.96); }
 }
 
 
@@ -1881,9 +1947,11 @@ html,
   width: 108px;
   min-width: 108px;
   height: 108px;
-  border: 4px solid #fff;
-  background: linear-gradient(145deg, #fff, #dadada);
-  box-shadow: 0 0 0 3px var(--party-color);
+  overflow: hidden;
+  border: 4px solid var(--party-color);
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 2px var(--party-color);
 }
 
 .polis-player-stats {
@@ -1955,10 +2023,12 @@ html,
 .polis-mission-copy p {
   margin: 8px 0 0;
   padding: 0 8px 6px;
-  font-size: 14px;
+  color: #3C57C5;
+  font-size: 15px;
+  font-family: "Fira Code", monospace !important;
   font-weight: 700;
   line-height: 1.28;
-  letter-spacing: 0.15px;
+  letter-spacing: calc(0.04em + 0.5px) !important;
 }
 
 .polis-mission-copy .polis-mission-party {
@@ -2419,4 +2489,65 @@ html,
 
 .polis-game-page .polis-turn-title {
   top: 16px;
+}
+
+.non-game-screen-zoom {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  transform: translateY(-10px) scale(1.22);
+  transform-origin: center;
+}
+
+.polis-skip-turn-message {
+  position: absolute;
+
+  top: 55px;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  z-index: 70;
+
+  min-width: 340px;
+  max-width: 650px;
+
+  padding: 12px 24px;
+
+  background: rgba(15, 23, 42, 0.95);
+
+  border: 2px solid #e0a12a;
+  border-radius: 8px;
+
+  color: #ffffff;
+
+  text-align: center;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  box-shadow:
+    0 5px 20px rgba(0, 0, 0, 0.45);
+
+  animation:
+    polis-skip-enter 0.25s ease-out;
+}
+
+@keyframes polis-skip-enter {
+  from {
+    opacity: 0;
+
+    transform:
+      translate(-50%, -10px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translate(-50%, 0);
+  }
 }
