@@ -482,15 +482,21 @@ def move_used_action(match_dict:dict , action: dict):
 
 def update_action_list(match_dict: dict, action:dict):
     active_key = match_dict[f"activate_{action["action_type"]}_actions_list"]
+    active_actions = match_dict[active_key]
 
-    if len(match_dict[active_key]) < 3:
+    non_insane_actions = sum(
+        1 for item in active_actions
+        if item["risk_level"] != "insane"
+    )
+
+    if len(active_actions) <= 3 or non_insane_actions < 2:
         inactive_key = (
             f"{action["action_type"]}_actions_2"
             if active_key.endswith("_1")
             else f"{action["action_type"]}_actions_1"
         )
 
-        match_dict[inactive_key].extend(match_dict[active_key])
+        match_dict[inactive_key].extend(active_actions)
         match_dict[active_key] = []
 
         match_dict[f"activate_{action["action_type"]}_actions_list"] = inactive_key
