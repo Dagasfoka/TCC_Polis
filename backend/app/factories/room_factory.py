@@ -15,10 +15,9 @@ class RoomFactory:
         return self.room_repository.create_room_player(player_id)
     def get_public_rooms(self):
             return self.room_repository.get_public_rooms()
-    def put_ready(self,room_dict,player_id):
-        for p_id in room_dict['players']:
-            if p_id==player_id:
-                room_dict['players'][player_id]['ready']=True
+    def put_ready(self, room_dict, player_id):
+        current_ready = room_dict["players"][player_id].get("ready",False)
+        room_dict["players"][player_id]["ready"] = not current_ready
         return room_dict
         #Tem que atualizar a room, essa function so coloca ready
         # Frontend tem que fazer o host não ver esse botão.
