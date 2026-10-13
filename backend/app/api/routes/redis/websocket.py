@@ -89,7 +89,7 @@ async def match_websocket(
                         option_id=option_id,
                         action_type=action_type
                     )
-                    if response["result"]["skipped_player_id"]:
+                    if response["result"].get("skipped_player_id"):
                         skipped_player_id=response["result"]["skipped_player_id"]
                         await manager.send_to_all(
                             match_id,

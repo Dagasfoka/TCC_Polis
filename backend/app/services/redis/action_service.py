@@ -278,8 +278,6 @@ def resolve_attack_action(
 
     match_factory.advance_turn(match)
 
-    match_factory.update_match(match)
-
     match_mission_validator.start_round_verify(match_id, match["current_turn_player_id"])
     actual_player =match_gateway.find_player(match, match["current_turn_player_id"])
     actual_player= player_validator.not_exist(actual_player)
@@ -287,8 +285,10 @@ def resolve_attack_action(
     match=initial_distribute_actions(match,get_match_attack_actions(match_id),get_match_defense_actions(match_id))
     match_factory.update_match(match)
     if (match_validator.skip_turn_by_money_insufficient(match,actual_player)):
-        return skip_turn_by_money_insufficient(match,action_result)
-    match_factory.update_match(match)
+        skipped_response=skip_turn_by_money_insufficient(match,action_result)
+        match_mission_validator.start_round_verify(match_id, match["current_turn_player_id"])
+        match_factory.update_match(match)
+        return skipped_response
     return {
         "match": match,
         "result": {
