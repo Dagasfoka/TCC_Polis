@@ -9,7 +9,7 @@ from backend.app.services.redis.action_service import (
     get_match_defense_actions,
     distribute_actions
 )
-
+from backend.app.factories.match_factory import MatchFactory
 from backend.app.validators.db.territory_validator import TerritoryValidator
 from backend.app.websocket.manager import manager
 
@@ -17,6 +17,7 @@ router_websocket = APIRouter()
 
 match_gateway=MatchGateway()
 territory_validator=TerritoryValidator()
+match_factory = MatchFactory()
 
 def prepare_match_for_player(match: dict, player_id: str):
     match_for_player = match.copy()
@@ -123,16 +124,30 @@ async def match_websocket(
                         match,
                         territory_id,
                     )
-                    territory=territory_validator.territory_exist(territory)
+                    territory = territory_validator.territory_exist(territory)
 
                     owner_id = territory["owner_id"]
-
                     is_my_territory = owner_id == player_id
 
                     action_type = "defense" if is_my_territory else "attack"
-                    available_actions = get_match_defense_actions(match_id) if is_my_territory else get_match_attack_actions(match_id)
-                    random.shuffle(available_actions)
-                    player_available_actions = distribute_actions(available_actions)
+                    actions_key = f"round_{action_type}_actions"
+
+                    available_actions = match.get(actions_key, [])
+
+                    if not available_actions:
+                        available_actions = (
+                            get_match_defense_actions(match_id)
+                            if action_type == "defense"
+                            else get_match_attack_actions(match_id)
+                        )
+
+                        available_actions = list(available_actions)
+                        random.shuffle(available_actions)
+
+                        available_actions = distribute_actions(available_actions)
+
+                        match[actions_key] = available_actions
+                        match_factory.update_match(match)
 
                     await manager.send_to_player(
                         match_id=match_id,
@@ -142,7 +157,7 @@ async def match_websocket(
                             "payload": {
                                 "action_type": action_type,
                                 "territory": territory,
-                                "available_actions": player_available_actions,
+                                "available_actions": available_actions,
                             },
                         },
                     )

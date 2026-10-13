@@ -405,6 +405,10 @@ def execute_attack_roll(
     if player["match_money"] < 0:
         player["match_money"] = 0
     player["match_corruption"] += corruption_generated
+    match["round_attack_actions"] = []
+    match["round_defense_actions"] = []
+
+    move_used_action(match, option)
 
     action_result = {
         "type": type,
@@ -457,6 +461,39 @@ def execute_attack_roll(
     }
 
     return action_result
+
+def move_used_action(match_dict:dict , action: dict):
+    active_key = match_dict[f"activate_{action["action_type"]}_actions_list"]
+
+    inactive_key = (
+        f"{action["action_type"]}_actions_2"
+        if active_key.endswith("_1")
+        else f"{action["action_type"]}_actions_1"
+    )
+
+    active_actions = match_dict[active_key]
+
+    for verify_action in active_actions:
+        if verify_action["action_id"] == action["action_id"]:
+            active_actions.remove(verify_action)
+            match_dict[inactive_key].append(verify_action)
+            break
+    update_action_list(match_dict, action)
+
+def update_action_list(match_dict: dict, action:dict):
+    active_key = match_dict[f"activate_{action["action_type"]}_actions_list"]
+
+    if len(match_dict[active_key]) < 3:
+        inactive_key = (
+            f"{action["action_type"]}_actions_2"
+            if active_key.endswith("_1")
+            else f"{action["action_type"]}_actions_1"
+        )
+
+        match_dict[inactive_key].extend(match_dict[active_key])
+        match_dict[active_key] = []
+
+        match_dict[f"activate_{action["action_type"]}_actions_list"] = inactive_key
 
 def clamp_success_chance(question_was_correct,base_success_chance):
     if question_was_correct:

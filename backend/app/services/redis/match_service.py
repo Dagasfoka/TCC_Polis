@@ -49,6 +49,9 @@ class MatchService:
         match_dict["defense_actions_2"] = []
         match_dict["activate_attack_actions_list"]="attack_actions_1"
         match_dict["activate_defense_actions_list"]="defense_actions_1"
+        match_dict["round_attack_actions"] = []
+        match_dict["round_defense_actions"] = []
+        
         self.match_factory.update_match(match_dict)
         return match_dict
 

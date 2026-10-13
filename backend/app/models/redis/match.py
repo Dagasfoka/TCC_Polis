@@ -20,6 +20,8 @@ class Match:
         defense_actions_2: list[dict] | None = None,
         activate_attack_actions_list:str | None = None,
         activate_defense_actions_list:str | None = None,
+        round_attack_actions: list[dict] | None = None,
+        round_defense_actions: list[dict] | None = None,
     ):
         self.match_id = match_id
         self.territories = territories
@@ -41,6 +43,8 @@ class Match:
         self.defense_actions_2 = defense_actions_2
         self.activate_attack_actions_list = activate_attack_actions_list
         self.activate_defense_actions_list = activate_defense_actions_list
+        self.round_attack_actions = round_attack_actions
+        self.round_defense_actions = round_defense_actions
         
         
 
@@ -65,6 +69,8 @@ class Match:
             "defense_actions_2": self.defense_actions_2,
             "activate_attack_actions_list": self.activate_attack_actions_list,
             "activate_defense_actions_list": self.activate_defense_actions_list,
+            "round_attack_action" : self.round_attack_actions,
+            "round_defense_action" : self.round_defense_actions,
                 }
 
     @classmethod
@@ -89,6 +95,8 @@ class Match:
         defense_actions_2: list[dict] | None = None,
         activate_attack_actions_list:str | None = None,
         activate_defense_actions_list:str | None = None,
+        round_attack_actions: list[dict] | None = None,
+        round_defense_actions: list[dict] | None = None,
     ):
         return cls(
             match_id,
@@ -110,4 +118,6 @@ class Match:
             defense_actions_2,
             activate_attack_actions_list,
             activate_defense_actions_list,
+            round_attack_actions,
+            round_defense_actions,
         ).to_dict()
