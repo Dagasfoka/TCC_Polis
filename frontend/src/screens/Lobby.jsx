@@ -935,7 +935,7 @@ export default function Lobby({
                   type="button"
                   className="btn-action-img btn-pronto"
                   onClick={handleReady}
-                  disabled={loading || isReady || !myPartyId}
+                  disabled={loading || !myPartyId}
                   title={
                     !myPartyId
                       ? "Escolha um partido primeiro"
