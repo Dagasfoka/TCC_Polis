@@ -145,52 +145,52 @@ export default function App() {
   }
 
   async function handleLogout() {
-  const userId =
-    localStorage.getItem("user_id");
+    const userId =
+      localStorage.getItem("user_id");
 
-  const playerId =
-    localStorage.getItem("player_id");
+    const playerId =
+      localStorage.getItem("player_id");
 
-  try {
-    // Usuário cadastrado
-    if (userId) {
-      await deleteUserPlayer(
-        Number(userId)
+    try {
+      // Usuário cadastrado
+      if (userId) {
+        await deleteUserPlayer(
+          Number(userId)
+        );
+      }
+
+      // Guest
+      else if (playerId) {
+        await deleteGuestPlayer(
+          playerId
+        );
+      }
+
+    } catch (error) {
+      console.error(
+        "Erro ao apagar player no logout:",
+        error
       );
-    }
 
-    // Guest
-    else if (playerId) {
-      await deleteGuestPlayer(
-        playerId
+    } finally {
+      localStorage.removeItem(
+        "user_id"
       );
+
+      localStorage.removeItem(
+        "player_id"
+      );
+
+      clearRoomCode();
+      clearMatchID();
+
+      setPlayer(null);
+      setRoom(null);
+      setMatchId(null);
+
+      setScreen("login");
     }
-
-  } catch (error) {
-    console.error(
-      "Erro ao apagar player no logout:",
-      error
-    );
-
-  } finally {
-    localStorage.removeItem(
-      "user_id"
-    );
-
-    localStorage.removeItem(
-      "player_id"
-    );
-
-    clearRoomCode();
-    clearMatchID();
-
-    setPlayer(null);
-    setRoom(null);
-    setMatchId(null);
-
-    setScreen("login");
   }
-}
   // ==============================
   // ENTROU OU CRIOU SALA
   // ==============================
@@ -257,6 +257,7 @@ export default function App() {
             player={player}
             onEnterRoom={handleEnterRoom}
             onLogout={handleLogout}
+            onPlayerUpdate={setPlayer}
           />
 
         )}
