@@ -29,7 +29,7 @@ export default function Lobby({
   onStart,
 }) {
   const [currentRoom, setCurrentRoom] = useState(room);
-  const [playerNames, setPlayerNames] = useState({});
+  const [playerInfos, setPlayerInfos] = useState({});
   const [parties, setParties] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -186,42 +186,50 @@ export default function Lobby({
   useEffect(() => {
     let active = true;
 
-    async function loadPlayerNames() {
-      const ids = playerIdsKey ? playerIdsKey.split(",") : [];
+    async function loadPlayerInfos() {
+      const ids = playerIdsKey
+        ? playerIdsKey.split(",")
+        : [];
 
       const results = await Promise.allSettled(
         ids.map(async (id) => {
-          if (id === playerId) {
-            return [id, player.username ?? player.nickname ?? id];
-          }
-
           const playerData = await getPlayer(id);
+
           return [
             id,
-            playerData.username ?? playerData.nickname ?? id,
+            {
+              username:
+                playerData.username ??
+                playerData.nickname ??
+                id,
+
+              avatar_id:
+                playerData.avatar_id ?? null,
+            },
           ];
         })
       );
 
       if (!active) return;
 
-      const names = {};
+      const infos = {};
+
       for (const result of results) {
         if (result.status === "fulfilled") {
-          const [id, name] = result.value;
-          names[id] = name;
+          const [id, info] = result.value;
+          infos[id] = info;
         }
       }
 
-      setPlayerNames(names);
+      setPlayerInfos(infos);
     }
 
-    loadPlayerNames();
+    loadPlayerInfos();
 
     return () => {
       active = false;
     };
-  }, [playerIdsKey, playerId, player.username, player.nickname]);
+  }, [playerIdsKey]);
 
   async function runAction(action) {
     if (actionInProgress.current) return;
@@ -752,14 +760,26 @@ export default function Lobby({
                 const selectedParty = activePartiesList.find(
                   (p) => String(p.id) === String(roomPlayer.party_id)
                 );
+
                 const isMe = id === playerId;
-                const pName = playerNames[id] ?? id;
+                const playerInfo = playerInfos[id];
+
+                const pName =
+                  playerInfo?.username ?? id;
+
+                const avatarId =
+                  playerInfo?.avatar_id ?? null;
                 const bgColor = selectedParty?.colorHex || "#2b334e";
 
                 return (
                   <div className="player-slot-item" key={id}>
+
                     <img
-                      src="/avatarsapo.png"
+                      src={
+                        avatarId
+                          ? `/avatars/${avatarId}.png`
+                          : "/avatarsapo.png"
+                      }
                       className="player-avatar-circle"
                       alt={pName}
                     />
@@ -787,7 +807,10 @@ export default function Lobby({
                               disabled={loading}
                               title="Expulsar"
                             >
-                              <img src="/expulsar.png" alt="Expulsar" />
+                              <img
+                                src="/expulsar.png"
+                                alt="Expulsar"
+                              />
                             </button>
                           )
                         )}
@@ -801,9 +824,11 @@ export default function Lobby({
                         alt="Pronto"
                       />
                     )}
+
                   </div>
                 );
               })}
+
 
               {Array.from({ length: emptySlots }).map((_, i) => (
                 <div className="empty-slot-item" key={`empty-${i}`}>
@@ -864,14 +889,12 @@ export default function Lobby({
                     <button
                       key={party.id}
                       type="button"
-                      className={`color-party-btn ${
-                        isSelected ? "selected" : ""
-                      } ${usedByOther ? "occupied" : ""}`}
+                      className={`color-party-btn ${isSelected ? "selected" : ""
+                        } ${usedByOther ? "occupied" : ""}`}
                       onClick={() => handleChooseParty(party.id)}
                       disabled={loading || isReady || usedByOther}
-                      title={`${party.name}${
-                        usedByOther ? " (Ocupado por outro jogador)" : ""
-                      }`}
+                      title={`${party.name}${usedByOther ? " (Ocupado por outro jogador)" : ""
+                        }`}
                     >
                       <img
                         src={party.file}
@@ -910,8 +933,8 @@ export default function Lobby({
                     !myPartyId
                       ? "Escolha um partido primeiro"
                       : isReady
-                      ? "Você já está pronto"
-                      : "Marcar como Pronto"
+                        ? "Você já está pronto"
+                        : "Marcar como Pronto"
                   }
                 >
                   <img src="/PRONTO.png" alt="Estou Pronto" />
