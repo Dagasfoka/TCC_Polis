@@ -185,13 +185,14 @@ def resolve_action_no_question(
     match_factory.update_match(match)
 
     match_mission_validator.start_round_verify(match_id, match["current_turn_player_id"])
-
+    actual_player =match_gateway.find_player(match, match["current_turn_player_id"])
+    actual_player= player_validator.not_exist(actual_player)
     match["last_action_result"] = action_result
     match=round_service.initial_distribute_actions(match)
     match_factory.update_match(match)
-    if (match_validator.skip_turn_by_money_insufficient(match,player)):
+    if (match_validator.skip_turn_by_money_insufficient(match,actual_player)):
         return round_service.skip_turn_by_money_insufficient(match,action_result)
-        
+    match_factory.update_match(match)  
     return {
         "match": match,
         "result": {
@@ -284,11 +285,12 @@ def resolve_attack_action(
     match_factory.update_match(match)
 
     match_mission_validator.start_round_verify(match_id, match["current_turn_player_id"])
-
+    actual_player =match_gateway.find_player(match, match["current_turn_player_id"])
+    actual_player= player_validator.not_exist(actual_player)
     match["last_action_result"] = action_result
     match=round_service.initial_distribute_actions(match)
     match_factory.update_match(match)
-    if (match_validator.skip_turn_by_money_insufficient(match,player)):
+    if (match_validator.skip_turn_by_money_insufficient(match,actual_player)):
         return round_service.skip_turn_by_money_insufficient(match,action_result)
     match_factory.update_match(match)
     return {
