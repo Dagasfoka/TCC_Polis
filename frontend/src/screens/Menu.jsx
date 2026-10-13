@@ -1,15 +1,13 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useState } from "react";
 import {
   createPrivateRoom,
   joinRandomRoom,
   joinRoom,
   chooseAvatar,
 } from "../service/api.jsx";
+import { getAvatarImage } from "../utils/avatarAssets.js";
 
-export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate, }) {
+export default function Menu({ player, onEnterRoom, onLogout }) {
 
   const avatars = [
     "avatar_1",
@@ -38,7 +36,6 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate, })
 
 
       setSelectedAvatar(updatedPlayer.avatar_id);
-      onPlayerUpdate(updatedPlayer);
       setShowAvatarModal(false);
 
     } catch (error) {
@@ -47,12 +44,6 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate, })
       setLoading(false);
     }
   }
-
-  useEffect(() => {
-    setSelectedAvatar(
-      player?.avatar_id || null
-    );
-  }, [player?.avatar_id]);
   // Criar sala privada
   async function handleCreatePrivateRoom() {
     try {
@@ -208,19 +199,19 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate, })
           z-index: 4;
         }
 
-        .avatar-perfil {
+        .avatar-sapo {
           position: absolute;
           bottom: 160px;
           width: 260px;
           z-index: 2;
         }
 
-      .podium-wrapper {
-        position: absolute;
-        bottom: -40px;
-        width: 290px;
-        z-index: 3;
-      }
+        .podium-wrapper {
+          position: absolute;
+          bottom: -34px;
+          width: 290px;
+          z-index: 3;
+        }
 
         .podium-wrapper img {
           width: 100%;
@@ -232,11 +223,18 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate, })
           top: 14px;
           left: 50%;
           transform: translateX(-50%);
+          display: inline-block;
+          padding: 2px 12px 4px;
+          background: #000000;
           color: #ffffff;
+          font-family: "Coolvetica", sans-serif;
           font-weight: 800;
-          font-size: 20px;
+          font-size: 28px;
+          letter-spacing: calc(0.04em + 1px);
           white-space: nowrap;
-          text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+          -webkit-text-stroke: 5.5px #000;
+          paint-order: stroke fill;
+          text-shadow: none;
         }
 
         .actions-section {
@@ -281,9 +279,14 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate, })
         .code-form-wrapper {
           position: relative;
           width: 340px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
         }
 
         .code-btn-submit {
+          position: relative;
+          z-index: 2;
           background: none;
           border: none;
           padding: 0;
@@ -306,13 +309,13 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate, })
 
         /* CAIXA DE INPUT TRANSPARENTE ALINHADA PERFEITAMENTE SOBRE O ESPAÇO MARROM */
         .code-input-overlay {
-          position: absolute;
-          bottom: 12px;
-          left: 50%;
-          transform: translateX(-50%);
+          position: relative;
+          z-index: 1;
+          transform: none;
+          margin-top: -19px;
           width: 270px;
-          height: 48px;
-          background: transparent;
+          height: 64px;
+          background: url("/DIGITARCODIGO.png") center / 100% 100% no-repeat;
           border: none;
           outline: none;
           color: #ffffff;
@@ -322,7 +325,6 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate, })
           text-align: center;
           letter-spacing: 4px;
           text-transform: uppercase;
-          z-index: 3;
         }
 
         .code-input-overlay::placeholder {
@@ -330,6 +332,10 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate, })
         }
 
         .status-msg {
+          position: absolute;
+          right: 10px;
+          bottom: 16px;
+          margin: 0;
           font-size: 14px;
           font-weight: 700;
           text-align: right;
@@ -505,13 +511,20 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate, })
 
 .avatar-button {
   position: absolute;
-  bottom: 190px;
+
+  bottom: 160px;
+
   width: 260px;
+
   background: none;
   border: none;
+
   padding: 0;
+
   cursor: pointer;
+
   z-index: 2;
+
   transition: transform 0.15s ease;
 }
 
@@ -519,217 +532,217 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate, })
   transform: scale(1.04);
 }
 
-.avatar-button .avatar-perfil {
+.avatar-button .avatar-sapo {
   position: static;
-  width: 100%;
+
+  width: 260px;
+
   display: block;
 }
 
         .loading-msg { color: #ffca28; }
-        .error-msg { color: #ff5252; }
+        .error-msg { color: #f04444; }
       `}</style>
 
       {/* Topo */}
-      <div className="header-bar-lobby">
-        <div className="header-logo">
-          <img src="/polis.png" alt="Logo Polis" />
-        </div>
+<div className="header-bar-lobby">
+  <div className="header-logo">
+    <img src="/polis.png" alt="Logo Polis" />
+  </div>
 
-        <button
-          onClick={onLogout}
-          disabled={loading}
-          className="top-login-link-btn"
-          title="Sair"
-        >
-          <img src="/sair.png" alt="Sair" />
-        </button>
-      </div>
-
-
-      {/* Card Principal */}
-      <div className="main-card">
-
-        {/* Esquerda: Perfil */}
-        <div className="profile-section">
-
-          <img
-            src="/retangulo.png"
-            className="retangulo-bg"
-            alt="Fundo Retângulo Azul"
-          />
-
-          <img
-            src="/perfil.png"
-            className="badge-perfil"
-            alt="PERFIL"
-          />
-
-          <button
-            type="button"
-            className="avatar-button"
-            onClick={() => setShowAvatarModal(true)}
-            title="Trocar avatar"
-          >
-            <img
-              src={
-                selectedAvatar
-                  ? `/avatars/${selectedAvatar}.png`
-                  : "/avatars/avatar_3.png"
-              }
-              className="avatar-perfil"
-              alt="Avatar do jogador"
-            />
-          </button>
-
-          <div className="podium-wrapper">
-            <img src="/podio.png" alt="Pódio" />
-
-            <span className="player-name">
-              {player?.username || player?.name || "Jogador"}
-            </span>
-          </div>
-        </div>
+  <button
+    onClick={onLogout}
+    disabled={loading}
+    className="top-login-link-btn"
+    title="Sair"
+  >
+    <img src="/sair.png" alt="Sair" />
+  </button>
+</div>
 
 
-        {/* Direita: Botões */}
-        <div className="actions-section">
+{/* Card Principal */}
+<div className="main-card">
 
-          {/* Sala Aleatória */}
-          <button
-            onClick={handleRandomRoom}
-            disabled={loading}
-            className="btn-action-img"
-          >
-            <img
-              src="/aleatoria.png"
-              alt="Sala Aleatória"
-            />
-          </button>
+  {/* Esquerda: Perfil */}
+  <div className="profile-section">
 
+    <img
+      src="/retangulo.png"
+      className="retangulo-bg"
+      alt="Fundo Retângulo Azul"
+    />
 
-          {/* Criar Sala Privada */}
-          <button
-            onClick={handleCreatePrivateRoom}
-            disabled={loading}
-            className="btn-action-img"
-          >
-            <img
-              src="/criar.png"
-              alt="Criar Sala"
-            />
-          </button>
+    <img
+      src="/perfil.png"
+      className="badge-perfil"
+      alt="PERFIL"
+    />
 
+    <button
+      type="button"
+      className="avatar-button"
+      onClick={() => setShowAvatarModal(true)}
+      title="Trocar avatar"
+    >
+      <img
+        src={getAvatarImage(selectedAvatar)}
+        className="avatar-sapo"
+        alt="Avatar do jogador"
+      />
+    </button>
 
-          {/* Entrar com Código */}
-          <form
-            onSubmit={handleJoinRoom}
-            className="code-form-wrapper"
-          >
+    <div className="podium-wrapper">
+      <img src="/podio.png" alt="Pódio" />
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="code-btn-submit"
-              title="Entrar com Código"
-            >
-              <img
-                src="/codigo.png"
-                alt="Entrar com Código"
-                className="code-bg-img"
-              />
-            </button>
+      <span className="player-name">
+        {player?.username || player?.name || "Jogador"}
+      </span>
+    </div>
 
-            <input
-              type="text"
-              maxLength={7}
-              placeholder="CÓDIGO"
-              value={roomCode}
-              onChange={(event) =>
-                setRoomCode(
-                  event.target.value.toUpperCase()
-                )
-              }
-              disabled={loading}
-              className="code-input-overlay"
-            />
-
-          </form>
+  </div>
 
 
-          {loading && (
-            <p className="status-msg loading-msg">
-              Carregando...
-            </p>
-          )}
+  {/* Direita: Botões */}
+  <div className="actions-section">
 
-          {error && (
-            <p
-              className="status-msg error-msg"
-              role="alert"
-            >
-              {error}
-            </p>
-          )}
-
-        </div>
-
-      </div>
+    {/* Sala Aleatória */}
+    <button
+      onClick={handleRandomRoom}
+      disabled={loading}
+      className="btn-action-img"
+    >
+      <img
+        src="/aleatoria.png"
+        alt="Sala Aleatória"
+      />
+    </button>
 
 
-      {/* ==============================
+    {/* Criar Sala Privada */}
+    <button
+      onClick={handleCreatePrivateRoom}
+      disabled={loading}
+      className="btn-action-img"
+    >
+      <img
+        src="/criar.png"
+        alt="Criar Sala"
+      />
+    </button>
+
+
+    {/* Entrar com Código */}
+    <form
+      onSubmit={handleJoinRoom}
+      className="code-form-wrapper"
+    >
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="code-btn-submit"
+        title="Entrar com Código"
+      >
+        <img
+          src="/entrar.png"
+          alt="Entrar com Código"
+          className="code-bg-img"
+        />
+      </button>
+
+      <input
+        type="text"
+        maxLength={7}
+        placeholder="CÓDIGO"
+        value={roomCode}
+        onChange={(event) =>
+          setRoomCode(
+            event.target.value.toUpperCase()
+          )
+        }
+        disabled={loading}
+        className="code-input-overlay"
+      />
+
+    </form>
+
+
+    {loading && (
+      <p className="status-msg loading-msg">
+        Carregando...
+      </p>
+    )}
+
+    {error && (
+      <p
+        className="status-msg error-msg"
+        role="alert"
+      >
+        {error}
+      </p>
+    )}
+
+  </div>
+
+</div>
+
+
+{/* ==============================
     MODAL DE AVATAR
 ================================ */}
 
-      {showAvatarModal && (
-        <div className="avatar-modal-overlay">
+{showAvatarModal && (
+  <div className="avatar-modal-overlay">
 
-          <div className="avatar-modal-box">
+    <div className="avatar-modal-box">
 
-            <button
-              type="button"
-              className="avatar-modal-close"
-              onClick={() =>
-                setShowAvatarModal(false)
-              }
-            >
-              ×
-            </button>
+      <button
+        type="button"
+        className="avatar-modal-close"
+        onClick={() =>
+          setShowAvatarModal(false)
+        }
+      >
+        ×
+      </button>
 
-            <h2 className="avatar-modal-title">
-              ESCOLHA SEU AVATAR
-            </h2>
+      <h2 className="avatar-modal-title">
+        ESCOLHA SEU AVATAR
+      </h2>
 
-            <div className="avatar-options">
+      <div className="avatar-options">
 
-              {avatars.map((avatar) => (
-                <button
-                  key={avatar}
-                  type="button"
-                  className={`avatar-option ${selectedAvatar === avatar
-                    ? "selected"
-                    : ""
-                    }`}
-                  disabled={loading}
-                  onClick={() =>
-                    handleChooseAvatar(avatar)
-                  }
-                >
-                  <img
-                    src={`/avatars/${avatar}.png`}
-                    alt={avatar}
-                  />
-                </button>
-              ))}
+        {avatars.map((avatar) => (
+          <button
+            key={avatar}
+            type="button"
+            className={`avatar-option ${
+              selectedAvatar === avatar
+                ? "selected"
+                : ""
+            }`}
+            disabled={loading}
+            onClick={() =>
+              handleChooseAvatar(avatar)
+            }
+          >
+            <img
+              src={getAvatarImage(avatar)}
+              alt={avatar}
+            />
+          </button>
+        ))}
 
-            </div>
-
-          </div>
-
-        </div>
-      )}
+      </div>
 
     </div>
 
-  );
+  </div>
+)}
+
+</div>
+  
+);
 
 }

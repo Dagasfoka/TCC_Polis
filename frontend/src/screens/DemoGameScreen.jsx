@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import BrazilMapSvg from "../components/BrazilMapSvg.jsx";
+import { getAvatarImage } from "../utils/avatarAssets.js";
 
 const PARTY_COLORS = {
   PR: "#DA3A3C",
@@ -119,16 +120,16 @@ function PlayerCard({
         aria-hidden="true"
       />
       <div className="polis-player-polygon" aria-hidden="true" />
-{isNext && <div className="polis-next-label">Próximo</div>}
+      {isNext && <div className="polis-next-label">Próximo</div>}
 
 
       <div className="polis-player-main">
         <div className="polis-player-avatar">
           <img
-            src={`/avatars/${player.avatar_id || "avatar_3"}.png`}
+            src={getAvatarImage(player.avatar_id)}
             alt={`Avatar de ${player.username}`}
             onError={(event) => {
-              event.currentTarget.src = "/avatars/avatar_3.png";
+              event.currentTarget.src = getAvatarImage("avatar_3");
             }}
           />
         </div>
@@ -319,19 +320,75 @@ export default function DemoGameScreen({
   const [selectedTerritory, setSelectedTerritory] = useState(null);
   const [availableActions, setAvailableActions] = useState([]);
   const [actionType, setActionType] = useState(null);
+  const [skipTurnMessage, setSkipTurnMessage] = useState(null);
 
   const [pendingQuestion, setPendingQuestion] = useState(null);
   const [pendingActionInfo, setPendingActionInfo] = useState(null);
+  const [gameNotice, setGameNotice] = useState(null);
 
 
   const wsRef = useRef(null);
   const winnerAlertShownRef = useRef(false);
   const reconnectTimerRef = useRef(null);
+  const gameNoticeTimerRef = useRef(null);
+  const lastActionNoticeRef = useRef(null);
+  const gameNoticeIdRef = useRef(0);
+  const localActionPendingRef = useRef(false);
+  const receivedInitialStateRef = useRef(false);
   const shouldReconnectRef = useRef(true);
   const isUnmountingRef = useRef(false);
 
   const players = matchState?.players ?? [];
   const territories = matchState?.territories ?? [];
+
+  function showGameNotice(kind, message) {
+    showGameNotices([{ kind, message }]);
+  }
+
+  function showGameNotices(notices) {
+    if (!notices.length) return;
+
+    if (gameNoticeTimerRef.current) {
+      clearTimeout(gameNoticeTimerRef.current);
+    }
+
+    let noticeIndex = 0;
+    const showNextNotice = () => {
+      setGameNotice({ ...notices[noticeIndex], id: ++gameNoticeIdRef.current });
+      gameNoticeTimerRef.current = setTimeout(() => {
+        noticeIndex += 1;
+        if (noticeIndex < notices.length) {
+          showNextNotice();
+        } else {
+          setGameNotice(null);
+          gameNoticeTimerRef.current = null;
+        }
+      }, 2200);
+    };
+
+    showNextNotice();
+  }
+
+  function notifyActionCompleted(result) {
+    if (!["attack_result", "attack_no_question"].includes(result?.type)) {
+      return;
+    }
+
+    const signature = JSON.stringify(result);
+    if (receivedInitialStateRef.current && signature !== lastActionNoticeRef.current && localActionPendingRef.current) {
+      const notices = [];
+      if (typeof result.question_was_correct === "boolean") {
+        notices.push({
+          kind: result.question_was_correct ? "success" : "error",
+          message: result.question_was_correct ? "Resposta correta!" : "Resposta errada!",
+        });
+      }
+      notices.push({ kind: "success", message: "Ação concluída!" });
+      showGameNotices(notices);
+      localActionPendingRef.current = false;
+    }
+    lastActionNoticeRef.current = signature;
+  }
 
   const currentPlayer = useMemo(() => {
     if (!matchState) {
@@ -510,6 +567,31 @@ export default function DemoGameScreen({
 
       if (data.type === "match_state") {
         const newMatchState = data.payload;
+        const actionResult = newMatchState?.last_action_result;
+
+        if (newMatchState?.skipped_player_id) {
+          const skippedPlayer =
+            newMatchState.players?.find(
+              (player) =>
+                player.player_id ===
+                newMatchState.skipped_player_id
+            );
+
+          const skippedPlayerName =
+            skippedPlayer?.username ??
+            "O jogador";
+
+          setSkipTurnMessage(
+            `${skippedPlayerName} não possui dinheiro suficiente. A vez foi pulada.`
+          );
+        }
+
+        if (receivedInitialStateRef.current) {
+          notifyActionCompleted(actionResult);
+        } else if (["attack_result", "attack_no_question"].includes(actionResult?.type)) {
+          lastActionNoticeRef.current = JSON.stringify(actionResult);
+        }
+        receivedInitialStateRef.current = true;
 
         setMatchState(newMatchState);
 
@@ -537,6 +619,8 @@ export default function DemoGameScreen({
       if (data.result?.type === "attack_result") {
         const newMatchState = data.match;
 
+        notifyActionCompleted(data.result);
+
         setMatchState(newMatchState);
 
         // Atualiza o painel imediatamente
@@ -553,6 +637,8 @@ export default function DemoGameScreen({
 
       if (data.match && data.result) {
         const newMatchState = data.match;
+
+        notifyActionCompleted(data.result);
 
         setMatchState(newMatchState);
 
@@ -581,9 +667,31 @@ export default function DemoGameScreen({
          * Um erro de jogada NÃO deve derrubar a conexão.
          * Apenas mostramos o erro.
          */
-        onMatchNotFound(message)
+        const normalizedMessage = message.toLowerCase();
+        if (
+          (normalizedMessage.includes("partida") && normalizedMessage.includes("encontrada")) ||
+          normalizedMessage.includes("match not found")
+        ) {
+          onMatchNotFound?.(message);
+          return;
+        }
 
-        alert(message);
+        if (normalizedMessage.includes("fronteira")) {
+          localActionPendingRef.current = false;
+          setSelectedTerritory(null);
+          setAvailableActions([]);
+          return;
+        }
+
+        const isTechnicalError =
+          normalizedMessage.includes("not supported between instances") ||
+          normalizedMessage.includes("nonetype") ||
+          normalizedMessage.includes("traceback");
+        showGameNotice(
+          "error",
+          isTechnicalError ? "Não foi possível concluir a ação. Tente novamente." : message
+        );
+        localActionPendingRef.current = false;
 
         return;
       }
@@ -670,6 +778,7 @@ export default function DemoGameScreen({
       return;
     }
 
+    localActionPendingRef.current = true;
     wsRef.current.send(
       JSON.stringify({
         type: "choose_attack_option",
@@ -735,6 +844,19 @@ export default function DemoGameScreen({
         reconnectTimerRef.current = null;
       }
 
+      if (skipMessageTimerRef.current) {
+        clearTimeout(
+          skipMessageTimerRef.current
+        );
+
+        skipMessageTimerRef.current = null;
+      }
+
+      if (gameNoticeTimerRef.current) {
+        clearTimeout(gameNoticeTimerRef.current);
+        gameNoticeTimerRef.current = null;
+      }
+
       if (wsRef.current) {
         wsRef.current.close();
 
@@ -762,6 +884,13 @@ export default function DemoGameScreen({
             {currentPlayer?.username ?? "..."}
           </span>
         </div>
+
+        {skipTurnMessage && (
+          <div className="polis-skip-turn-message">
+            {skipTurnMessage}
+          </div>
+        )}
+
 
         <div className="polis-position polis-position-top-left">
           <PlayerCard
@@ -858,6 +987,7 @@ export default function DemoGameScreen({
             territories={territories}
             players={players}
             partyColors={PARTY_COLORS}
+            currentPlayerId={matchState?.your_player_id}
             selectedTerritoryId={
               selectedTerritory?.territory_id
             }
@@ -881,7 +1011,7 @@ export default function DemoGameScreen({
                 <div className="polis-choice-territory">
                   <h2>
                     {selectedTerritory.name &&
-                    selectedTerritory.name !== selectedTerritory.territory_id
+                      selectedTerritory.name !== selectedTerritory.territory_id
                       ? `${selectedTerritory.name} (${selectedTerritory.territory_id})`
                       : selectedTerritory.territory_id}
                   </h2>
@@ -898,37 +1028,49 @@ export default function DemoGameScreen({
                   {availableActions.length === 0 && (
                     <p className="polis-no-choice">Nenhuma ação disponível.</p>
                   )}
-                  {availableActions.slice(0, 4).map((option) => (
-                    <button
-                      type="button"
-                      className="polis-choice-card"
-                      key={option.action_id}
-                      onClick={() => sendAttack(option.action_id, option.action_type)}
-                    >
-                      <span className="polis-choice-card-title">
-                        <strong>{option.title}</strong>
-                      </span>
-                      <span className="polis-choice-card-risk">
-                        {({
-                          low: "Risco baixo",
-                          medium: "Risco médio",
-                          high: "Risco alto",
-                          insane: "Risco insano",
-                        })[option.risk_level] ?? option.risk_level ?? "Risco não informado"}
-                      </span>
-                      <span className="polis-choice-card-details">
-                        {option.influence_generated !== undefined && (
-                          <span>+{option.influence_generated} influência</span>
+                  {availableActions
+                    .slice(0, 4)
+                    .map((option) => (
+                      <button
+                        type="button"
+                        className="polis-choice-card"
+                        key={option.action_id}
+                        onClick={() =>
+                          sendAttack(
+                            option.action_id,
+                            actionType
+                          )
+                        }
+                      >
+                        <span className="polis-choice-card-title">
+                          <strong>{option.title}</strong>
+                        </span>
+                        <span className="polis-choice-card-risk">
+                          {({
+                            low: "Risco baixo",
+                            medium: "Risco médio",
+                            high: "Risco alto",
+                            insane: "Risco insano",
+                          })[option.risk_level] ?? option.risk_level ?? "Risco não informado"}
+                        </span>
+                        <span className="polis-choice-card-details">
+                          {option.influence_generated !== undefined && (
+                            <span>+{option.influence_generated} influência</span>
+                          )}
+                          {option.success_chance !== undefined && (
+                            <span className="polis-choice-success">{option.success_chance}% de sucesso</span>
+                          )}
+                          {option.description && (
+                            <span className="polis-choice-description">{option.description}</span>
+                          )}
+                        </span>
+                        {option.cost !== undefined && (
+                          <span className="polis-choice-card-cost">
+                            Custo: {option.cost}$
+                          </span>
                         )}
-                        {option.success_chance !== undefined && (
-                          <span className="polis-choice-success">{option.success_chance}% de sucesso</span>
-                        )}
-                        {option.description && (
-                          <span className="polis-choice-description">{option.description}</span>
-                        )}
-                      </span>
-                    </button>
-                  ))}
+                      </button>
+                    ))}
                 </div>
               ) : (
                 <p className="polis-not-your-turn">Aguarde sua vez para realizar uma ação.</p>
@@ -989,6 +1131,21 @@ export default function DemoGameScreen({
           </div>
         )}
 
+        {gameNotice && (
+          <div
+            className="polis-game-notice-backdrop"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <p
+              key={gameNotice.id}
+              className={`polis-game-notice polis-game-notice-${gameNotice.kind}`}
+              role="status"
+            >
+              {gameNotice.message}
+            </p>
+          </div>
+        )}
       </main>
 
 
