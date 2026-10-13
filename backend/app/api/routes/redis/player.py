@@ -68,11 +68,12 @@ def delete_player_route(
         data.player_id
     ) 
 
-@router_player.patch("/player/avatar")
+@router_player.patch("/players/{player_id}/avatar")
 def update_avatar(
+    player_id: str,
     data: PlayerAvatarUpdate
 ):
     return update_player_avatar(
-        data.player_id,
+        player_id,
         data.avatar_id
     )

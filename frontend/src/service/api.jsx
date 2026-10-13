@@ -357,3 +357,15 @@ export function getUser(userId) {
     `/users/${encodeURIComponent(userId)}`
   );
 }
+
+export function chooseAvatar(playerId, avatarId) {
+  return request(
+    `/players/${encodeURIComponent(playerId)}/avatar`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        avatar_id: avatarId,
+      }),
+    }
+  );
+}

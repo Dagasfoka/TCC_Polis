@@ -3,13 +3,46 @@ import {
   createPrivateRoom,
   joinRandomRoom,
   joinRoom,
+  chooseAvatar,
 } from "../service/api.jsx";
 
 export default function Menu({ player, onEnterRoom, onLogout }) {
+
+  const avatars = [
+    "avatar_1",
+    "avatar_2",
+    "avatar_3",
+    "avatar_4",
+  ];
+
   const [roomCode, setRoomCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState(player?.avatar_id || null);
 
+  async function handleChooseAvatar(avatarId) {
+    try {
+      setLoading(true);
+      setError("");
+
+      const updatedPlayer = await chooseAvatar(
+        player.player_id,
+        avatarId
+      );
+
+      console.log("PLAYER ATUALIZADO:", updatedPlayer);
+
+
+      setSelectedAvatar(updatedPlayer.avatar_id);
+      setShowAvatarModal(false);
+
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
   // Criar sala privada
   async function handleCreatePrivateRoom() {
     try {
@@ -293,105 +326,411 @@ export default function Menu({ player, onEnterRoom, onLogout }) {
           width: 340px;
         }
 
+        /* ==============================
+   MODAL DE ESCOLHA DE AVATAR
+   ============================== */
+
+.avatar-modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(5, 10, 20, 0.78);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 9999;
+
+  backdrop-filter: blur(4px);
+}
+
+.avatar-modal-box {
+  position: relative;
+
+  width: 760px;
+  max-width: 92%;
+
+  min-height: 420px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(30, 46, 78, 0.98),
+      rgba(13, 18, 29, 0.98)
+    );
+
+  border: 2px solid #2e3e6e;
+  border-radius: 16px;
+
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.75),
+    inset 0 0 25px rgba(76, 110, 245, 0.08);
+
+  padding: 35px 40px 40px;
+
+  font-family: 'Fira Code', monospace;
+  color: #ffffff;
+
+  text-align: center;
+}
+
+.avatar-modal-title {
+  font-size: 25px;
+  font-weight: 800;
+
+  margin-bottom: 30px;
+
+  color: #ffffff;
+
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.7);
+}
+
+.avatar-modal-close {
+  position: absolute;
+
+  top: 15px;
+  right: 18px;
+
+  width: 38px;
+  height: 38px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  color: #ffffff;
+
+  font-family: 'Fira Code', monospace;
+  font-size: 22px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+
+.avatar-modal-close:hover {
+  transform: scale(1.08);
+  background: rgba(255, 82, 82, 0.7);
+}
+
+.avatar-options {
+  display: grid;
+
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 22px;
+
+  align-items: center;
+  justify-items: center;
+}
+
+.avatar-option {
+  width: 140px;
+  height: 170px;
+
+  border: 2px solid #2e3e6e;
+  border-radius: 14px;
+
+  background: rgba(13, 18, 29, 0.75);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  padding: 10px;
+
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.avatar-option:hover:not(:disabled) {
+  transform: translateY(-5px) scale(1.04);
+
+  border-color: #4c6ef5;
+
+  background: rgba(27, 38, 71, 0.95);
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.5),
+    0 0 15px rgba(76, 110, 245, 0.35);
+}
+
+.avatar-option:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.avatar-option.selected {
+  border-color: #6d8cff;
+
+  background: rgba(59, 91, 219, 0.25);
+
+  box-shadow:
+    0 0 0 3px rgba(76, 110, 245, 0.2),
+    0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.avatar-option img {
+  width: 115px;
+  height: 145px;
+
+  object-fit: contain;
+
+  display: block;
+
+  filter: drop-shadow(
+    0px 7px 8px rgba(0, 0, 0, 0.45)
+  );
+}
+
+.avatar-button {
+  position: absolute;
+
+  bottom: 160px;
+
+  width: 260px;
+
+  background: none;
+  border: none;
+
+  padding: 0;
+
+  cursor: pointer;
+
+  z-index: 2;
+
+  transition: transform 0.15s ease;
+}
+
+.avatar-button:hover {
+  transform: scale(1.04);
+}
+
+.avatar-button .avatar-sapo {
+  position: static;
+
+  width: 260px;
+
+  display: block;
+}
+
         .loading-msg { color: #ffca28; }
         .error-msg { color: #ff5252; }
       `}</style>
 
       {/* Topo */}
-      <div className="header-bar-lobby">
-        <div className="header-logo">
-          <img src="/polis.png" alt="Logo Polis" />
-        </div>
-        <button
-          onClick={onLogout}
-          disabled={loading}
-          className="top-login-link-btn"
-          title="Sair"
-        >
-          <img src="/sair.png" alt="Sair" />
-        </button>
-      </div>
+<div className="header-bar-lobby">
+  <div className="header-logo">
+    <img src="/polis.png" alt="Logo Polis" />
+  </div>
 
-      {/* Card Principal */}
-      <div className="main-card">
-        {/* Esquerda: Perfil */}
-        <div className="profile-section">
-          <img
-            src="/retangulo.png"
-            className="retangulo-bg"
-            alt="Fundo Retângulo Azul"
-          />
-          <img src="/perfil.png" className="badge-perfil" alt="PERFIL" />
+  <button
+    onClick={onLogout}
+    disabled={loading}
+    className="top-login-link-btn"
+    title="Sair"
+  >
+    <img src="/sair.png" alt="Sair" />
+  </button>
+</div>
 
-          <img
-            src="/sapoestendido.png"
-            className="avatar-sapo"
-            alt="Avatar Sapo"
-          />
 
-          <div className="podium-wrapper">
-            <img src="/podio.png" alt="Pódio" />
-            <span className="player-name">
-              {player?.username || player?.name || "Jogador"}
-            </span>
-          </div>
-        </div>
+{/* Card Principal */}
+<div className="main-card">
 
-        {/* Direita: Botões */}
-        <div className="actions-section">
-          {/* Sala Aleatória */}
-          <button
-            onClick={handleRandomRoom}
-            disabled={loading}
-            className="btn-action-img"
-          >
-            <img src="/aleatoria.png" alt="Sala Aleatória" />
-          </button>
+  {/* Esquerda: Perfil */}
+  <div className="profile-section">
 
-          {/* Criar Sala Privada */}
-          <button
-            onClick={handleCreatePrivateRoom}
-            disabled={loading}
-            className="btn-action-img"
-          >
-            <img src="/criar.png" alt="Criar Sala" />
-          </button>
+    <img
+      src="/retangulo.png"
+      className="retangulo-bg"
+      alt="Fundo Retângulo Azul"
+    />
 
-          {/* Entrar com Código sem duplicação de elementos */}
-          <form onSubmit={handleJoinRoom} className="code-form-wrapper">
-            <button
-              type="submit"
-              disabled={loading}
-              className="code-btn-submit"
-              title="Entrar com Código"
-            >
-              <img
-                src="/codigo.png"
-                alt="Entrar com Código"
-                className="code-bg-img"
-              />
-            </button>
-            <input
-              type="text"
-              maxLength={7}
-              placeholder="CÓDIGO"
-              value={roomCode}
-              onChange={(event) =>
-                setRoomCode(event.target.value.toUpperCase())
-              }
-              disabled={loading}
-              className="code-input-overlay"
-            />
-          </form>
+    <img
+      src="/perfil.png"
+      className="badge-perfil"
+      alt="PERFIL"
+    />
 
-          {loading && <p className="status-msg loading-msg">Carregando...</p>}
-          {error && (
-            <p className="status-msg error-msg" role="alert">
-              {error}
-            </p>
-          )}
-        </div>
-      </div>
+    <button
+      type="button"
+      className="avatar-button"
+      onClick={() => setShowAvatarModal(true)}
+      title="Trocar avatar"
+    >
+      <img
+        src={
+          selectedAvatar
+            ? `/avatars/${selectedAvatar}.png`
+            : "/sapoestendido.png"
+        }
+        className="avatar-sapo"
+        alt="Avatar do jogador"
+      />
+    </button>
+
+    <div className="podium-wrapper">
+      <img src="/podio.png" alt="Pódio" />
+
+      <span className="player-name">
+        {player?.username || player?.name || "Jogador"}
+      </span>
     </div>
-  );
+
+  </div>
+
+
+  {/* Direita: Botões */}
+  <div className="actions-section">
+
+    {/* Sala Aleatória */}
+    <button
+      onClick={handleRandomRoom}
+      disabled={loading}
+      className="btn-action-img"
+    >
+      <img
+        src="/aleatoria.png"
+        alt="Sala Aleatória"
+      />
+    </button>
+
+
+    {/* Criar Sala Privada */}
+    <button
+      onClick={handleCreatePrivateRoom}
+      disabled={loading}
+      className="btn-action-img"
+    >
+      <img
+        src="/criar.png"
+        alt="Criar Sala"
+      />
+    </button>
+
+
+    {/* Entrar com Código */}
+    <form
+      onSubmit={handleJoinRoom}
+      className="code-form-wrapper"
+    >
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="code-btn-submit"
+        title="Entrar com Código"
+      >
+        <img
+          src="/codigo.png"
+          alt="Entrar com Código"
+          className="code-bg-img"
+        />
+      </button>
+
+      <input
+        type="text"
+        maxLength={7}
+        placeholder="CÓDIGO"
+        value={roomCode}
+        onChange={(event) =>
+          setRoomCode(
+            event.target.value.toUpperCase()
+          )
+        }
+        disabled={loading}
+        className="code-input-overlay"
+      />
+
+    </form>
+
+
+    {loading && (
+      <p className="status-msg loading-msg">
+        Carregando...
+      </p>
+    )}
+
+    {error && (
+      <p
+        className="status-msg error-msg"
+        role="alert"
+      >
+        {error}
+      </p>
+    )}
+
+  </div>
+
+</div>
+
+
+{/* ==============================
+    MODAL DE AVATAR
+================================ */}
+
+{showAvatarModal && (
+  <div className="avatar-modal-overlay">
+
+    <div className="avatar-modal-box">
+
+      <button
+        type="button"
+        className="avatar-modal-close"
+        onClick={() =>
+          setShowAvatarModal(false)
+        }
+      >
+        ×
+      </button>
+
+      <h2 className="avatar-modal-title">
+        ESCOLHA SEU AVATAR
+      </h2>
+
+      <div className="avatar-options">
+
+        {avatars.map((avatar) => (
+          <button
+            key={avatar}
+            type="button"
+            className={`avatar-option ${
+              selectedAvatar === avatar
+                ? "selected"
+                : ""
+            }`}
+            disabled={loading}
+            onClick={() =>
+              handleChooseAvatar(avatar)
+            }
+          >
+            <img
+              src={`/avatars/${avatar}.png`}
+              alt={avatar}
+            />
+          </button>
+        ))}
+
+      </div>
+
+    </div>
+
+  </div>
+)}
+
+</div>
+  
+);
+
 }

@@ -16,5 +16,4 @@ class PlayerRoom(BaseModel):
     host_id: str
 
 class PlayerAvatarUpdate(BaseModel):
-    player_id: str
     avatar_id: str
