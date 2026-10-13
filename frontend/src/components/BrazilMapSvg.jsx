@@ -31,11 +31,24 @@ const TERRITORY_IDS = [
   "PI", "AL", "DF", "MA", "PA", "SP", "RJ", "SC", "CE", "PE",
 ];
 
+const TERRITORY_FRONTIERS = {
+  AC: ["AM", "RO", "SC"], AM: ["AC", "RO", "MT", "PA"],
+  PA: ["AM", "MT", "TO", "MA"], RO: ["AC", "AM", "MT"],
+  TO: ["PA", "MA", "PI", "BA", "GO", "MT"], AL: ["PE", "BA"],
+  BA: ["AL", "PE", "PI", "TO", "GO", "MG", "RJ"], CE: ["PI", "PE", "RJ"],
+  MA: ["PA", "TO", "PI"], PE: ["CE", "PI", "BA", "AL"],
+  PI: ["MA", "CE", "PE", "BA", "TO"], DF: ["GO", "MG"],
+  GO: ["TO", "BA", "MG", "MS", "MT", "DF"], MT: ["RO", "AM", "PA", "TO", "GO", "MS"],
+  MS: ["MT", "GO", "MG", "SP", "PR"], MG: ["BA", "GO", "DF", "MS", "SP", "RJ"],
+  RJ: ["MG", "SP", "BA", "CE"], SP: ["MG", "RJ", "MS", "PR"],
+  PR: ["SP", "MS", "SC"], SC: ["PR", "AC"],
+};
+
 function darkenColor(color) {
   const hex = color.replace("#", "");
   if (!/^[0-9a-f]{6}$/i.test(hex)) return color;
   const channels = [0, 2, 4].map((index) =>
-    Math.round(parseInt(hex.slice(index, index + 2), 16) * 0.5)
+    Math.round(parseInt(hex.slice(index, index + 2), 16) * 0.35)
   );
   return `#${channels.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
 }
@@ -47,12 +60,28 @@ export default function BrazilMapSvg({
   selectedTerritoryId = null,
   onSelectTerritory = () => {},
   isActionable = true,
+  currentPlayerId = null,
   className = "",
 }) {
   const territoryById = useMemo(
     () => Object.fromEntries(territories.map((territory) => [territory.territory_id, territory])),
     [territories]
   );
+
+  function isTerritorySelectable(territoryId) {
+    if (!currentPlayerId) return true;
+
+    const territory = territoryById[territoryId];
+    if (!territory) return false;
+    if (territory.owner_id === currentPlayerId) return true;
+
+    const frontiers = TERRITORY_FRONTIERS[territoryId] ?? [];
+    return territories.some(
+      (ownedTerritory) =>
+        ownedTerritory.owner_id === currentPlayerId &&
+        frontiers.includes(ownedTerritory.territory_id)
+    );
+  }
 
   function getFill(territoryId) {
     const territory = territoryById[territoryId];
@@ -65,7 +94,9 @@ export default function BrazilMapSvg({
         : REGION_COLORS[territory.region] ?? "#c9963a";
     }
 
-    return isActionable ? fill : darkenColor(fill);
+    return isActionable && isTerritorySelectable(territoryId)
+      ? fill
+      : darkenColor(fill);
   }
 
   function getAriaLabel(territoryId) {
@@ -76,7 +107,9 @@ export default function BrazilMapSvg({
 
   function handleTerritoryClick(territoryId) {
     const territory = territoryById[territoryId];
-    if (territory) onSelectTerritory(territory);
+    if (territory && isTerritorySelectable(territoryId)) {
+      onSelectTerritory(territory);
+    }
   }
 
   function handleTerritoryKeyDown(event, territoryId) {
@@ -124,11 +157,15 @@ export default function BrazilMapSvg({
               : undefined
           }
           className="polis-territory"
-          style={{ cursor: "pointer", transition: "fill 0.15s ease" }}
+          style={{
+            cursor: isTerritorySelectable(territoryId) ? "pointer" : "not-allowed",
+            transition: "fill 0.15s ease",
+          }}
           onClick={() => handleTerritoryClick(territoryId)}
           onKeyDown={(event) => handleTerritoryKeyDown(event, territoryId)}
-          tabIndex={0}
+          tabIndex={isTerritorySelectable(territoryId) ? 0 : -1}
           role="button"
+          aria-disabled={!isTerritorySelectable(territoryId)}
           aria-label={getAriaLabel(territoryId)}
         />
       ))}
@@ -184,8 +221,8 @@ export default function BrazilMapSvg({
                   userSelect: "none",
                   fontSize: "18px",
                   fontWeight: 800,
-                  fill: isActionable ? "#ffffff" : "#808080",
-                  stroke: isActionable ? "#1a1816" : "#111111",
+                  fill: isActionable && isTerritorySelectable(territoryId) ? "#ffffff" : "#808080",
+                  stroke: isActionable && isTerritorySelectable(territoryId) ? "#1a1816" : "#111111",
                   strokeWidth: 2.8,
                   paintOrder: "stroke",
                 }}
@@ -203,8 +240,8 @@ export default function BrazilMapSvg({
                   userSelect: "none",
                   fontSize: "14px",
                   fontWeight: 800,
-                  fill: isActionable ? "#ffffff" : "#808080",
-                  stroke: isActionable ? "#1a1816" : "#111111",
+                  fill: isActionable && isTerritorySelectable(territoryId) ? "#ffffff" : "#808080",
+                  stroke: isActionable && isTerritorySelectable(territoryId) ? "#1a1816" : "#111111",
                   strokeWidth: 2.8,
                   paintOrder: "stroke",
                 }}
