@@ -15,7 +15,7 @@ from backend.app.validators.pending_action_validators import PendingActionValida
 from backend.app.validators.player_validators import PlayerValidator
 from backend.app.models.redis.pending_action import PendingAction
 from backend.app.factories.match_action_factory import MatchActionFactory
-from backend.app.services.redis.round_service import RoundService
+from backend.app.services.redis.round_service import initial_distribute_actions,skip_turn_by_money_insufficient
 QUESTION_CORRECT_BONUS = 2
 QUESTION_WRONG_PENALTY = 2
 
@@ -41,8 +41,6 @@ pending_action_validator=PendingActionValidator()
 territory_validator=TerritoryValidator()
 match_action_factory = MatchActionFactory()
 
-round_service=RoundService()
-
 def get_attack_actions():
     return action_factory.get_actions_by_type("attack")
 
@@ -57,8 +55,6 @@ def get_match_defense_actions(match_id : int):
 
 def distribute_actions(actions : list[dict]):
     return match_action_factory.distribute_actions(actions)
-attacks_function=get_match_attack_actions
-defenses_function=get_match_defense_actions
 def prepare_attack_action(
     match_id,
     player_id: str,
@@ -188,10 +184,10 @@ def resolve_action_no_question(
     actual_player =match_gateway.find_player(match, match["current_turn_player_id"])
     actual_player= player_validator.not_exist(actual_player)
     match["last_action_result"] = action_result
-    match=round_service.initial_distribute_actions(match)
+    match=initial_distribute_actions(match,get_match_attack_actions(match_id),get_match_defense_actions(match_id))
     match_factory.update_match(match)
     if (match_validator.skip_turn_by_money_insufficient(match,actual_player)):
-        return round_service.skip_turn_by_money_insufficient(match,action_result)
+        return skip_turn_by_money_insufficient(match,action_result)
     match_factory.update_match(match)  
     return {
         "match": match,
@@ -288,10 +284,10 @@ def resolve_attack_action(
     actual_player =match_gateway.find_player(match, match["current_turn_player_id"])
     actual_player= player_validator.not_exist(actual_player)
     match["last_action_result"] = action_result
-    match=round_service.initial_distribute_actions(match)
+    match=initial_distribute_actions(match,get_match_attack_actions(match_id),get_match_defense_actions(match_id))
     match_factory.update_match(match)
     if (match_validator.skip_turn_by_money_insufficient(match,actual_player)):
-        return round_service.skip_turn_by_money_insufficient(match,action_result)
+        return skip_turn_by_money_insufficient(match,action_result)
     match_factory.update_match(match)
     return {
         "match": match,
