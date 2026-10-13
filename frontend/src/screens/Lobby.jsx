@@ -928,7 +928,7 @@ export default function Lobby({
                       : "Iniciar Partida"
                   }
                 >
-                  <img src="/PRONTO.png" alt="Iniciar Partida" />
+                  <img src="/COMEÇAR.png" alt="Iniciar Partida" />
                 </button>
               ) : (
                 <button
