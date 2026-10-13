@@ -78,3 +78,14 @@ class MatchValidator:
         if match_dict["status"]=="finished":
             return True
         return False
+    def skip_turn_by_money_insufficient(self,match,player):
+        available_defense_actions=match['round_defense_actions']
+        available_attack_actions=match['round_attack_actions']
+        money=player['match_money']
+        for action in available_attack_actions:
+            if money >=action['cost']:
+                return False
+        for action in available_defense_actions:
+            if money >=action['cost']:
+                return False
+        return True

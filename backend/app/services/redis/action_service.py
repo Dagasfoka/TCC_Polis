@@ -15,6 +15,7 @@ from backend.app.validators.pending_action_validators import PendingActionValida
 from backend.app.validators.player_validators import PlayerValidator
 from backend.app.models.redis.pending_action import PendingAction
 from backend.app.factories.match_action_factory import MatchActionFactory
+from backend.app.services.redis.round_service import RoundService
 QUESTION_CORRECT_BONUS = 2
 QUESTION_WRONG_PENALTY = 2
 
@@ -40,6 +41,7 @@ pending_action_validator=PendingActionValidator()
 territory_validator=TerritoryValidator()
 match_action_factory = MatchActionFactory()
 
+round_service=RoundService()
 
 def get_attack_actions():
     return action_factory.get_actions_by_type("attack")
@@ -55,7 +57,8 @@ def get_match_defense_actions(match_id : int):
 
 def distribute_actions(actions : list[dict]):
     return match_action_factory.distribute_actions(actions)
-
+attacks_function=get_match_attack_actions
+defenses_function=get_match_defense_actions
 def prepare_attack_action(
     match_id,
     player_id: str,
@@ -122,7 +125,7 @@ def prepare_attack_action(
         }
     else:
         type="attack_no_question"
-        return resolve_action_no_question(match_id,player_id,action,target_territory_id,type,action_type)
+        return resolve_action_no_question(match_id,player_id,action,target_territory_id,type,action_type,player)
 
 def resolve_action_no_question(
     match_id : int,
@@ -130,7 +133,8 @@ def resolve_action_no_question(
     action : dict,
     target_territory_id: str,
     type : str,
-    action_type:str
+    action_type:str,
+    player : str,
 ):
 
     match = match_gateway.get_match(match_id)
@@ -183,9 +187,11 @@ def resolve_action_no_question(
     match_mission_validator.start_round_verify(match_id, match["current_turn_player_id"])
 
     match["last_action_result"] = action_result
-
+    match=round_service.initial_distribute_actions(match)
     match_factory.update_match(match)
-
+    if (match_validator.skip_turn_by_money_insufficient(match,player)):
+        return round_service.skip_turn_by_money_insufficient(match,action_result)
+        
     return {
         "match": match,
         "result": {
@@ -214,6 +220,8 @@ def resolve_attack_action(
     pending_action_validator.pending_action_exist(pending_action)
     pending_action_validator.verify_pending_action_player_id(pending_action,player_id)
 
+    player = match_gateway.find_player(match, player_id)
+    player=player_validator.not_exist(player)
 
     target_territory_id = pending_action["target_territory_id"]
     option_id = pending_action["option_id"]
@@ -278,9 +286,11 @@ def resolve_attack_action(
     match_mission_validator.start_round_verify(match_id, match["current_turn_player_id"])
 
     match["last_action_result"] = action_result
-
+    match=round_service.initial_distribute_actions(match)
     match_factory.update_match(match)
-
+    if (match_validator.skip_turn_by_money_insufficient(match,player)):
+        return round_service.skip_turn_by_money_insufficient(match,action_result)
+    match_factory.update_match(match)
     return {
         "match": match,
         "result": {

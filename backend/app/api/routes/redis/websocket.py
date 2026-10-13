@@ -7,7 +7,7 @@ from backend.app.services.redis.action_service import (
     resolve_attack_action,
     get_match_attack_actions,
     get_match_defense_actions,
-    distribute_actions
+    distribute_actions,
 )
 from backend.app.factories.match_factory import MatchFactory
 from backend.app.validators.db.territory_validator import TerritoryValidator
@@ -19,11 +19,11 @@ match_gateway=MatchGateway()
 territory_validator=TerritoryValidator()
 match_factory = MatchFactory()
 
-def prepare_match_for_player(match: dict, player_id: str):
+def prepare_match_for_player(match: dict, player_id: str, skipped_player_id = None):
     match_for_player = match.copy()
     match_for_player["your_player_id"] = player_id
     match_for_player["your_mission"] = match_gateway.find_your_mission(match, player_id)
-
+    match_for_player["skipped_player_id"] = skipped_player_id
     return match_for_player
 
 @router_websocket.websocket("/ws/match/{match_id}/{player_id}")
@@ -89,7 +89,20 @@ async def match_websocket(
                         option_id=option_id,
                         action_type=action_type
                     )
-
+                    if response["result"]["skipped_player_id"]:
+                        skipped_player_id=response["result"]["skipped_player_id"]
+                        await manager.send_to_all(
+                            match_id,
+                            lambda recipient_id: {
+                                "type": "match_state",
+                                "payload": prepare_match_for_player(
+                                    updated_match,
+                                    recipient_id,
+                                    skipped_player_id,
+                                ),
+                                
+                            },
+                        )
                     if response["result"]["type"] == "attack_question":
                         await manager.send_to_player(
                             match_id=match_id,
