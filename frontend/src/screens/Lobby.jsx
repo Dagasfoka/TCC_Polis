@@ -318,16 +318,15 @@ export default function Lobby({
     });
   }
 
-  const activePartiesList = FIXED_PARTIES.map((fixed) => {
-  const apiParty = parties.find((party) =>
-    String(party.name)
-      .toLowerCase()
-      .includes(fixed.name.toLowerCase())
-  );
+  const activePartiesList = FIXED_PARTIES.map((fixed, idx) => {
+  const apiParty = parties[idx];
 
   return {
+    // ID REAL usado pelo backend
     id: apiParty?.id ?? fixed.id,
-    name: apiParty?.name ?? fixed.name,
+
+    // Visual fica sempre do jeito que você definiu
+    name: fixed.name,
     file: fixed.file,
     colorHex: fixed.colorHex,
   };
