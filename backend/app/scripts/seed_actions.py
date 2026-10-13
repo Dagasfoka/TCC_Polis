@@ -120,6 +120,110 @@ ACTIONS = [
             "low_critical": "Você foi flagrado destruindo provas e enfrentou forte rejeição popular."
         }
     ),
+    Action(
+        action_type="attack",
+        alignment="good",
+        title="Ampliar o transporte público",
+        description="Você investirá na expansão do transporte público para melhorar a mobilidade da população.",
+        risk_level="medium",
+        responses={
+            "high_critical": "O projeto recebeu financiamento extra e se tornou referência nacional.",
+            "normal_success": "Novas linhas foram implementadas e facilitaram o deslocamento da população.",
+            "normal_fail": "Atrasos nas obras impediram a conclusão das melhorias.",
+            "low_critical": "Os custos dispararam e a população criticou a má gestão do projeto."
+        }
+    ),
+    Action(
+        action_type="attack",
+        alignment="good",
+        title="Criar centros profissionalizantes",
+        description="Você criará centros de formação profissional para ampliar as oportunidades de emprego.",
+        risk_level="low",
+        responses={
+            "high_critical": "Empresas parceiras financiaram os centros e contrataram centenas de alunos.",
+            "normal_success": "Os centros começaram a formar profissionais para o mercado de trabalho.",
+            "normal_fail": "A falta de equipamentos limitou a oferta de cursos.",
+            "low_critical": "Denúncias de favorecimento na seleção dos alunos prejudicaram sua reputação."
+        }
+    ),
+    Action(
+        action_type="attack",
+        alignment="bad",
+        title="Distribuir benefícios em troca de apoio",
+        description="Você oferecerá benefícios públicos com o objetivo de conquistar apoio político indevido.",
+        risk_level="high",
+        responses={
+            "high_critical": "Sua estratégia conquistou apoio inesperado, sem gerar suspeitas imediatas.",
+            "normal_success": "Parte da população passou a apoiar sua campanha.",
+            "normal_fail": "A população rejeitou a proposta e seu apoio não aumentou.",
+            "low_critical": "A prática foi denunciada e você passou a ser investigado."
+        }
+    ),
+    Action(
+        action_type="attack",
+        alignment="bad",
+        title="Manipular uma pesquisa eleitoral",
+        description="Você financiará a divulgação de uma pesquisa fraudulenta para influenciar a opinião pública.",
+        risk_level="insane",
+        responses={
+            "high_critical": "A divulgação ganhou enorme repercussão e alterou momentaneamente o debate eleitoral.",
+            "normal_success": "Não utilizado em ações insane.",
+            "normal_fail": "Não utilizado em ações insane.",
+            "low_critical": "A fraude foi descoberta, provocando um escândalo e uma queda acentuada de apoio."
+        }
+    ),
+    Action(
+        action_type="defense",
+        alignment="good",
+        title="Publicar prestação de contas",
+        description="Você divulgará relatórios detalhados sobre os gastos e resultados da campanha.",
+        risk_level="low",
+        responses={
+            "high_critical": "A transparência recebeu reconhecimento público e fortaleceu sua credibilidade.",
+            "normal_success": "A prestação de contas foi aprovada e reduziu as críticas.",
+            "normal_fail": "Os relatórios foram publicados, mas não esclareceram todas as dúvidas.",
+            "low_critical": "Inconsistências nos relatórios geraram questionamentos públicos."
+        }
+    ),
+    Action(
+        action_type="defense",
+        alignment="good",
+        title="Reforçar a equipe jurídica",
+        description="Você contratará especialistas para revisar decisões e prevenir problemas legais.",
+        risk_level="medium",
+        responses={
+            "high_critical": "A equipe identificou um problema grave a tempo e evitou uma crise.",
+            "normal_success": "A revisão jurídica reduziu os riscos de novas contestações.",
+            "normal_fail": "A equipe não encontrou soluções para os problemas existentes.",
+            "low_critical": "Uma orientação equivocada agravou a situação jurídica."
+        }
+    ),
+    Action(
+        action_type="defense",
+        alignment="bad",
+        title="Transferir a culpa para aliados",
+        description="Você tentará atribuir a aliados a responsabilidade por irregularidades da sua administração.",
+        risk_level="high",
+        responses={
+            "high_critical": "Seus aliados assumiram a responsabilidade e as suspeitas sobre você diminuíram temporariamente.",
+            "normal_success": "Parte das críticas foi direcionada a outros integrantes da equipe.",
+            "normal_fail": "A população não acreditou nas acusações contra seus aliados.",
+            "low_critical": "Seus aliados apresentaram provas contra você e agravaram a crise."
+        }
+    ),
+    Action(
+        action_type="defense",
+        alignment="bad",
+        title="Coagir uma testemunha",
+        description="Você tentará intimidar uma testemunha para impedir que ela revele informações comprometedoras.",
+        risk_level="insane",
+        responses={
+            "high_critical": "A testemunha desistiu de prestar depoimento, mas o risco de investigação permanece.",
+            "normal_success": "Não utilizado em ações insane.",
+            "normal_fail": "Não utilizado em ações insane.",
+            "low_critical": "A testemunha denunciou a intimidação e o caso se transformou em um grande escândalo."
+        }
+    ),
 ]
 
 def seed_actions():

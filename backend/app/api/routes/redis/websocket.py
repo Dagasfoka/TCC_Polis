@@ -23,8 +23,6 @@ def prepare_match_for_player(match: dict, player_id: str):
     match_for_player = match.copy()
     match_for_player["your_player_id"] = player_id
     match_for_player["your_mission"] = match_gateway.find_your_mission(match, player_id)
-    match_for_player["available_attack_options"] = get_match_attack_actions(match["match_id"])
-    match_for_player["available_defense_options"] = get_match_defense_actions(match["match_id"])
 
     return match_for_player
 
