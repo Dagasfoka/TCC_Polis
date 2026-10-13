@@ -69,8 +69,8 @@ class Match:
             "defense_actions_2": self.defense_actions_2,
             "activate_attack_actions_list": self.activate_attack_actions_list,
             "activate_defense_actions_list": self.activate_defense_actions_list,
-            "round_attack_action" : self.round_attack_actions,
-            "round_defense_action" : self.round_defense_actions,
+            "round_attack_actions" : self.round_attack_actions,
+            "round_defense_actions" : self.round_defense_actions,
                 }
 
     @classmethod
