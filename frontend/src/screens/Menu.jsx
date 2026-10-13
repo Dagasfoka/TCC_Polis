@@ -31,6 +31,9 @@ export default function Menu({ player, onEnterRoom, onLogout }) {
         avatarId
       );
 
+      console.log("PLAYER ATUALIZADO:", updatedPlayer);
+
+
       setSelectedAvatar(updatedPlayer.avatar_id);
       setShowAvatarModal(false);
 

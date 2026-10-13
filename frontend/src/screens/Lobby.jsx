@@ -194,6 +194,7 @@ export default function Lobby({
       const results = await Promise.allSettled(
         ids.map(async (id) => {
           const playerData = await getPlayer(id);
+          console.log("PLAYER DO LOBBY:", id, playerData);
 
           return [
             id,
