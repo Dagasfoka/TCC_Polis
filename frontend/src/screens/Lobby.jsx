@@ -318,15 +318,19 @@ export default function Lobby({
     });
   }
 
-  const activePartiesList = FIXED_PARTIES.map((fixed, idx) => {
-    const apiParty = parties[idx];
-    return {
-      id: apiParty?.id || fixed.id,
-      name: apiParty?.name || fixed.name,
-      file: fixed.file,
-      colorHex: fixed.colorHex,
-    };
-  });
+  const activePartiesList = FIXED_PARTIES.map((fixed) => {
+  const apiParty = parties.find(
+    (party) =>
+      String(party.id) === String(fixed.id)
+  );
+
+  return {
+    id: fixed.id,
+    name: apiParty?.name || fixed.name,
+    file: fixed.file,
+    colorHex: fixed.colorHex,
+  };
+});
 
   return (
     <div className="lobby-body">
