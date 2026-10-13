@@ -1,4 +1,7 @@
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 import {
   createPrivateRoom,
   joinRandomRoom,
@@ -6,7 +9,7 @@ import {
   chooseAvatar,
 } from "../service/api.jsx";
 
-export default function Menu({ player, onEnterRoom, onLogout }) {
+export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate, }) {
 
   const avatars = [
     "avatar_1",
@@ -35,6 +38,7 @@ export default function Menu({ player, onEnterRoom, onLogout }) {
 
 
       setSelectedAvatar(updatedPlayer.avatar_id);
+      onPlayerUpdate(updatedPlayer);
       setShowAvatarModal(false);
 
     } catch (error) {
@@ -43,6 +47,12 @@ export default function Menu({ player, onEnterRoom, onLogout }) {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    setSelectedAvatar(
+      player?.avatar_id || null
+    );
+  }, [player?.avatar_id]);
   // Criar sala privada
   async function handleCreatePrivateRoom() {
     try {
