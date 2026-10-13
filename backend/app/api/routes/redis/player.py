@@ -6,6 +6,7 @@ from backend.app.schemas.redis.player import (
     UserPlayerCreate,
     UserPlayerDelete,
     PlayerDelete,
+    PlayerAvatarUpdate,
 )
 
 from backend.app.services.redis.player_service import (
@@ -14,6 +15,7 @@ from backend.app.services.redis.player_service import (
     create_user_player,
     delete_user_player,
     delete_player,
+    update_player_avatar,
 )
 
 
@@ -65,3 +67,12 @@ def delete_player_route(
     return delete_player(
         data.player_id
     ) 
+
+@router_player.patch("/player/avatar")
+def update_avatar(
+    data: PlayerAvatarUpdate
+):
+    return update_player_avatar(
+        data.player_id,
+        data.avatar_id
+    )
