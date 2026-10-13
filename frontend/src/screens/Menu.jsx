@@ -573,7 +573,7 @@ export default function Menu({ player, onEnterRoom, onLogout }) {
         src={
           selectedAvatar
             ? `/avatars/${selectedAvatar}.png`
-            : "/sapoestendido.png"
+            : "/avatars/avatar_3.png"
         }
         className="avatar-sapo"
         alt="Avatar do jogador"

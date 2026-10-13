@@ -261,14 +261,20 @@ export default function Lobby({
   }
 
   function handleReady() {
-    if (isHost || isReady || !myPartyId) return;
+    if (isHost || !myPartyId) return;
 
     runAction(async () => {
-      const updatedRoom = await putReady(roomCode, playerId);
+      const updatedRoom = await putReady(
+        roomCode,
+        playerId
+      );
+
       if (updatedRoom?.players) {
         processRoom(updatedRoom);
       } else {
-        const refreshedRoom = await getRoom(roomCode);
+        const refreshedRoom =
+          await getRoom(roomCode);
+
         processRoom(refreshedRoom);
       }
     });
@@ -934,8 +940,8 @@ export default function Lobby({
                     !myPartyId
                       ? "Escolha um partido primeiro"
                       : isReady
-                        ? "Você já está pronto"
-                        : "Marcar como Pronto"
+                        ? "Retirar pronto"
+                        : "Marcar como pronto"
                   }
                 >
                   <img src="/PRONTO.png" alt="Estou Pronto" />
