@@ -789,7 +789,7 @@ export default function Lobby({
                       src={
                         avatarId
                           ? `/avatars/${avatarId}.png`
-                          : "/avatarsapo.png"
+                          : "/avatars/avatar_3.png"
                       }
                       className="player-avatar-circle"
                       alt={pName}
