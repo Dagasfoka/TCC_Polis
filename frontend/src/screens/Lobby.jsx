@@ -319,14 +319,15 @@ export default function Lobby({
   }
 
   const activePartiesList = FIXED_PARTIES.map((fixed) => {
-  const apiParty = parties.find(
-    (party) =>
-      String(party.id) === String(fixed.id)
+  const apiParty = parties.find((party) =>
+    String(party.name)
+      .toLowerCase()
+      .includes(fixed.name.toLowerCase())
   );
 
   return {
-    id: fixed.id,
-    name: apiParty?.name || fixed.name,
+    id: apiParty?.id ?? fixed.id,
+    name: apiParty?.name ?? fixed.name,
     file: fixed.file,
     colorHex: fixed.colorHex,
   };
