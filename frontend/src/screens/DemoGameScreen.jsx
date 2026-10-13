@@ -3,10 +3,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import BrazilMapSvg from "../components/BrazilMapSvg.jsx";
 
 const PARTY_COLORS = {
-  PR: "#E74C3C",
-  PA: "#3498DB",
-  PV: "#2ECC71",
-  PD: "#F1C40F",
+  PR: "#DA3A3C",
+  PA: "#28A3E0",
+  PV: "#30C067",
+  PD: "#E0A12A",
 };
 
 function getPlayerNameById(playerId, players) {
@@ -79,6 +79,8 @@ function PlayerCard({
   isNext,
   isMe,
   partyColors,
+  territories = [],
+  side = "left",
 }) {
   if (!player) {
     return null;
@@ -95,12 +97,14 @@ function PlayerCard({
       .slice(0, 2)
       .toUpperCase() || "?";
 
-  const influence = Number(player.match_influence ?? 0);
+  const controlledTerritories = territories.filter((territory) => territory.owner_id === player.player_id).length;
+  const imageSuffix = side === "right" ? "d" : "e";
 
   return (
     <div
       className={[
         "polis-player-card",
+        `polis-player-card-${side}`,
         isCurrentTurn ? "polis-player-current" : "",
         isMe ? "polis-player-me" : "",
       ]
@@ -108,46 +112,33 @@ function PlayerCard({
         .join(" ")}
       style={{ "--party-color": partyColor }}
     >
-      {isNext && <div className="polis-next-label">Próximo</div>}
+      <img
+        className="polis-player-curtain"
+        src="/Cortina.png"
+        alt=""
+        aria-hidden="true"
+      />
+      <div className="polis-player-polygon" aria-hidden="true" />
+{isNext && <div className="polis-next-label">Próximo</div>}
 
-      {isMe && <div className="polis-you-label">Você</div>}
 
       <div className="polis-player-main">
-        <div className="polis-player-avatar">{initials}</div>
+        <div className="polis-player-avatar">
+          <img
+            src={`/avatars/${player.avatar_id || "avatar_3"}.png`}
+            alt={`Avatar de ${player.username}`}
+            onError={(event) => {
+              event.currentTarget.src = "/avatars/avatar_3.png";
+            }}
+          />
+        </div>
 
         <div className="polis-player-stats">
-          <div className="polis-stat-row">
-            <span className="polis-stat-icon">◆</span>
-
-            <div className="polis-stat-track polis-influence-track">
-              <div
-                className="polis-stat-fill"
-                style={{
-                  width: `${Math.max(0, Math.min(influence, 100))}%`,
-                }}
-              />
-              <strong>{player.match_influence ?? 0}%</strong>
-            </div>
-          </div>
-
-          <div className="polis-stat-row">
-            <span className="polis-stat-icon">$</span>
-
-            <div className="polis-stat-track polis-money-track">
-              <strong>{player.match_money ?? 0}$</strong>
-            </div>
-          </div>
-
-          <div className="polis-stat-row">
-            <span className="polis-stat-icon">●</span>
-
-            <div className="polis-stat-track polis-corruption-track">
-              <strong>{player.match_corruption ?? 0}</strong>
-            </div>
-          </div>
+          <div className="polis-stat-row polis-stat-corruption" style={{ backgroundImage: `url(/corrupcao${imageSuffix}.png)` }}><strong>{player.match_corruption ?? 0}%</strong></div>
+          <div className="polis-stat-row polis-stat-money" style={{ backgroundImage: `url(/dinheiro${imageSuffix}.png)` }}><strong>{player.match_money ?? 0}$</strong></div>
+          <div className="polis-stat-row polis-stat-states" style={{ backgroundImage: `url(/estados${imageSuffix}.png)` }}><strong>{controlledTerritories}</strong></div>
         </div>
       </div>
-
       <div className="polis-player-name">{player.username}</div>
     </div>
   );
@@ -788,6 +779,8 @@ export default function DemoGameScreen({
               matchState?.your_player_id
             }
             partyColors={PARTY_COLORS}
+            territories={territories}
+            side="left"
           />
         </div>
 
@@ -807,6 +800,8 @@ export default function DemoGameScreen({
               matchState?.your_player_id
             }
             partyColors={PARTY_COLORS}
+            territories={territories}
+            side="right"
           />
         </div>
 
@@ -826,6 +821,8 @@ export default function DemoGameScreen({
               matchState?.your_player_id
             }
             partyColors={PARTY_COLORS}
+            territories={territories}
+            side="left"
           />
         </div>
 
@@ -845,10 +842,18 @@ export default function DemoGameScreen({
               matchState?.your_player_id
             }
             partyColors={PARTY_COLORS}
+            territories={territories}
+            side="right"
           />
         </div>
 
         <section className="polis-map-container">
+          <img
+            className="polis-america-backdrop"
+            src="/AMERICA.png"
+            alt=""
+            aria-hidden="true"
+          />
           <BrazilMapSvg
             territories={territories}
             players={players}
@@ -856,115 +861,88 @@ export default function DemoGameScreen({
             selectedTerritoryId={
               selectedTerritory?.territory_id
             }
+            isActionable={isMyTurn}
             onSelectTerritory={handleTerritorySelection}
             className="polis-main-map"
           />
         </section>
 
         <aside className="polis-mission-card polis-mission-right">
-          <div className="polis-mission-heading">
-            <span>Sua missão</span>
-
-            {me?.party_id && (
-              <span
-                className="polis-mission-party"
-                style={{
-                  backgroundColor:
-                    PARTY_COLORS[me.party_id] ?? "#7f8c8d",
-                }}
-              >
-                {me.party_id}
-              </span>
-            )}
+          <img className="polis-mission-art" src="/missaosec.png" alt="Missão Secreta" />
+          <div className="polis-mission-copy">
+            <p>{missionText}</p>
           </div>
-
-          <p>{missionText}</p>
         </aside>
 
         {selectedTerritory && (
-          <div className="polis-territory-popup polis-territory-left">
-            <button
-              type="button"
-              className="polis-close-popup"
-              onClick={() => setSelectedTerritory(null)}
-              aria-label="Fechar"
-            >
-              ×
-            </button>
+          <div className="polis-choice-overlay">
+            <section className="polis-choice-board" aria-label="Escolhas do território">
+              <header className="polis-choice-board-header">
+                <div className="polis-choice-territory">
+                  <h2>
+                    {selectedTerritory.name &&
+                    selectedTerritory.name !== selectedTerritory.territory_id
+                      ? `${selectedTerritory.name} (${selectedTerritory.territory_id})`
+                      : selectedTerritory.territory_id}
+                  </h2>
+                  <span>{selectedTerritory.region ?? "-"}</span>
+                </div>
+                <div className="polis-choice-influence">
+                  <span>Influência</span>
+                  <strong>{selectedTerritory.current_influence ?? 0}</strong>
+                </div>
+              </header>
 
-            <h2>
-              {selectedTerritory.name ??
-                selectedTerritory.territory_id}
-            </h2>
-
-            <div className="polis-territory-info">
-              <span>
-                Região
-                <strong>
-                  {selectedTerritory.region ?? "-"}
-                </strong>
-              </span>
-
-              <span>
-                Influência
-                <strong>
-                  {selectedTerritory.current_influence ?? 0}
-                </strong>
-              </span>
-            </div>
-
-            {isMyTurn ? (
-              <>
-                <h3>
-                  {actionType === "attack"
-                    ? "Ações de Ataque"
-                    : "Ações de Defesa"}
-                </h3>
-
-                <div className="polis-attack-actions">
+              {isMyTurn ? (
+                <div className="polis-choice-cards">
                   {availableActions.length === 0 && (
-                    <p>Nenhuma ação disponível.</p>
+                    <p className="polis-no-choice">Nenhuma ação disponível.</p>
                   )}
-
-                  {availableActions.map((option) => (
+                  {availableActions.slice(0, 4).map((option) => (
                     <button
                       type="button"
+                      className="polis-choice-card"
                       key={option.action_id}
-                      onClick={() =>
-                        sendAttack(option.action_id, option.action_type)
-                      }
+                      onClick={() => sendAttack(option.action_id, option.action_type)}
                     >
-                      <strong>{option.title}</strong>
-
-                      {option.influence_generated !==
-                        undefined && (
-                          <span>
-                            +
-                            {option.influence_generated} influência
-                          </span>
+                      <span className="polis-choice-card-title">
+                        <strong>{option.title}</strong>
+                      </span>
+                      <span className="polis-choice-card-risk">
+                        {({
+                          low: "Risco baixo",
+                          medium: "Risco médio",
+                          high: "Risco alto",
+                          insane: "Risco insano",
+                        })[option.risk_level] ?? option.risk_level ?? "Risco não informado"}
+                      </span>
+                      <span className="polis-choice-card-details">
+                        {option.influence_generated !== undefined && (
+                          <span>+{option.influence_generated} influência</span>
                         )}
-
-                      {option.success_chance !== undefined && (
-                        <small>
-                          {option.success_chance}% de sucesso
-                        </small>
-                      )}
-
-                      {option.description && (
-                        <small>{option.description}</small>
-                      )}
+                        {option.success_chance !== undefined && (
+                          <span className="polis-choice-success">{option.success_chance}% de sucesso</span>
+                        )}
+                        {option.description && (
+                          <span className="polis-choice-description">{option.description}</span>
+                        )}
+                      </span>
                     </button>
                   ))}
                 </div>
-              </>
-            ) : (
-              <p className="polis-not-your-turn">
-                Aguarde sua vez para realizar uma ação.
-              </p>
-            )}
+              ) : (
+                <p className="polis-not-your-turn">Aguarde sua vez para realizar uma ação.</p>
+              )}
+            </section>
+            <button
+              type="button"
+              className="polis-choice-back"
+              onClick={() => setSelectedTerritory(null)}
+            >
+              Voltar
+            </button>
           </div>
         )}
-
         {pendingQuestion && (
           <div className="question-modal-backdrop">
             <div className="question-modal polis-question-modal">
