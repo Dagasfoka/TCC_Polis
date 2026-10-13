@@ -6,3 +6,5 @@ class PlayerFactory:
         return self.player_repository.create_player(username,party_id)
     def delete_player(self,player_id):
         return self.player_repository.delete_player(player_id)
+    def update_avatar(self, player_id, avatar_id):
+        return self.player_repository.update_avatar(player_id,avatar_id)

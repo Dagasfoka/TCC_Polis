@@ -1,5 +1,6 @@
-# Jogador dentro de uma partida.
-from backend.app.factories.action_factory import INITIAL_MONEY,INITIAL_INFLUENCE
+from backend.app.factories.action_factory import INITIAL_MONEY, INITIAL_INFLUENCE
+
+
 class Player:
     def __init__(
         self,
@@ -8,6 +9,7 @@ class Player:
         party_id: int | None,
         player_token: str,
         username: str,
+        avatar_id: str | None = None,
         questions: dict | None = None,
         match_influence: int | None = INITIAL_INFLUENCE,
         match_money: int | None = INITIAL_MONEY,
@@ -18,6 +20,7 @@ class Player:
         self.party_id = party_id
         self.player_token = player_token
         self.username = username
+        self.avatar_id = avatar_id
         self.questions = questions
         self.match_influence = match_influence
         self.match_money = match_money
@@ -30,6 +33,7 @@ class Player:
             "party_id": self.party_id,
             "player_token": self.player_token,
             "username": self.username,
+            "avatar_id": self.avatar_id,
             "questions": self.questions,
             "match_influence": self.match_influence,
             "match_money": self.match_money,
@@ -44,6 +48,7 @@ class Player:
         party_id: int | None,
         player_token: str,
         username: str,
+        avatar_id: str | None = None,
         questions: dict | None = None,
         match_influence: int | None = INITIAL_INFLUENCE,
         match_money: int | None = INITIAL_MONEY,
@@ -55,6 +60,7 @@ class Player:
             party_id,
             player_token,
             username,
+            avatar_id,
             questions,
             match_influence,
             match_money,

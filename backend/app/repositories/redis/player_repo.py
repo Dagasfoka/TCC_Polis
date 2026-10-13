@@ -8,26 +8,28 @@ from backend.app.utils.ids import generate_player_id, generate_player_token
 class PlayerRepo:
     def __init__(self) -> None:
         pass
-    def create_player(self,username, party_id=None):
+    def create_player(self, username, party_id=None, avatar_id=None):
         player_id = generate_player_id()
         player_token = generate_player_token()
+
         player_dict = Player.create_dict(
             player_id=player_id,
             match_id=None,
             party_id=None,
-            player_token = player_token,
-            username=username
-        )
+            player_token=player_token,
+            username=username,
+            avatar_id=None,
+            )
 
         key = f"player:{player_id}"
         redis_client.set(key, dumps(player_dict))
 
         key = f"player_token:{player_token}"
-        redis_client.set(key,player_id)
+        redis_client.set(key, player_id)
 
         return {
-             **player_dict,
-        }
+        **player_dict,
+    }
     def get_player(self, player_id):
         key = f"player:{player_id}"
         player_json = redis_client.get(key)
@@ -56,3 +58,16 @@ class PlayerRepo:
         
         if player_token:
             redis_client.delete(f"player_token:{player_token}")
+
+    def update_avatar(self, player_id, avatar_id):
+        player = self.get_player(player_id)
+
+        if player is None:
+            return None
+
+        player["avatar_id"] = avatar_id
+
+        key = f"player:{player_id}"
+        redis_client.set(key, dumps(player))
+
+        return player
