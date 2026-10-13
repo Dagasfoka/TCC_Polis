@@ -5,10 +5,12 @@ from backend.app.gateways.db.user_gateways import UsersGateway
 from backend.app.factories.user_factory import UserFactory
 
 from backend.app.validators.user_validators import UserValidator
+from backend.app.validators.player_validators import PlayerValidator
 
 
 player_gateway = PlayerGateway()
 player_factory = PlayerFactory()
+player_validator = PlayerValidator()
 
 user_gateway = UsersGateway()
 user_factory = UserFactory()
@@ -44,6 +46,9 @@ def delete_user_player(user_id):
     user_factory.update_player_id(user.user_id, None)
     return user
 def delete_player(player_id):
-    return player_factory.delete_player(
-        player_id
-    )
+    return player_factory.delete_player(player_id)
+
+def update_player_avatar(player_id, avatar_id):
+    player = player_gateway.get_player(player_id)
+    player = player_validator.not_exist(player)
+    return player_factory.update_avatar(player_id,avatar_id)
