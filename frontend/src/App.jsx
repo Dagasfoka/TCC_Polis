@@ -145,52 +145,52 @@ export default function App() {
   }
 
   async function handleLogout() {
-    const userId =
-      localStorage.getItem("user_id");
+  const userId =
+    localStorage.getItem("user_id");
 
-    const playerId =
-      localStorage.getItem("player_id");
+  const playerId =
+    localStorage.getItem("player_id");
 
-    try {
-      // Usuário cadastrado
-      if (userId) {
-        await deleteUserPlayer(
-          Number(userId)
-        );
-      }
-
-      // Guest
-      else if (playerId) {
-        await deleteGuestPlayer(
-          playerId
-        );
-      }
-
-    } catch (error) {
-      console.error(
-        "Erro ao apagar player no logout:",
-        error
+  try {
+    // Usuário cadastrado
+    if (userId) {
+      await deleteUserPlayer(
+        Number(userId)
       );
-
-    } finally {
-      localStorage.removeItem(
-        "user_id"
-      );
-
-      localStorage.removeItem(
-        "player_id"
-      );
-
-      clearRoomCode();
-      clearMatchID();
-
-      setPlayer(null);
-      setRoom(null);
-      setMatchId(null);
-
-      setScreen("login");
     }
+
+    // Guest
+    else if (playerId) {
+      await deleteGuestPlayer(
+        playerId
+      );
+    }
+
+  } catch (error) {
+    console.error(
+      "Erro ao apagar player no logout:",
+      error
+    );
+
+  } finally {
+    localStorage.removeItem(
+      "user_id"
+    );
+
+    localStorage.removeItem(
+      "player_id"
+    );
+
+    clearRoomCode();
+    clearMatchID();
+
+    setPlayer(null);
+    setRoom(null);
+    setMatchId(null);
+
+    setScreen("login");
   }
+}
   // ==============================
   // ENTROU OU CRIOU SALA
   // ==============================
@@ -244,37 +244,38 @@ export default function App() {
     <>
 
       {screen === "login" && (
-        <LoginScreen
-          onLogin={handleLogin}
-        />
+        <div className="non-game-screen-zoom">
+          <LoginScreen
+            onLogin={handleLogin}
+          />
+        </div>
       )}
 
 
       {screen === "menu" &&
         player && (
-
-          <MenuScreen
-            player={player}
-            onEnterRoom={handleEnterRoom}
-            onLogout={handleLogout}
-            onPlayerUpdate={setPlayer}
-          />
-
+          <div className="non-game-screen-zoom">
+            <MenuScreen
+              player={player}
+              onEnterRoom={handleEnterRoom}
+              onLogout={handleLogout}
+            />
+          </div>
         )}
 
 
       {screen === "lobby" &&
         player &&
         room && (
-
-          <LobbyScreen
-            player={player}
-            room={room}
-            onRoomUpdate={setRoom}
-            onLeave={handleLeaveRoom}
-            onStart={handleStartGame}
-          />
-
+          <div className="non-game-screen-zoom">
+            <LobbyScreen
+              player={player}
+              room={room}
+              onRoomUpdate={setRoom}
+              onLeave={handleLeaveRoom}
+              onStart={handleStartGame}
+            />
+          </div>
         )}
 
 

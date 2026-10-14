@@ -10,6 +10,7 @@ import {
   getParties,
   chooseParty,
 } from "../service/api.jsx";
+import { getAvatarImage } from "../utils/avatarAssets.js";
 
 const MAX_PLAYERS = 4;
 const REFRESH_INTERVAL = 2000;
@@ -319,18 +320,14 @@ export default function Lobby({
   }
 
   const activePartiesList = FIXED_PARTIES.map((fixed, idx) => {
-  const apiParty = parties[idx];
-
-  return {
-    // ID REAL usado pelo backend
-    id: apiParty?.id ?? fixed.id,
-
-    // Visual fica sempre do jeito que você definiu
-    name: fixed.name,
-    file: fixed.file,
-    colorHex: fixed.colorHex,
-  };
-});
+    const apiParty = parties[idx];
+    return {
+      id: apiParty?.id || fixed.id,
+      name: apiParty?.name || fixed.name,
+      file: fixed.file,
+      colorHex: fixed.colorHex,
+    };
+  });
 
   return (
     <div className="lobby-body">
@@ -429,8 +426,10 @@ export default function Lobby({
         /* PAINEL ESQUERDO: JOGADORES */
         .room-players-panel {
           position: relative;
-          width: 440px;
-          height: 480px;
+          overflow: visible;
+          width: 480px;
+          height: 448px;
+          transform: translateY(8px);
           background-color: #d9d2c9;
           border: 3px solid #2b2b36;
           border-radius: 20px;
@@ -458,55 +457,69 @@ export default function Lobby({
         .players-list-container {
           display: flex;
           flex-direction: column;
+          overflow: visible;
           gap: 14px;
           margin-top: 10px;
+          padding-right: 40px;
         }
 
         .player-slot-item {
           position: relative;
+          overflow: visible;
           width: 100%;
-          height: 70px;
+          height: 78px;
           display: flex;
           align-items: center;
         }
 
         .player-card-bar {
           position: absolute;
+          overflow: visible;
+          top: -2px;
           width: 100%;
-          height: 100%;
-          border-radius: 35px 18px 18px 35px;
-          border: 2px solid #1a1a24;
+          height: calc(100% + 4px);
+          border-radius: 39px 18px 18px 39px;
+          border: none;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0 20px 0 80px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-          transition: background-color 0.25s ease;
+          padding: 0 20px 0 88px;
+          box-shadow: none;
+          transition: background-color 0.25s ease, border-color 0.25s ease;
         }
 
         .player-avatar-circle {
           position: absolute;
           left: -2px;
           top: -2px;
-          width: 74px;
-          height: 74px;
+          width: 82px;
+          height: 82px;
           border-radius: 50%;
           z-index: 5;
           object-fit: cover;
-          border: 3px solid #1a1a24;
+          border: 3px solid var(--party-color, #2b334e);
+          box-sizing: border-box;
           background-color: #2b334e;
+          transition: border-color 0.25s ease;
         }
 
         .player-name-text {
+          display: inline-block;
+          flex-shrink: 0;
+          line-height: 1.4;
+          padding: 6px;
+          margin: -6px;
           color: #ffffff;
           font-size: 1.2rem;
           font-weight: 800;
-          text-shadow: 2px 2px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000;
+          -webkit-text-stroke: 5px #000;
+          paint-order: stroke fill;
+          text-shadow: 3px 3px 0 #000;
           z-index: 2;
           white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          max-width: 200px;
+          overflow: visible;
+          text-overflow: clip;
+          max-width: none;
         }
 
         .player-status-icon {
@@ -557,10 +570,11 @@ export default function Lobby({
 
         .empty-slot-item {
           width: 100%;
-          height: 70px;
+          height: 82px;
+          box-sizing: border-box;
           background-color: #ccc5b9;
           border: 2px solid #2b2b36;
-          border-radius: 35px;
+          border-radius: 41px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -581,19 +595,25 @@ export default function Lobby({
         }
 
         .room-info-header {
+          position: absolute;
+          top: 16px;
+          left: 50%;
+          transform: translateX(-50%);
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 12px;
-          margin-top: 10px;
+          margin-top: 0;
+          z-index: 3;
         }
 
         .code-badge {
           background-color: #000000;
           color: #ffffff;
           padding: 6px 16px;
-          border-radius: 8px;
+          border-radius: 0;
           text-align: center;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+          box-shadow: none;
         }
 
         .code-badge span {
@@ -629,7 +649,8 @@ export default function Lobby({
         /* CARD DE PARTIDOS */
         .partidos-card-wrapper {
           position: relative;
-          width: 340px;
+          top: 54px;
+          width: 320px;
           height: 160px;
           background-color: #d9d2c9;
           border: 3px solid #2b2b36;
@@ -786,13 +807,10 @@ export default function Lobby({
                   <div className="player-slot-item" key={id}>
 
                     <img
-                      src={
-                        avatarId
-                          ? `/avatars/${avatarId}.png`
-                          : "/avatars/avatar_3.png"
-                      }
+                      src={getAvatarImage(avatarId)}
                       className="player-avatar-circle"
                       alt={pName}
+                      style={{ "--party-color": bgColor }}
                     />
 
                     <div
@@ -870,7 +888,7 @@ export default function Lobby({
                 }
               >
                 <img
-                  src={isPrivate ? "/PRIVACIDADE.png" : "/publica.png"}
+                  src={isPrivate ? "/privado.png" : "/publica.png"}
                   alt={isPrivate ? "Privada" : "Pública"}
                   className="private-badge-img"
                 />
@@ -932,7 +950,7 @@ export default function Lobby({
                       : "Iniciar Partida"
                   }
                 >
-                  <img src="/COMEÇAR.png" alt="Iniciar Partida" />
+                  <img src="/COMEÇAR.png" alt="Começar partida" />
                 </button>
               ) : (
                 <button
