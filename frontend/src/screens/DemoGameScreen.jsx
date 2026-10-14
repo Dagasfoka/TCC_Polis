@@ -1023,58 +1023,84 @@ export default function DemoGameScreen({
                 </div>
               </header>
 
-              {isMyTurn ? (
-                <div className="polis-choice-cards">
-                  {availableActions.length === 0 && (
-                    <p className="polis-no-choice">Nenhuma ação disponível.</p>
-                  )}
-                  {availableActions
-                    .slice(0, 4)
-                    .map((option) => (
-                      <button
-                        type="button"
-                        className="polis-choice-card"
-                        key={option.action_id}
-                        onClick={() =>
-                          sendAttack(
-                            option.action_id,
-                            actionType
-                          )
-                        }
-                      >
-                        <span className="polis-choice-card-title">
-                          <strong>{option.title}</strong>
-                        </span>
-                        <span className="polis-choice-card-risk">
-                          {({
-                            low: "Risco baixo",
-                            medium: "Risco médio",
-                            high: "Risco alto",
-                            insane: "Risco insano",
-                          })[option.risk_level] ?? option.risk_level ?? "Risco não informado"}
-                        </span>
-                        <span className="polis-choice-card-details">
-                          {option.influence_generated !== undefined && (
-                            <span>+{option.influence_generated} influência</span>
-                          )}
-                          {option.success_chance !== undefined && (
-                            <span className="polis-choice-success">{option.success_chance}% de sucesso</span>
-                          )}
-                          {option.description && (
-                            <span className="polis-choice-description">{option.description}</span>
-                          )}
-                        </span>
-                        {option.cost !== undefined && (
-                          <span className="polis-choice-card-cost">
-                            Custo: {option.cost}$
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                </div>
-              ) : (
-                <p className="polis-not-your-turn">Aguarde sua vez para realizar uma ação.</p>
-              )}
+             {isMyTurn ? (
+  <div className="polis-choice-cards">
+    {availableActions.length === 0 && (
+      <p className="polis-no-choice">
+        Nenhuma ação disponível.
+      </p>
+    )}
+
+    {availableActions
+      .slice(0, 4)
+      .map((option) => (
+        <button
+          type="button"
+          className="polis-choice-card"
+          key={option.action_id}
+          onClick={() =>
+            sendAttack(
+              option.action_id,
+              actionType
+            )
+          }
+        >
+          <span className="polis-choice-card-title">
+            <strong>{option.title}</strong>
+          </span>
+
+          <span className="polis-choice-card-risk">
+            {({
+              low: "Risco baixo",
+              medium: "Risco médio",
+              high: "Risco alto",
+              insane: "Risco insano",
+            })[option.risk_level] ??
+              option.risk_level ??
+              "Risco não informado"}
+          </span>
+
+          <span className="polis-choice-card-details">
+
+            {option.influence_generated !== undefined && (
+              <span>
+                Influência: +{option.influence_generated}
+              </span>
+            )}
+
+            {option.corruption_generated !== undefined && (
+              <span>
+                Corrupção: +{option.corruption_generated}
+              </span>
+            )}
+
+            {option.success_chance !== undefined && (
+              <span className="polis-choice-success">
+                {option.success_chance}% de sucesso
+              </span>
+            )}
+
+            {option.description && (
+              <span className="polis-choice-description">
+                {option.description}
+              </span>
+            )}
+
+          </span>
+
+          {option.cost !== undefined && (
+            <span className="polis-choice-card-cost">
+              Custo: {option.cost}$
+            </span>
+          )}
+        </button>
+      ))}
+  </div>
+) : (
+  <p className="polis-not-your-turn">
+    Aguarde sua vez para realizar uma ação.
+  </p>
+)}
             </section>
             <button
               type="button"
