@@ -1060,39 +1060,43 @@ export default function DemoGameScreen({
               "Risco não informado"}
           </span>
 
-          <span className="polis-choice-card-details">
+         <span className="polis-choice-card-details">
 
-            {option.influence_generated !== undefined && (
-              <span>
-                Influência: +{option.influence_generated}
-              </span>
-            )}
+  {option.influence !== undefined && (
+    <span>
+      Influência:{" "}
+      {option.influence > 0 ? "+" : ""}
+      {option.influence}
+    </span>
+  )}
 
-            {option.corruption_generated !== undefined && (
-              <span>
-                Corrupção: +{option.corruption_generated}
-              </span>
-            )}
+  {option.corruption !== undefined && (
+    <span>
+      Corrupção:{" "}
+      {option.corruption > 0 ? "+" : ""}
+      {option.corruption}
+    </span>
+  )}
 
-            {option.success_chance !== undefined && (
-              <span className="polis-choice-success">
-                {option.success_chance}% de sucesso
-              </span>
-            )}
+  {option.success_chance !== undefined && (
+    <span className="polis-choice-success">
+      {option.success_chance}% de sucesso
+    </span>
+  )}
 
-            {option.description && (
-              <span className="polis-choice-description">
-                {option.description}
-              </span>
-            )}
+  {option.description && (
+    <span className="polis-choice-description">
+      {option.description}
+    </span>
+  )}
 
-          </span>
+</span>
 
-          {option.cost !== undefined && (
-            <span className="polis-choice-card-cost">
-              Custo: {option.cost}$
-            </span>
-          )}
+{option.cost !== undefined && (
+  <span className="polis-choice-card-cost">
+    Custo: {option.cost}$
+  </span>
+)}
         </button>
       ))}
   </div>
