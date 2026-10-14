@@ -10,23 +10,21 @@ MISSIONS = [
         "type": "destruction",
         "content": {
             "destruction": None,
-
-            # Missão alternativa caso a destruição seja convertida.
-            "state": ["AM", "PA"],
+            "state": ["AM", "PA", "MT"],
         },
     },
     {
         "mission_id": 2,
         "type": "state",
         "content": {
-            "state": ["SP", "RJ"],
+            "state": ["SP", "RJ", "MG", "BA"],
         },
     },
     {
         "mission_id": 3,
         "type": "state",
         "content": {
-            "state": ["AC", "RO"],
+            "state": ["AC", "RO", "AM", "MT"],
         },
     },
     {
@@ -35,8 +33,8 @@ MISSIONS = [
         "content": {
             "region": [
                 {
-                    "region": "Sul",
-                    "quantity": 2,
+                    "region": "Centro-Oeste",
+                    "quantity": 3,
                 },
             ],
         },

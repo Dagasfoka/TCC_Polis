@@ -67,6 +67,7 @@ class ActionsFactory:
                 corruption = CORRUPTION[action.risk_level]
                             
             if action.risk_level == INSANE_ACTION:
+                continue
                 redis_action = self.make_action(
                                 action=action,
                                 cost=cost,
