@@ -885,6 +885,81 @@ html,
   background: rgba(3, 8, 15, 0.72);
 }
 
+.polis-dice-result-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  background: rgba(3, 8, 15, 0.78);
+}
+
+.polis-dice-result {
+  min-width: min(340px, 80vw);
+  padding: 28px 42px;
+  border: 3px solid #d7b47c;
+  background: linear-gradient(145deg, #68442f, #39251b);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, .65);
+  color: #fff;
+  text-align: center;
+  animation: polis-dice-pop .25s ease-out both;
+}
+
+.polis-dice-roll {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.polis-dice-roll img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.polis-dice-roll span {
+  color: #fff;
+  font-size: clamp(54px, 10vw, 84px);
+  line-height: 1;
+  font-weight: 400;
+  -webkit-text-stroke: 3px #000;
+  paint-order: stroke fill;
+  text-shadow: 3px 3px 0 #000;
+}
+
+.polis-dice-result.is-rolling .polis-dice-roll span {
+  animation: polis-dice-number .18s linear infinite alternate;
+}
+
+.polis-dice-result p {
+  margin: 18px 0 0;
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 400;
+  -webkit-text-stroke: 1.5px #000;
+  paint-order: stroke fill;
+}
+
+.polis-dice-result.is-success p { color: #76e29a; }
+.polis-dice-result.is-failure p { color: #ff8585; }
+
+.polis-dice-result small {
+  display: block;
+  margin-top: 8px;
+  color: #fff;
+  font-size: 16px;
+}
+
+@keyframes polis-dice-number {
+  from { transform: rotate(-5deg) scale(.94); }
+  to { transform: rotate(5deg) scale(1.06); }
+}
+
+@keyframes polis-dice-pop {
+  from { opacity: 0; transform: scale(.82); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 .polis-choice-board {
   position: relative;
   width: min(1480px, 98vw);
@@ -932,6 +1007,9 @@ html,
   font-size: 19px;
 }
 .polis-choice-influence {
+  position: absolute;
+  top: 0;
+  right: 0;
   padding: 5px 10px;
   border-radius: 3px;
   background: #000;
@@ -1030,15 +1108,12 @@ html,
   pointer-events: none;
 }
 
-.polis-choice-card-details {
+.polis-choice-card-description {
   position: absolute;
   top: 46%;
   left: 12%;
   width: 76%;
-  max-height: 58%;
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
+  height: 17%;
   overflow: auto;
   padding: 2px;
   box-sizing: border-box;
@@ -1046,24 +1121,102 @@ html,
   line-height: 1.25;
 }
 
-.polis-choice-card-details span { display: block; }
-.polis-choice-card-details .polis-choice-success { color: #284FB3; }
-.polis-choice-card-details .polis-choice-description { margin-top: 8px; }
+.polis-choice-card-status {
+  position: absolute;
+  top: 66%;
+  left: 10%;
+  width: 80%;
+  max-height: 18%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  overflow: auto;
+  font-size: clamp(12px, 1.2vw, 16px);
+  line-height: 1.1;
+}
+
+.polis-choice-card-status span { display: block; }
+.polis-choice-card-status .polis-choice-gain-influence,
+.polis-choice-card-status .polis-choice-gain-money,
+.polis-choice-card-status .polis-choice-gain-corruption {
+  width: fit-content;
+  padding: 7px 12px;
+  border-radius: 0;
+  color: #fff;
+  font-weight: 400 !important;
+  font-style: normal;
+  font-synthesis: none;
+  text-transform: none;
+}
+.polis-choice-card-status .polis-choice-gain-influence { background: #284FB3; }
+.polis-choice-card-status .polis-choice-gain-money { background: #2F7355; }
+.polis-choice-card-status .polis-choice-gain-corruption { background: #581F72; }
 
 .polis-choice-card-cost {
   position: absolute;
   bottom: 5%;
   left: 8%;
+  width: 40%;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 0;
+  background: transparent;
   color: #fff;
-  font-size: clamp(13px, 1.5vw, 19px);
+  font-size: clamp(14px, 1.45vw, 20px);
   font-family: "Coolvetica", sans-serif !important;
   letter-spacing: calc(0.04em + 1px);
-  font-weight: 900;
+  font-weight: 400 !important;
+  font-style: normal;
+  font-synthesis: none;
+  text-transform: none;
   line-height: 1;
   text-align: left;
-  -webkit-text-stroke: 4px #000;
+  -webkit-text-stroke: 0.2em #000;
   paint-order: stroke fill;
-  text-shadow: none;
+  text-shadow: 0.12em 0.12em 0 #000, 0.16em 0.12em 0 #000, 0.12em 0.16em 0 #000, 0.16em 0.16em 0 #000;
+}
+
+.polis-choice-card-cost-value {
+  color: #E84A4A;
+}
+
+.polis-choice-success {
+  position: absolute;
+  right: 8%;
+  bottom: 5%;
+  left: auto;
+  top: auto;
+  transform: none;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  font-size: clamp(18px, 1.8vw, 25px);
+  font-family: "Coolvetica", sans-serif !important;
+  font-weight: 400 !important;
+  font-style: normal;
+  font-synthesis: none;
+  text-transform: none;
+  line-height: 1;
+  text-align: right;
+  -webkit-text-stroke: 0.2em #000;
+  paint-order: stroke fill;
+  text-shadow: 0.12em 0.12em 0 #000, 0.16em 0.12em 0 #000, 0.12em 0.16em 0 #000, 0.16em 0.16em 0 #000;
+}
+
+.polis-choice-die-icon {
+  display: block;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
 }
 
 .polis-no-choice {
@@ -1828,7 +1981,7 @@ html,
 
 .polis-player-stats {
   min-width: 0;
-  gap: 3px;
+  gap: 6px;
 }
 
 .polis-stat-row {
@@ -2636,7 +2789,7 @@ html,
   aspect-ratio: 1 / 1;
   border: 0;
   background: #fff;
-  color: #000;
+  color: #fff;
   font-size: 28px;
   font-weight: 400;
   line-height: 1;
@@ -3143,7 +3296,7 @@ html,
 .polis-victory-screen {
   position: relative;
   flex: 0 0 auto;
-  width: min(1200px, 98vw, 155vh);
+  width: min(1400px, 99vw, 160vh);
   aspect-ratio: 1585 / 891;
 }
 
@@ -3207,7 +3360,7 @@ html,
 
 .polis-victory-winner-area .polis-victory-winner-card {
   bottom: 8px;
-  transform: translateX(calc(-50% - 110px)) scale(1.5);
+  transform: translateX(calc(-50% - 150px)) scale(1.5);
   transform-origin: center bottom;
 }
 
@@ -3236,7 +3389,7 @@ html,
 
 .polis-victory-winner-label {
   position: absolute;
-  bottom: 29%;
+  bottom: calc(36% - 14px);
   left: 50%;
   z-index: 3;
   display: flex;
@@ -3279,7 +3432,7 @@ html,
 }
 
 .polis-victory-winner-count {
-  transform: translateY(-78px);
+  transform: translateY(-77px);
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
@@ -3297,10 +3450,10 @@ html,
 
 .polis-victory-missions {
   position: absolute;
-  top: 4%;
-  right: 4%;
+  top: 3.5%;
+  right: 3%;
   z-index: 10;
-  width: 43%;
+  width: 47%;
   height: auto;
   aspect-ratio: 713 / 646;
 }
@@ -3314,7 +3467,7 @@ html,
 
 .polis-victory-missions-list {
   position: absolute;
-  inset: 18% 6% 6%;
+  inset: 19% 6% 6%;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -3324,26 +3477,48 @@ html,
 }
 
 .polis-victory-player {
+  position: relative;
   display: flex;
   flex: 1 1 0;
   align-items: center;
-  gap: 10px;
-  min-height: 0;
+  --victory-player-gap: 10px;
+  gap: var(--victory-player-gap);
+  box-sizing: border-box;
+  min-height: clamp(56px, 9vw, 95px);
+  padding: 3px 8px;
   color: #000;
 }
 
+.polis-victory-player::before {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  right: 0;
+  height: clamp(56px, 9vw, 95px);
+  left: calc(8px + clamp(22px, 2.5vw, 34px) + var(--victory-player-gap) + clamp(50px, 8vw, 87px) / 2);
+  transform: translateY(-50%);
+  border-radius: 0 18px 18px 0;
+  background: var(--victory-party-color);
+  content: "";
+}
+
 .polis-victory-rank {
+  position: relative;
+  z-index: 1;
   flex: 0 0 auto;
+  width: clamp(22px, 2.5vw, 34px);
   color: #000;
   font-size: clamp(17px, 2vw, 27px);
   font-weight: 400;
+  text-align: center;
 }
 
 .polis-victory-avatar-wrap {
   position: relative;
-  flex: 0 0 clamp(50px, 8vw, 87px);
-  width: clamp(50px, 8vw, 87px);
-  height: clamp(50px, 8vw, 87px);
+  z-index: 1;
+  flex: 0 0 clamp(56px, 9vw, 95px);
+  width: clamp(56px, 9vw, 95px);
+  height: clamp(56px, 9vw, 95px);
 }
 
 .polis-victory-avatar {
@@ -3351,44 +3526,78 @@ html,
   width: 100%;
   height: 100%;
   object-fit: contain;
+  box-sizing: border-box;
+  border: 3px solid #2b334e;
+  border-radius: 50%;
 }
 
 .polis-victory-player-count {
   position: absolute;
-  right: -5px;
-  bottom: -3px;
-  padding: 3px 7px;
-  border-radius: 0;
-  background: #000;
+  z-index: 1;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  flex: 0 0 auto;
+  padding: 0;
+  background: transparent;
   color: #fff;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400 !important;
-  -webkit-text-stroke: 0 transparent;
-  text-shadow: none;
+  font-size: clamp(16px, 2vw, 25px);
+  font-weight: 800;
+  line-height: 1;
+  -webkit-text-stroke: 3px #000;
+  paint-order: stroke fill;
+  text-shadow: 2px 2px 0 #000, 3px 2px 0 #000, 2px 3px 0 #000, 3px 3px 0 #000;
   white-space: nowrap;
 }
 
+.polis-victory-player-heading {
+  display: flex;
+  width: 100%;
+  min-height: clamp(12px, 1.5vw, 20px);
+  flex: 0 0 clamp(12px, 1.5vw, 20px);
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.polis-victory-player-heading .polis-victory-player-count {
+  margin-left: 0;
+}
+
 .polis-victory-player-info {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+  align-self: center;
+  justify-content: center;
   min-width: 0;
+  padding-right: 90px;
   gap: 3px;
 }
 
 .polis-victory-player-name {
-  color: #000;
+  display: block;
+  height: 1em;
+  flex: 0 0 auto;
+  color: #fff;
   font-size: clamp(12px, 1.5vw, 20px);
-  font-weight: 400;
+  font-weight: 800;
   line-height: 1;
+  white-space: nowrap;
+  -webkit-text-stroke: 3px #000;
+  paint-order: stroke fill;
+  text-shadow: 2px 2px 0 #000, 3px 2px 0 #000, 2px 3px 0 #000, 3px 3px 0 #000;
 }
 
 .polis-victory-mission-text {
-  color: #1e293b;
+  display: block;
+  color: #000;
   font-size: clamp(11px, 1.1vw, 15px);
   font-weight: 400;
   line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 .polis-victory-empty {
@@ -3410,15 +3619,15 @@ html,
 }
 
 .polis-victory-back {
-  right: calc(24% - 20px);
-  width: 24%;
+  right: calc(26% - 18px);
+  width: 20%;
   bottom: calc(4% - 10px);
 }
 
 .polis-victory-exit {
-  right: calc(8% - 20px);
+  right: calc(7% - 18px);
   bottom: calc(5% - 5px);
-  width: 18%;
+  width: 15%;
 }
 
 .polis-victory-back img,
@@ -3440,22 +3649,22 @@ html,
   }
 
   .polis-victory-screen {
-    width: min(98vw, 155vh);
+    width: min(99vw, 160vh);
   }
 
   .polis-victory-missions {
-    top: 6%;
-    right: 3%;
-    width: 48%;
+    top: 4%;
+    right: 2%;
+    width: 52%;
   }
 
   .polis-victory-missions-list {
-    inset: 20% 5% 5%;
+    inset: 21% 5% 5%;
     gap: 3px;
   }
 
   .polis-victory-player {
-    gap: 5px;
+    --victory-player-gap: 5px;
   }
 
   .polis-victory-player-name {
@@ -3467,8 +3676,7 @@ html,
   }
 
   .polis-victory-player-count {
-    padding: 2px 5px;
-    font-size: 12px;
+    padding: 0;
   }
 
   .polis-victory-rank {
@@ -3476,13 +3684,13 @@ html,
   }
 
   .polis-victory-back {
-    right: calc(26% - 20px);
-    width: 26%;
+    right: calc(29% - 18px);
+    width: 23%;
   }
 
   .polis-victory-exit {
-    right: calc(8% - 20px);
-    width: 20%;
+    right: calc(8% - 18px);
+    width: 18%;
   }
 
   .polis-victory-open {
