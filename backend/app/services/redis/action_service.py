@@ -15,6 +15,9 @@ from backend.app.validators.pending_action_validators import PendingActionValida
 from backend.app.validators.player_validators import PlayerValidator
 from backend.app.models.redis.pending_action import PendingAction
 from backend.app.factories.match_action_factory import MatchActionFactory
+from backend.app.gateways.room_gateways import RoomGateway
+from backend.app.factories.room_factory import RoomFactory
+from backend.app.validators.room_validators import RoomValidator
 from backend.app.services.redis.round_service import initial_distribute_actions,skip_turn_by_money_insufficient
 QUESTION_CORRECT_BONUS = 2
 QUESTION_WRONG_PENALTY = 2
@@ -32,6 +35,9 @@ match_validator=MatchValidator()
 action_factory = ActionsFactory()
 player_gateway=PlayerGateway()
 player_validator=PlayerValidator()
+room_validator=RoomValidator()
+room_gateway=RoomGateway()
+room_factory=RoomFactory()
 
 match_action_gateway=MatchActionGateway()
 action_validator=ActionValidator()
@@ -162,6 +168,11 @@ def resolve_action_no_question(
     won = match_mission_validator.final_round_verify(match_id, player_id)
 
     if won:
+        room=room_gateway.get_room(match["room_code"])
+        room=room_validator.not_exist(room)
+        room_factory.set_status_waiting(room)
+        room_factory.update_room(room)
+        
         match=match_factory.finish_match(match,player_id,action_result)
         match_factory.update_match(match)
 

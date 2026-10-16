@@ -100,7 +100,6 @@ export default function Lobby({
     }
 
     applyRoom(updatedRoom);
-
     if (updatedRoom.status === "in_game" && updatedRoom.match_id) {
       callbacksRef.current.onStart(updatedRoom.match_id);
     }

@@ -428,6 +428,7 @@ function LastActionResult({ result }) {
 
 
 export default function DemoGameScreen({
+  onReturnRoom,
   initialMatchId,
   initialPlayerId,
   onMatchNotFound,
@@ -1531,7 +1532,7 @@ export default function DemoGameScreen({
               <button
                 type="button"
                 className="polis-victory-back"
-                onClick={() => setShowVictoryScreen(false)}
+                onClick={() => onReturnRoom()}
                 aria-label="Voltar para a sala"
               >
                 <img src="/voltarsala.png" alt="Voltar para a sala" />

@@ -37,4 +37,5 @@ class RoomFactory:
         for player in room["players"].values():
             player["ready"] = False
         self.update_room(room)
-    
+    def set_status_waiting(self,room_dict:dict):
+        room_dict['status']="waiting"
