@@ -225,7 +225,6 @@ export default function Menu({ player, onEnterRoom, onLogout }) {
           transform: translateX(-50%);
           display: inline-block;
           padding: 2px 12px 4px;
-          background: #000000;
           color: #ffffff;
           font-family: "Coolvetica", sans-serif;
           font-weight: 800;
