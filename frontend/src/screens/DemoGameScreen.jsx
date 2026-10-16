@@ -9,6 +9,10 @@ const PARTY_COLORS = {
   PA: "#28A3E0",
   PV: "#30C067",
   PD: "#E0A12A",
+  1: "#DA3A3C",
+  2: "#E0A12A",
+  3: "#28A3E0",
+  4: "#30C067",
 };
 
 const QUESTION_SUBJECT_LABELS = {
@@ -29,20 +33,25 @@ function QuestionPresentation({
   targetName,
   onAnswer,
   onDismiss,
+  feedback = null,
   isDemo = false,
 }) {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [remainingSeconds, setRemainingSeconds] = useState(30);
 
   useEffect(() => {
-    if (remainingSeconds <= 0 || (isDemo && selectedAnswer !== null)) return undefined;
+    if (feedback) setRemainingSeconds(30);
+  }, [Boolean(feedback)]);
+
+  useEffect(() => {
+    if (remainingSeconds <= 0 || (selectedAnswer !== null && !feedback)) return undefined;
 
     const timeoutId = window.setTimeout(() => {
       setRemainingSeconds((current) => Math.max(0, current - 1));
     }, 1000);
 
     return () => window.clearTimeout(timeoutId);
-  }, [isDemo, remainingSeconds, selectedAnswer]);
+  }, [feedback, remainingSeconds, selectedAnswer]);
 
   if (!question) return null;
 
@@ -54,8 +63,17 @@ function QuestionPresentation({
       setSelectedAnswer(letter);
       return;
     }
+    setSelectedAnswer(letter);
     onAnswer(letter);
   }
+
+  const answerReview = feedback ?? (
+    isDemo && selectedAnswer !== null
+      ? { selectedAnswer, correctAnswer: question.answer }
+      : null
+  );
+  const reviewedSelection = answerReview?.selectedAnswer ?? selectedAnswer;
+  const selectionIsCorrect = reviewedSelection === answerReview?.correctAnswer;
 
   return (
     <div
@@ -63,11 +81,11 @@ function QuestionPresentation({
       role="dialog"
       aria-modal="true"
       aria-label={isDemo ? "Tela demonstrativa de pergunta" : "Pergunta da partida"}
-      onClick={isDemo ? onDismiss : undefined}
+      onClick={isDemo || feedback ? onDismiss : undefined}
     >
       <section
         className="polis-question-preview-box"
-        onClick={isDemo ? (event) => event.stopPropagation() : undefined}
+        onClick={isDemo || feedback ? (event) => event.stopPropagation() : undefined}
       >
         <img className="polis-question-preview-bg" src="/areapergunta.png" alt="" />
         <div className="polis-question-preview-top-row">
@@ -105,23 +123,17 @@ function QuestionPresentation({
                   type="button"
                   key={letter}
                   onClick={() => handleAnswer(letter)}
-                  disabled={isDemo && selectedAnswer !== null}
-                  className={
-                    isDemo && selectedAnswer !== null
-                      ? selectedAnswer === question.answer && letter === question.answer
-                        ? "is-correct"
-                        : letter === selectedAnswer
-                          ? "is-incorrect"
-                          : ""
-                      : ""
-                  }
+                  disabled={selectedAnswer !== null || Boolean(feedback)}
+                  className={answerReview && letter === reviewedSelection
+                    ? selectionIsCorrect ? "is-correct" : "is-incorrect"
+                    : ""}
                 >
                   {letter}) {text}
                 </button>
               ))}
             </div>
           </div>
-          {question.explanation && (!isDemo || selectedAnswer !== null) && (
+          {question.explanation && (Boolean(feedback) || (isDemo && selectedAnswer !== null)) && (
             <div className="polis-question-preview-explanation">
               <p>Explicação:</p>
               <span>{question.explanation}</span>
@@ -457,6 +469,8 @@ export default function DemoGameScreen({
   const [pendingActionInfo, setPendingActionInfo] = useState(null);
   const [gameNotice, setGameNotice] = useState(null);
   const [skipTurnMessage, setSkipTurnMessage] = useState(null);
+  const [diceAnimation, setDiceAnimation] = useState(null);
+  const [questionFeedback, setQuestionFeedback] = useState(null);
 
 
   const wsRef = useRef(null);
@@ -468,6 +482,10 @@ export default function DemoGameScreen({
   const lastActionNoticeRef = useRef(null);
   const gameNoticeIdRef = useRef(0);
   const localActionPendingRef = useRef(false);
+  const lastDiceResultRef = useRef(null);
+  const answeredQuestionRef = useRef(null);
+  const pendingDiceResultRef = useRef(null);
+  const pendingCompletionNoticesRef = useRef([]);
   const receivedInitialStateRef = useRef(false);
   const shouldReconnectRef = useRef(true);
   const isUnmountingRef = useRef(false);
@@ -481,6 +499,55 @@ export default function DemoGameScreen({
     myTerritories.find((territory) => territory.territory_id === distributionTerritoryId) ??
     myTerritories[0] ??
     null;
+
+  useEffect(() => {
+    if (!diceAnimation?.rolling) return undefined;
+
+    const intervalId = window.setInterval(() => {
+      setDiceAnimation((current) => {
+        if (!current?.rolling) return current;
+        if (current.steps >= 18) {
+          return { ...current, roll: current.finalRoll, rolling: false };
+        }
+        return {
+          ...current,
+          roll: Math.floor(Math.random() * 20) + 1,
+          steps: current.steps + 1,
+        };
+      });
+    }, 65);
+
+    return () => window.clearInterval(intervalId);
+  }, [diceAnimation?.rolling]);
+
+  useEffect(() => {
+    if (!diceAnimation || diceAnimation.rolling || diceAnimation.outcomeVisible) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      setDiceAnimation((current) => current ? { ...current, outcomeVisible: true } : current);
+    }, 450);
+    return () => window.clearTimeout(timeoutId);
+  }, [diceAnimation?.rolling, diceAnimation?.outcomeVisible]);
+
+  useEffect(() => {
+    if (!diceAnimation || diceAnimation.rolling) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      setDiceAnimation(null);
+      if (pendingCompletionNoticesRef.current.length > 0) {
+        showGameNotices(pendingCompletionNoticesRef.current);
+        pendingCompletionNoticesRef.current = [];
+      }
+    }, 1800);
+    return () => window.clearTimeout(timeoutId);
+  }, [diceAnimation?.rolling]);
+
+  useEffect(() => {
+    if (!questionFeedback) return undefined;
+
+    const timeoutId = window.setTimeout(() => closeQuestionFeedback(), 30000);
+    return () => window.clearTimeout(timeoutId);
+  }, [questionFeedback]);
 
   function showGameNotice(kind, message) {
     showGameNotices([{ kind, message }]);
@@ -510,6 +577,29 @@ export default function DemoGameScreen({
     showNextNotice();
   }
 
+  function startDiceAnimation(result) {
+    if (!Number.isFinite(Number(result?.roll))) return;
+
+    setDiceAnimation({
+      roll: Math.floor(Math.random() * 20) + 1,
+      finalRoll: Number(result.roll),
+      success: Boolean(result.success),
+      threshold: Number(result.minimum_roll_to_succeed ?? result.success_chance ?? 0),
+      rolling: true,
+      outcomeVisible: false,
+      steps: 0,
+    });
+  }
+
+  function closeQuestionFeedback() {
+    setQuestionFeedback(null);
+    setPendingQuestion(null);
+    setPendingActionInfo(null);
+    const result = pendingDiceResultRef.current;
+    pendingDiceResultRef.current = null;
+    if (result) startDiceAnimation(result);
+  }
+
   function notifyActionCompleted(result) {
     if (!["attack_result", "attack_no_question"].includes(result?.type)) {
       return;
@@ -517,15 +607,30 @@ export default function DemoGameScreen({
 
     const signature = JSON.stringify(result);
     if (receivedInitialStateRef.current && signature !== lastActionNoticeRef.current && localActionPendingRef.current) {
-      const notices = [];
-      if (typeof result.question_was_correct === "boolean") {
-        notices.push({
-          kind: result.question_was_correct ? "success" : "error",
-          message: result.question_was_correct ? "Resposta correta!" : "Resposta errada!",
-        });
+      if (Number.isFinite(Number(result.roll)) && lastDiceResultRef.current !== signature) {
+        lastDiceResultRef.current = signature;
+        const answeredQuestion = answeredQuestionRef.current;
+        if (answeredQuestion && typeof result.question_was_correct === "boolean") {
+          pendingDiceResultRef.current = result;
+          setQuestionFeedback({
+            question: answeredQuestion.question,
+            selectedAnswer: answeredQuestion.selectedAnswer,
+            correctAnswer: result.correct_answer,
+          });
+          answeredQuestionRef.current = null;
+        } else {
+          startDiceAnimation(result);
+        }
       }
-      notices.push({ kind: "success", message: "Ação concluída!" });
-      showGameNotices(notices);
+      const threshold = Number(result.minimum_roll_to_succeed ?? result.success_chance ?? 0);
+      const actionSucceeded = typeof result.success === "boolean"
+        ? result.success
+        : Number(result.roll) >= threshold;
+      pendingCompletionNoticesRef.current = [
+        actionSucceeded
+          ? { kind: "success", message: "Ação concluída!" }
+          : { kind: "error", message: "Ação fracassada!" },
+      ];
       localActionPendingRef.current = false;
     }
     lastActionNoticeRef.current = signature;
@@ -632,7 +737,7 @@ export default function DemoGameScreen({
         newMatchState.players ?? []
       );
 
-      setShowVictoryScreen(true);
+      alert(`Fim de jogo! Vencedor: ${winnerName}`);
     }
   }
 
@@ -783,14 +888,6 @@ export default function DemoGameScreen({
           );
         }
 
-        if (
-          newMatchState?.last_action_result?.type ===
-          "attack_result"
-        ) {
-          setPendingQuestion(null);
-          setPendingActionInfo(null);
-        }
-
         handleWinnerAlert(newMatchState);
 
         return;
@@ -806,9 +903,6 @@ export default function DemoGameScreen({
 
         // Atualiza o painel imediatamente
         setLastActionResult(data.result);
-
-        setPendingQuestion(null);
-        setPendingActionInfo(null);
 
         handleWinnerAlert(newMatchState);
 
@@ -826,8 +920,10 @@ export default function DemoGameScreen({
         // Atualiza o painel imediatamente
         setLastActionResult(data.result);
 
-        setPendingQuestion(null);
-        setPendingActionInfo(null);
+        if (!["attack_result", "attack_no_question"].includes(data.result?.type)) {
+          setPendingQuestion(null);
+          setPendingActionInfo(null);
+        }
 
         handleWinnerAlert(newMatchState);
 
@@ -960,6 +1056,10 @@ export default function DemoGameScreen({
     }
 
     localActionPendingRef.current = true;
+    lastDiceResultRef.current = null;
+    answeredQuestionRef.current = null;
+    pendingDiceResultRef.current = null;
+    pendingCompletionNoticesRef.current = [];
     wsRef.current.send(
       JSON.stringify({
         type: "choose_attack_option",
@@ -990,6 +1090,11 @@ export default function DemoGameScreen({
       return;
     }
 
+    answeredQuestionRef.current = {
+      question: pendingQuestion,
+      selectedAnswer: answer,
+    };
+
     wsRef.current.send(
       JSON.stringify({
         type: "answer_attack_question",
@@ -1001,8 +1106,6 @@ export default function DemoGameScreen({
       })
     );
 
-    setPendingQuestion(null);
-    setPendingActionInfo(null);
   }
 
   useEffect(() => {
@@ -1235,7 +1338,7 @@ export default function DemoGameScreen({
                   <span>{selectedTerritory.region ?? "-"}</span>
                 </div>
                 <div className="polis-choice-influence">
-                  <span>Influência</span>
+                  <span>Influência do estado</span>
                   <span>{selectedTerritory.current_influence ?? 0}</span>
                 </div>
               </header>
@@ -1263,20 +1366,31 @@ export default function DemoGameScreen({
                           insane: "Risco insano",
                         })[option.risk_level] ?? option.risk_level ?? "Risco não informado"}
                       </span>
-                      <span className="polis-choice-card-details">
-                        {option.influence_generated !== undefined && (
-                          <span>+{option.influence_generated} influência</span>
+                      {option.description && (
+                        <span className="polis-choice-card-description">{option.description}</span>
+                      )}
+                      <span className="polis-choice-card-status">
+                        {(option.influence ?? option.influence_generated) !== undefined && (
+                          <span className="polis-choice-gain-influence">+{option.influence ?? option.influence_generated} influência</span>
                         )}
-                        {option.success_chance !== undefined && (
-                          <span className="polis-choice-success">{option.success_chance}% de sucesso</span>
+                        {option.money !== undefined && Number(option.money) !== 0 && (
+                          <span className="polis-choice-gain-money">+{option.money}$</span>
                         )}
-                        {option.description && (
-                          <span className="polis-choice-description">{option.description}</span>
+                        {option.corruption !== undefined && Number(option.corruption) !== 0 && (
+                          <span className="polis-choice-gain-corruption">
+                            {Number(option.corruption) > 0 ? "+" : ""}{option.corruption}% corrupção
+                          </span>
                         )}
                       </span>
-                      {option.cost !== undefined && (
+                      {option.cost !== undefined && option.cost !== null && (
                         <span className="polis-choice-card-cost">
-                          Custo: {option.cost}$
+                          <span className="polis-choice-card-cost-value">-{option.cost}$</span>
+                        </span>
+                      )}
+                      {option.success_chance !== undefined && option.success_chance !== null && (
+                        <span className="polis-choice-success">
+                          <img className="polis-choice-die-icon" src="/DADO.png" alt="Dado" />
+                          <span>{option.success_chance}</span>
                         </span>
                       )}
                     </button>
@@ -1300,6 +1414,8 @@ export default function DemoGameScreen({
             question={pendingQuestion}
             targetName={pendingActionInfo?.territory_name}
             onAnswer={answerAttackQuestion}
+            feedback={questionFeedback}
+            onDismiss={questionFeedback ? closeQuestionFeedback : undefined}
           />
         )}
 
@@ -1481,9 +1597,6 @@ export default function DemoGameScreen({
                     <span className="polis-victory-winner-name">
                       {victoryWinner?.username ?? "Aguardando jogadores"}
                     </span>
-                    <span className="polis-victory-winner-count">
-                      {victoryWinner?.controlledTerritories ?? 0} ⚑
-                    </span>
                   </div>
                 </div>
               </div>
@@ -1491,40 +1604,50 @@ export default function DemoGameScreen({
               <section className="polis-victory-missions" aria-label="Colocação e missões dos jogadores">
                 <img className="polis-victory-missions-art" src="/missoesrev.png" alt="Missões reveladas" />
                 <div className="polis-victory-missions-list">
-                  {victoryRanking.slice(1).map((rankedPlayer, index) => {
-                    const mission = rankedPlayer.player_id === matchState?.your_player_id
+                  {victoryRanking.map((rankedPlayer, index) => {
+                    const storedMission = matchState?.missions?.find(
+                      (item) => item.owner_id === rankedPlayer.player_id
+                    );
+                    const mission = (rankedPlayer.player_id === matchState?.your_player_id
                       ? matchState?.your_mission
-                      : rankedPlayer.mission ?? rankedPlayer.secret_mission ??
-                        matchState?.missions?.find((item) => item.owner_id === rankedPlayer.player_id)?.mission;
+                      : null) ?? rankedPlayer.mission ?? rankedPlayer.secret_mission ??
+                        storedMission?.mission ?? storedMission;
                     const missionText = mission
                       ? formatMission(mission, players)
                       : "Missão não disponível.";
 
                     return (
-                      <div className="polis-victory-player" key={rankedPlayer.player_id}>
-                        <span className="polis-victory-rank">{index + 2}º</span>
+                      <div
+                        className="polis-victory-player"
+                        key={rankedPlayer.player_id}
+                        style={{ "--victory-party-color": PARTY_COLORS[rankedPlayer.party_id] ?? "#2b334e" }}
+                      >
+                        <span className="polis-victory-rank">{index + 1}º</span>
                         <div className="polis-victory-avatar-wrap">
                           <img
                             className="polis-victory-avatar"
                             src={getAvatarImage(rankedPlayer.avatar_id)}
                             alt={`Avatar de ${rankedPlayer.username}`}
+                            style={{ borderColor: PARTY_COLORS[rankedPlayer.party_id] ?? "#2b334e" }}
                             onError={(event) => {
                               event.currentTarget.src = getAvatarImage("avatar_3");
                             }}
                           />
-                          <span className="polis-victory-player-count">
-                            {rankedPlayer.controlledTerritories} ⚑
-                          </span>
                         </div>
                         <div className="polis-victory-player-info">
-                          <span className="polis-victory-player-name">{rankedPlayer.username}</span>
+                          <div className="polis-victory-player-heading">
+                            <span className="polis-victory-player-name">{rankedPlayer.username}</span>
+                            <span className="polis-victory-player-count">
+                              {rankedPlayer.controlledTerritories} ⚑
+                            </span>
+                          </div>
                           <span className="polis-victory-mission-text">{missionText}</span>
                         </div>
                       </div>
                     );
                   })}
-                  {victoryRanking.length <= 1 && (
-                    <p className="polis-victory-empty">Ainda não há outros jogadores na partida.</p>
+                  {victoryRanking.length === 0 && (
+                    <p className="polis-victory-empty">Ainda não há jogadores na partida.</p>
                   )}
                 </div>
               </section>
@@ -1550,6 +1673,24 @@ export default function DemoGameScreen({
         )}
       </main>
 
+
+      {diceAnimation && (
+        <div
+          className="polis-dice-result-overlay"
+          role="status"
+          aria-live="assertive"
+          aria-label={diceAnimation.rolling ? "Sorteando o dado" : `${diceAnimation.success ? "Sucesso" : "Fracasso"}, resultado ${diceAnimation.roll}, CD ${diceAnimation.threshold}`}
+        >
+          <div className={`polis-dice-result ${diceAnimation.rolling ? "is-rolling" : diceAnimation.success ? "is-success" : "is-failure"}`}>
+            <div className="polis-dice-roll">
+              <img src="/DADO.png" alt="" aria-hidden="true" />
+              <span key={`${diceAnimation.steps}-${diceAnimation.roll}`}>{diceAnimation.roll}</span>
+            </div>
+            <p>{diceAnimation.rolling || !diceAnimation.outcomeVisible ? "Sorteando..." : diceAnimation.success ? "SUCESSO" : "FRACASSO"}</p>
+            {diceAnimation.outcomeVisible && <small>CD {diceAnimation.threshold}</small>}
+          </div>
+        </div>
+      )}
 
       <LastActionResult
         result={lastActionResult}
