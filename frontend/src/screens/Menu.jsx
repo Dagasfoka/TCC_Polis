@@ -234,7 +234,11 @@ export default function Menu({ player, onEnterRoom, onLogout }) {
           white-space: nowrap;
           -webkit-text-stroke: 5.5px #000;
           paint-order: stroke fill;
-          text-shadow: none;
+          text-shadow:
+            4px 4px 0 #000,
+            5px 4px 0 #000,
+            4px 5px 0 #000,
+            5px 5px 0 #000;
         }
 
         .actions-section {
@@ -511,20 +515,13 @@ export default function Menu({ player, onEnterRoom, onLogout }) {
 
 .avatar-button {
   position: absolute;
-
   bottom: 160px;
-
   width: 260px;
-
   background: none;
   border: none;
-
   padding: 0;
-
   cursor: pointer;
-
   z-index: 2;
-
   transition: transform 0.15s ease;
 }
 
@@ -534,9 +531,7 @@ export default function Menu({ player, onEnterRoom, onLogout }) {
 
 .avatar-button .avatar-sapo {
   position: static;
-
   width: 260px;
-
   display: block;
 }
 
@@ -566,7 +561,6 @@ export default function Menu({ player, onEnterRoom, onLogout }) {
 
   {/* Esquerda: Perfil */}
   <div className="profile-section">
-
     <img
       src="/retangulo.png"
       className="retangulo-bg"
@@ -594,12 +588,10 @@ export default function Menu({ player, onEnterRoom, onLogout }) {
 
     <div className="podium-wrapper">
       <img src="/podio.png" alt="Pódio" />
-
       <span className="player-name">
-        {player?.username || player?.name || "Jogador"}
+          {player?.username || player?.name || "Jogador"}
       </span>
     </div>
-
   </div>
 
 

@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import Overlay from '../Overlay.js';
-import COLORS from '../../Data.js';
-import '../../style.css';
+import { COLORS, STATES } from '../../data/Data.js';
+import '../../styles/style.css';
 
 function GameOverlays({
   gs,
@@ -125,7 +125,7 @@ function QuestionOverlay({ question, action, onAnswer, onClose, flash }) {
   return (
     <Overlay onClose={!answered ? onClose : null}>
       <div className="q-ctx-bar">
-        Ação: <strong>{ACTIONS[action]}</strong> — Responda para alterar a chance de sucesso
+        Ação: <span>{ACTIONS[action]}</span> — Responda para alterar a chance de sucesso
       </div>
 
       <div className="q-hdr">

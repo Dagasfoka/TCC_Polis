@@ -285,6 +285,7 @@ export default function App() {
 
           <DemoGameScreen
             onMatchNotFound={handleMatchNotFound}
+            onLeaveRoom={handleLeaveRoom}
             initialMatchId={matchId}
             initialPlayerId={
               player.player_id

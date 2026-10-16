@@ -680,17 +680,17 @@ export default function DemoGameScreen() {
           <div className="demo-card">
             <h2>Você</h2>
             <p>
-              <strong>Jogador:</strong>{" "}
+              <span>Jogador:</span>{" "}
               {/* Renderização condicional usando operador ternário. */}
               {me ? `${me.username} (${me.player_id})` : "Não conectado"}
             </p>
             <p>
-              <strong>Partido:</strong>{" "}
+              <span>Partido:</span>{" "}
               {/* ?. evita erro; ?? mostra "-" quando não há valor. */}
               {me?.party_id ?? "-"}
             </p>
             <p>
-              <strong>Status:</strong>{" "}
+              <span>Status:</span>{" "}
               {connected ? "Conectado" : "Desconectado"}
             </p>
           </div>
@@ -699,23 +699,23 @@ export default function DemoGameScreen() {
           <div className="demo-card">
             <h2>Turno</h2>
             <p>
-              <strong>Rodada:</strong> {matchState?.round ?? "-"}
+              <span>Rodada:</span> {matchState?.round ?? "-"}
             </p>
             <p>
-              <strong>Jogador da vez:</strong>{" "}
+              <span>Jogador da vez:</span>{" "}
               {currentPlayer
                 ? `${currentPlayer.username} (${currentPlayer.player_id})`
                 : "-"}
             </p>
             <p>
-              <strong>É sua vez?</strong> {isMyTurn ? "Sim" : "Não"}
+              <span>É sua vez?</span> {isMyTurn ? "Sim" : "Não"}
             </p>
             <p>
-              <strong>Status da partida:</strong>{" "}
+              <span>Status da partida:</span>{" "}
               {matchState?.status ?? "-"}
             </p>
             <p>
-              <strong>Vencedor:</strong>{" "}
+              <span>Vencedor:</span>{" "}
               {matchState?.winner_id
                 ? getPlayerNameById(matchState.winner_id, players)
                 : "Nenhum"}
@@ -747,17 +747,17 @@ export default function DemoGameScreen() {
               // Fragment <> permite agrupar vários elementos sem criar uma div.
               <>
                 <p>
-                  <strong>{selectedTerritory.name}</strong> (
+                  <span>{selectedTerritory.name}</span> (
                   {selectedTerritory.territory_id})
                 </p>
                 <p>
-                  <strong>Região:</strong> {selectedTerritory.region}
+                  <span>Região:</span> {selectedTerritory.region}
                 </p>
                 <p>
-                  <strong>Dono:</strong> {selectedTerritory.owner_id}
+                  <span>Dono:</span> {selectedTerritory.owner_id}
                 </p>
                 <p>
-                  <strong>Influência:</strong>{" "}
+                  <span>Influência:</span>{" "}
                   {selectedTerritory.current_influence}
                 </p>
 
@@ -810,11 +810,11 @@ export default function DemoGameScreen() {
             {matchState?.last_action_result ? (
               <>
                 <p>
-                  <strong>Ação:</strong>{" "}
+                  <span>Ação:</span>{" "}
                   {matchState.last_action_result.title}
                 </p>
                 <p>
-                  <strong>Território:</strong>{" "}
+                  <span>Território:</span>{" "}
                   {matchState.last_action_result.territory_name} (
                   {matchState.last_action_result.territory_id})
                 </p>
@@ -827,7 +827,7 @@ export default function DemoGameScreen() {
                 {matchState.last_action_result.question_was_correct !==
                   undefined && (
                   <p>
-                    <strong>Pergunta:</strong>{" "}
+                    <span>Pergunta:</span>{" "}
                     {matchState.last_action_result.question_was_correct
                       ? "Acertou"
                       : "Errou"}
@@ -838,7 +838,7 @@ export default function DemoGameScreen() {
                 {matchState.last_action_result.base_success_chance !==
                   undefined && (
                   <p>
-                    <strong>Chance base:</strong>{" "}
+                    <span>Chance base:</span>{" "}
                     {matchState.last_action_result.base_success_chance}%
                   </p>
                 )}
@@ -847,35 +847,35 @@ export default function DemoGameScreen() {
                 {matchState.last_action_result.adjusted_success_chance !==
                   undefined && (
                   <p>
-                    <strong>Chance após pergunta:</strong>{" "}
+                    <span>Chance após pergunta:</span>{" "}
                     {matchState.last_action_result.adjusted_success_chance}%
                   </p>
                 )}
 
                 <p>
-                  <strong>Resultado:</strong>{" "}
+                  <span>Resultado:</span>{" "}
                   {matchState.last_action_result.success ? "Sucesso" : "Falha"}
                 </p>
                 <p>
-                  <strong>Conquistou?</strong>{" "}
+                  <span>Conquistou?</span>{" "}
                   {matchState.last_action_result.conquered ? "Sim" : "Não"}
                 </p>
                 <p>
-                  <strong>Influência:</strong>{" "}
+                  <span>Influência:</span>{" "}
                   {matchState.last_action_result.previous_influence} →{" "}
                   {matchState.last_action_result.new_influence}
                 </p>
                 <p>
-                  <strong>Dono:</strong>{" "}
+                  <span>Dono:</span>{" "}
                   {matchState.last_action_result.previous_owner_id} →{" "}
                   {matchState.last_action_result.new_owner_id}
                 </p>
                 <p>
-                  <strong>Rolagem:</strong>{" "}
+                  <span>Rolagem:</span>{" "}
                   {matchState.last_action_result.roll}
                 </p>
                 <p>
-                  <strong>Necessário:</strong>{" "}
+                  <span>Necessário:</span>{" "}
                   {/*
                    * Usa minimum_roll_to_succeed quando o backend o envia.
                    * Caso seja null/undefined, calcula 100 - chance de sucesso.
@@ -885,7 +885,7 @@ export default function DemoGameScreen() {
                   ou mais
                 </p>
                 <p>
-                  <strong>Chance de sucesso:</strong>{" "}
+                  <span>Chance de sucesso:</span>{" "}
                   {matchState.last_action_result.success_chance}%
                 </p>
               </>
@@ -947,9 +947,9 @@ export default function DemoGameScreen() {
           {/* Renderiza uma entrada para cada log armazenado. */}
           {logs.map((log) => (
             <div key={log.id} className="demo-log-item">
-              <strong>
+              <span>
                 [{log.createdAt}] {log.message}
-              </strong>
+              </span>
 
               {/*
                * Eventos com payload costumam carregar o estado inteiro.
@@ -994,16 +994,16 @@ export default function DemoGameScreen() {
             {pendingActionInfo && (
               <div className="question-action-info">
                 <p>
-                  <strong>Ação:</strong> {pendingActionInfo.title}
+                  <span>Ação:</span> {pendingActionInfo.title}
                 </p>
 
                 <p>
-                  <strong>Território:</strong>{" "}
+                  <span>Território:</span>{" "}
                   {pendingActionInfo.territory_name}
                 </p>
 
                 <p>
-                  <strong>Chance base:</strong>{" "}
+                  <span>Chance base:</span>{" "}
                   {pendingActionInfo.success_chance}%
                 </p>
               </div>

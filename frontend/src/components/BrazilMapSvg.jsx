@@ -61,6 +61,7 @@ export default function BrazilMapSvg({
   onSelectTerritory = () => {},
   isActionable = true,
   currentPlayerId = null,
+  selectableTerritoryIds = null,
   className = "",
 }) {
   const territoryById = useMemo(
@@ -69,6 +70,10 @@ export default function BrazilMapSvg({
   );
 
   function isTerritorySelectable(territoryId) {
+    if (Array.isArray(selectableTerritoryIds)) {
+      return selectableTerritoryIds.includes(territoryId);
+    }
+
     if (!currentPlayerId) return true;
 
     const territory = territoryById[territoryId];
@@ -191,7 +196,7 @@ export default function BrazilMapSvg({
           d={TERRITORY_PATHS[selectedTerritoryId]}
           fill="none"
           stroke="#ffffff"
-          strokeWidth="1.4"
+          strokeWidth="2.8"
           mask={
             ["GO", "BA", "MG"].includes(selectedTerritoryId)
               ? "url(#mask-df-neighbors)"
@@ -219,11 +224,11 @@ export default function BrazilMapSvg({
                 style={{
                   pointerEvents: "none",
                   userSelect: "none",
-                  fontSize: "18px",
-                  fontWeight: 800,
+                  fontSize: "20px",
+                  fontWeight: 400,
                   fill: isActionable && isTerritorySelectable(territoryId) ? "#ffffff" : "#808080",
-                  stroke: isActionable && isTerritorySelectable(territoryId) ? "#1a1816" : "#111111",
-                  strokeWidth: 2.8,
+                  stroke: "#000000",
+                  strokeWidth: 5,
                   paintOrder: "stroke",
                 }}
               >
@@ -238,11 +243,11 @@ export default function BrazilMapSvg({
                 style={{
                   pointerEvents: "none",
                   userSelect: "none",
-                  fontSize: "14px",
-                  fontWeight: 800,
+                  fontSize: "16px",
+                  fontWeight: 400,
                   fill: isActionable && isTerritorySelectable(territoryId) ? "#ffffff" : "#808080",
-                  stroke: isActionable && isTerritorySelectable(territoryId) ? "#1a1816" : "#111111",
-                  strokeWidth: 2.8,
+                  stroke: "#000000",
+                  strokeWidth: 5,
                   paintOrder: "stroke",
                 }}
               >

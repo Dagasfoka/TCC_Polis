@@ -1,5 +1,5 @@
-import AVATARS from '../../polis/Data.js'
-import '../../style.css'
+import { AVATARS } from '../../data/Data.js'
+import '../../styles/style.css'
 
 function GameHUDTop({ gs, isMyTurn, player, onMenu }) {
   return (

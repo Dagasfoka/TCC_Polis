@@ -1,4 +1,4 @@
-import STATES from '../../data/Data.js'
+import { STATES } from '../../data/Data.js'
 import '../../styles/style.css'
 
 export default function GameBottomHud({
@@ -13,7 +13,7 @@ export default function GameBottomHud({
       <div>
         {gs.sel ? (
           <span className="sel-state-chip">
-            Estado selecionado: <strong>{STATES.find(s => s.id === gs.sel)?.name}</strong>
+            Estado selecionado: <span>{STATES.find(s => s.id === gs.sel)?.name}</span>
           </span>
         ) : (
           <span style={{

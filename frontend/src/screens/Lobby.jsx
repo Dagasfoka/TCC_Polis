@@ -514,7 +514,11 @@ export default function Lobby({
           font-weight: 800;
           -webkit-text-stroke: 5px #000;
           paint-order: stroke fill;
-          text-shadow: 3px 3px 0 #000;
+          text-shadow:
+            3px 3px 0 #000,
+            4px 3px 0 #000,
+            3px 4px 0 #000,
+            4px 4px 0 #000;
           z-index: 2;
           white-space: nowrap;
           overflow: visible;
@@ -846,7 +850,7 @@ export default function Lobby({
                       </div>
                     </div>
 
-                    {(roomPlayer.ready || roomPlayer.host) && (
+                    {(roomPlayer.ready || (roomPlayer.host && roomPlayer.party_id)) && (
                       <img
                         src="/vpronto.png"
                         className="ready-check-img"
@@ -965,8 +969,12 @@ export default function Lobby({
                         ? "Retirar pronto"
                         : "Marcar como pronto"
                   }
+                  aria-pressed={isReady}
                 >
-                  <img src="/PRONTO.png" alt="Estou Pronto" />
+                  <img
+                    src={isReady ? "/CANCELAR.png" : "/PRONTO.png"}
+                    alt={isReady ? "Cancelar pronto" : "Estou Pronto"}
+                  />
                 </button>
               )}
 
