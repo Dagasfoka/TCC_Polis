@@ -632,7 +632,7 @@ export default function DemoGameScreen({
         newMatchState.players ?? []
       );
 
-      alert(`Fim de jogo! Vencedor: ${winnerName}`);
+      setShowVictoryScreen(true);
     }
   }
 

@@ -271,6 +271,12 @@ def resolve_attack_action(
     won = match_mission_validator.final_round_verify(match_id, player_id)
 
     if won:
+        room=room_gateway.get_room(match["room_code"])
+        room=room_validator.not_exist(room)
+        room_factory.set_status_waiting(room)
+        room_factory.update_room(room)
+        
+        
         match["status"] = "finished"
         match["winner_id"] = player_id
         match["last_action_result"] = action_result

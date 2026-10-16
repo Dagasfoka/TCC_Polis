@@ -11,11 +11,13 @@ from backend.app.services.redis.action_service import (
 )
 from backend.app.factories.match_factory import MatchFactory
 from backend.app.validators.db.territory_validator import TerritoryValidator
+from backend.app.validators.match_validators import MatchValidator
 from backend.app.websocket.manager import manager
 
 router_websocket = APIRouter()
 
 match_gateway=MatchGateway()
+match_validator=MatchValidator()
 territory_validator=TerritoryValidator()
 match_factory = MatchFactory()
 
@@ -128,9 +130,8 @@ async def match_websocket(
                         data.get("territory_id")
                         or payload.get("territory_id")
                     )
-
                     match = match_gateway.get_match(match_id)
-
+                    match = match_validator.match_exist(match)
                     territory = match_gateway.get_territory_by_id(
                         match,
                         territory_id,
