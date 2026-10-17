@@ -3,7 +3,7 @@ from backend.app.repositories.redis.match_repo import MatchRepo
 from backend.app.repositories.db.territory_repo import TerritoryRepo
 from backend.app.gateways.player_gateways import PlayerGateway
 from backend.app.models.redis.match import Match
-
+import random
 class MatchFactory:
     def __init__(self) -> None:
         self.match_repository=MatchRepo()
@@ -36,7 +36,7 @@ class MatchFactory:
             room_player = room_dict["players"].get(player_id)
 
             if room_player is None:
-             raise ValueError(
+                raise ValueError(
                     f"Jogador {player_id} não encontrado na sala"
                 )
 
@@ -59,25 +59,34 @@ class MatchFactory:
         round=1,
         missions=[],
     )
+        random.shuffle(match_dict["players"])
 
+        match_dict["phase"] = "initial_distribution"
+
+        match_dict["phase"] = "initial_distribution"
+        self.set_first_turn_player(match_dict)
         return match_dict
-    def advance_turn(self,match_dict: dict):
-            players = match_dict["players"]
-            current_player_id = match_dict["current_turn_player_id"]
-    
-            current_index = 0
-    
-            for index, player in enumerate(players):
-                if player["player_id"] == current_player_id:
-                    current_index = index
-                    break
-    
-            next_index = (current_index + 1) % len(players)
-    
-            if next_index == 0:
+    def advance_turn(self, match_dict: dict):
+        players = match_dict["players"]
+        current_player_id = match_dict["current_turn_player_id"]
+
+        current_index = next(
+            index
+            for index, player in enumerate(players)
+            if player["player_id"] == current_player_id
+        )
+
+        next_index = (current_index + 1) % len(players)
+
+        if next_index == 0:
+            if match_dict.get("phase") == "initial_distribution":
+                match_dict["phase"] = "playing"
+            else:
                 match_dict["round"] += 1
-    
-            match_dict["current_turn_player_id"] = players[next_index]["player_id"]
+
+        match_dict["current_turn_player_id"] = (
+            players[next_index]["player_id"]
+        )
     def change_key_value(self,match_dict,key,newValue):
         match_dict[key]=newValue
         return match_dict
@@ -101,3 +110,7 @@ class MatchFactory:
         put_list.append(question)
         match_dict["activate_questions_list"] = pop_name_list_questions
         self.update_match(match_dict)
+    def set_first_turn_player(self, match_dict):
+        match_dict["current_turn_player_id"] = (
+            match_dict["players"][0]["player_id"]
+        )

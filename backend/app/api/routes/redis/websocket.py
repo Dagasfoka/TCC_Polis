@@ -1,6 +1,8 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import random
+import logging
 
+from backend.app.services.redis.round_service import distribute_match_influence
 from backend.app.gateways.match_gateways import MatchGateway
 from backend.app.services.redis.action_service import (
     prepare_attack_action,
@@ -12,20 +14,31 @@ from backend.app.services.redis.action_service import (
 from backend.app.factories.match_factory import MatchFactory
 from backend.app.validators.db.territory_validator import TerritoryValidator
 from backend.app.validators.match_validators import MatchValidator
+from backend.app.validators.player_validators import PlayerValidator
 from backend.app.websocket.manager import manager
 
 router_websocket = APIRouter()
+logger = logging.getLogger(__name__)
 
+player_validator=PlayerValidator()
 match_gateway=MatchGateway()
 match_validator=MatchValidator()
 territory_validator=TerritoryValidator()
 match_factory = MatchFactory()
 
-def prepare_match_for_player(match: dict, player_id: str, skipped_player_id = None):
+def prepare_match_for_player(match: dict,player_id: str,skipped_player_id=None,):
     match_for_player = match.copy()
+    player = match_gateway.find_player(match, player_id)
+    player = player_validator.not_exist(player)
+
     match_for_player["your_player_id"] = player_id
-    match_for_player["your_mission"] = match_gateway.find_your_mission(match, player_id)
+    match_for_player["your_mission"] = (match_gateway.find_your_mission(match, player_id))
     match_for_player["skipped_player_id"] = skipped_player_id
+    match_for_player["must_distribute"] = (match_validator.must_distribute_influence(match, player))
+
+    if match["status"] != "finished":
+        match_for_player.pop("missions", None)
+
     return match_for_player
 
 @router_websocket.websocket("/ws/match/{match_id}/{player_id}")
@@ -184,7 +197,6 @@ async def match_websocket(
                         match_id=match_id,
                         player_id=player_id,
                         answer=answer,
-                        action_type="attack"
                     )
 
                     updated_match = response["match"]
@@ -199,6 +211,24 @@ async def match_websocket(
                             ),
                         },
                     )
+                elif event_type == "distribute_influence":
+                    updated_match = distribute_match_influence(
+                        match_id=match_id,
+                        player_id=player_id,
+                        distributed_influence=payload.get("amount"),
+                        territory_id=payload.get("territory_id"),
+                    )
+
+                    await manager.send_to_all(
+                        match_id,
+                        lambda recipient_id: {
+                            "type": "match_state",
+                            "payload": prepare_match_for_player(
+                                updated_match,
+                                recipient_id,
+                            ),
+                        },
+                    )
 
                 else:
                     await manager.send_to_player(
@@ -207,12 +237,21 @@ async def match_websocket(
                         message={
                             "type": "error",
                             "payload": {
-                                "message": f"Evento WebSocket desconhecido: {event_type}",
+                                "message": (
+                                    "Evento WebSocket desconhecido: "
+                                    f"{event_type}"
+                                ),
                             },
                         },
                     )
-
+    
             except Exception as error:
+                logger.exception(
+                    "Erro no WebSocket da partida %s, jogador %s",
+                    match_id,
+                    player_id,
+                )
+
                 await manager.send_to_player(
                     match_id=match_id,
                     player_id=player_id,

@@ -90,7 +90,8 @@ class RoomService:
 
         room_dict["status"] = "in_game"
         room_dict["match_id"] = match["match_id"]
-
+        for player_id in room_dict['players']:
+            self.room_factory.put_ready(room_dict,player_id)
         self.room_factory.update_room(room_dict)
 
         return match

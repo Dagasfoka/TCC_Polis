@@ -2761,7 +2761,6 @@ html,
   justify-content: center;
   padding: 1px 5px;
   border-radius: 0;
-  background: #000;
   color: #fff;
   font-size: clamp(16px, 1.8vw, 25px);
   font-weight: 400;

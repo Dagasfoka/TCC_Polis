@@ -76,7 +76,7 @@ def prepare_attack_action(
     match=match_validator.verify_current_turn_player_id(match,player_id)
     round=match_gateway.get_round(match)
     round=match_validator.round_exist(round)
-
+    match_validator.verify_action_phase(match)
     target = match_gateway.find_territory(match, target_territory_id)
     target=match_territory_validator.territory_exist(target)
     target=match_territory_validator.verify_territory_owner_id_action_type(target,player_id,action_type)
@@ -86,7 +86,8 @@ def prepare_attack_action(
     
     player = match_gateway.find_player(match, player_id)
     player=player_validator.not_exist(player)
-
+    match_validator.verify_influence_distribution_finished(match,player)
+    
     action = action_validator.player_have_money_to_action(action,player)
     if action_type == "attack":
         match_territory_validator.frontier_verify(
@@ -215,7 +216,6 @@ def resolve_attack_action(
     match_id,
     player_id: str,
     answer: bool,
-    action_type:str
 ):
     status="running"
     match = match_gateway.get_match(match_id)
@@ -227,7 +227,8 @@ def resolve_attack_action(
     
     pending_action_validator.pending_action_exist(pending_action)
     pending_action_validator.verify_pending_action_player_id(pending_action,player_id)
-
+    action_type = pending_action["action_type"]
+    
     player = match_gateway.find_player(match, player_id)
     player=player_validator.not_exist(player)
 

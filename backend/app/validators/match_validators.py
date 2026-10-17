@@ -89,3 +89,19 @@ class MatchValidator:
             if money >=action['cost']:
                 return False
         return True
+    def must_distribute_influence(self, match,player):
+        return (
+            match["status"] == "running"
+            and match["current_turn_player_id"] == player["player_id"]
+            and player.get("match_influence", 0) > 0
+        )
+    def verify_influence_distribution_finished(self, match, player):
+        if self.must_distribute_influence(match, player):
+            raise ValueError(
+                "Distribua toda a influência geral antes de realizar uma ação."
+            )
+    def verify_action_phase(self, match):
+        if match.get("phase") == "initial_distribution":
+            raise ValueError(
+                "Aguarde todos terminarem a distribuição inicial."
+            )

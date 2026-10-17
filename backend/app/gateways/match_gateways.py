@@ -60,11 +60,9 @@ class MatchGateway:
 
         return None
 
-    def get_your_territories(self,match: dict, player_id: str):
-        territories = match.get("territories", [])
-        player_territories = []
-        for territory in territories:
-            if territory["owner_id"] == player_id:
-                player_territories.append(territory["territory_id"])
-
-        return player_territories
+    def get_your_territories(self,match: dict,player_id: str,) -> list[dict]:
+        return [
+            territory
+            for territory in match.get("territories", [])
+            if territory["owner_id"] == player_id
+        ]

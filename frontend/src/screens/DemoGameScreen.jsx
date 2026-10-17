@@ -1,8 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-
+import { formatMission } from "../utils/missionUtils.js";
 import BrazilMapSvg from "../components/BrazilMapSvg.jsx";
-import { getAvatarImage } from "../utils/avatarAssets.js";
 import QUESTION_PREVIEW_BANK from "../data/questionPreviewBank.json";
+import VictoryScreen from "./VictoryScreen.jsx";
+import PlayerCard from "../components/PlayerCard.jsx";
+import LastActionResult from "../components/LastActionResult.jsx";
+import QuestionPresentation from "../components/QuestionPresentation.jsx";
+import InfluenceDistributionScreen from "./InfluenceDistributionScreen.jsx";
+import DiceAnimation from "../components/DiceAnimation.jsx";
+import TerritoryActions from "../components/TerritoryActions.jsx";
+import GameNotice from "../components/GameNotice.jsx";
 
 const PARTY_COLORS = {
   PR: "#DA3A3C",
@@ -14,430 +21,6 @@ const PARTY_COLORS = {
   3: "#28A3E0",
   4: "#30C067",
 };
-
-const QUESTION_SUBJECT_LABELS = {
-  philosophy: "Filosofia",
-  sociology: "Sociologia",
-  geography: "Geografia",
-  history: "História",
-};
-
-const QUESTION_DIFFICULTY_LABELS = {
-  easy: "Fácil",
-  medium: "Médio",
-  hard: "Difícil",
-};
-
-function QuestionPresentation({
-  question,
-  targetName,
-  onAnswer,
-  onDismiss,
-  feedback = null,
-  isDemo = false,
-}) {
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [remainingSeconds, setRemainingSeconds] = useState(30);
-
-  useEffect(() => {
-    if (feedback) setRemainingSeconds(30);
-  }, [Boolean(feedback)]);
-
-  useEffect(() => {
-    if (remainingSeconds <= 0 || (selectedAnswer !== null && !feedback)) return undefined;
-
-    const timeoutId = window.setTimeout(() => {
-      setRemainingSeconds((current) => Math.max(0, current - 1));
-    }, 1000);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [feedback, remainingSeconds, selectedAnswer]);
-
-  if (!question) return null;
-
-  const timerMinutes = String(Math.floor(remainingSeconds / 60)).padStart(2, "0");
-  const timerSeconds = String(remainingSeconds % 60).padStart(2, "0");
-
-  function handleAnswer(letter) {
-    if (isDemo) {
-      setSelectedAnswer(letter);
-      return;
-    }
-    setSelectedAnswer(letter);
-    onAnswer(letter);
-  }
-
-  const answerReview = feedback ?? (
-    isDemo && selectedAnswer !== null
-      ? { selectedAnswer, correctAnswer: question.answer }
-      : null
-  );
-  const reviewedSelection = answerReview?.selectedAnswer ?? selectedAnswer;
-  const selectionIsCorrect = reviewedSelection === answerReview?.correctAnswer;
-
-  return (
-    <div
-      className="polis-question-preview-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-label={isDemo ? "Tela demonstrativa de pergunta" : "Pergunta da partida"}
-      onClick={isDemo || feedback ? onDismiss : undefined}
-    >
-      <section
-        className="polis-question-preview-box"
-        onClick={isDemo || feedback ? (event) => event.stopPropagation() : undefined}
-      >
-        <img className="polis-question-preview-bg" src="/areapergunta.png" alt="" />
-        <div className="polis-question-preview-top-row">
-          {targetName && (
-            <span className="polis-question-preview-target">Alvo: {targetName}</span>
-          )}
-          <div
-            className="polis-question-preview-timer"
-            role="timer"
-            aria-label={`Tempo restante: ${timerMinutes}:${timerSeconds}`}
-          >
-            {timerMinutes}:{timerSeconds}
-          </div>
-        </div>
-        <div className="polis-question-preview-tags">
-          <span>{QUESTION_SUBJECT_LABELS[String(question.subject ?? "").toLowerCase()] ?? question.subject}</span>
-          {question.difficulty && (
-            <span>{QUESTION_DIFFICULTY_LABELS[String(question.difficulty).toLowerCase()] ?? question.difficulty}</span>
-          )}
-          <span className="polis-question-preview-chance-tag">
-            Chance de sucesso: +20%
-          </span>
-        </div>
-        <div className="polis-question-preview-content">
-          <div className="polis-question-preview-main">
-            <div className="polis-question-preview-body">
-              <p className="polis-question-preview-title">
-                {question.question_id ?? 1}) {question.exam_board ? `(${question.exam_board})` : ""}
-              </p>
-              <p>{question.description}</p>
-            </div>
-            <div className="polis-question-preview-answers">
-              {Object.entries(question.options ?? {}).map(([letter, text]) => (
-                <button
-                  type="button"
-                  key={letter}
-                  onClick={() => handleAnswer(letter)}
-                  disabled={selectedAnswer !== null || Boolean(feedback)}
-                  className={answerReview && letter === reviewedSelection
-                    ? selectionIsCorrect ? "is-correct" : "is-incorrect"
-                    : ""}
-                >
-                  {letter}) {text}
-                </button>
-              ))}
-            </div>
-          </div>
-          {question.explanation && (Boolean(feedback) || (isDemo && selectedAnswer !== null)) && (
-            <div className="polis-question-preview-explanation">
-              <p>Explicação:</p>
-              <span>{question.explanation}</span>
-            </div>
-          )}
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function getPlayerNameById(playerId, players) {
-  const player = players.find((item) => item.player_id === playerId);
-  return player?.username ?? playerId ?? "jogador desconhecido";
-}
-
-
-function formatMission(mission, players = []) {
-  if (!mission) {
-    return "Missão não encontrada.";
-  }
-
-  const content = mission.content ?? {};
-
-  if (mission.type === "state") {
-    const states = content.state ?? [];
-
-    if (states.length === 0) {
-      return "Conquiste os territórios indicados pela sua missão.";
-    }
-
-    return `Conquiste os territórios: ${states.join(", ")}.`;
-  }
-
-  if (mission.type === "region") {
-    const regions = content.region ?? [];
-
-    if (regions.length === 0) {
-      return "Conquiste os territórios indicados pela sua missão.";
-    }
-
-    return regions
-      .map(
-        (item) =>
-          `Conquiste ${item.quantity} território(s) em ${item.region}`
-      )
-      .join(" + ");
-  }
-
-  if (mission.type === "destruction") {
-    const targetPlayerId = content.destruction;
-    const alternativeStates = content.state ?? [];
-
-    if (targetPlayerId) {
-      const targetName = getPlayerNameById(targetPlayerId, players);
-
-      if (alternativeStates.length > 0) {
-        return `Destrua o jogador ${targetName}. Se essa missão for convertida, conquiste: ${alternativeStates.join(
-          ", "
-        )}.`;
-      }
-
-      return `Destrua o jogador ${targetName}.`;
-    }
-
-    if (alternativeStates.length > 0) {
-      return `Conquiste os territórios: ${alternativeStates.join(", ")}.`;
-    }
-
-    return "Elimine o jogador indicado pela sua missão.";
-  }
-
-  return "Tipo de missão desconhecido.";
-}
-
-function PlayerCard({
-  player,
-  isCurrentTurn,
-  isNext,
-  isMe,
-  partyColors,
-  territories = [],
-  side = "left",
-}) {
-  if (!player) {
-    return null;
-  }
-
-  const partyColor = partyColors[player.party_id] ?? "#7f8c8d";
-
-  const initials =
-    player.username
-      ?.trim()
-      .split(/\s+/)
-      .map((name) => name[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "?";
-
-  const controlledTerritories = territories.filter((territory) => territory.owner_id === player.player_id).length;
-  const imageSuffix = side === "right" ? "d" : "e";
-
-  return (
-    <div
-      className={[
-        "polis-player-card",
-        `polis-player-card-${side}`,
-        isCurrentTurn ? "polis-player-current" : "",
-        isMe ? "polis-player-me" : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      style={{ "--party-color": partyColor }}
-    >
-      <img
-        className="polis-player-curtain"
-        src="/Cortina.png"
-        alt=""
-        aria-hidden="true"
-      />
-      <div className="polis-player-polygon" aria-hidden="true" />
-{isNext && <div className="polis-next-label">Próximo</div>}
-
-
-      <div className="polis-player-main">
-        <div className="polis-player-avatar">
-          <img
-            src={getAvatarImage(player.avatar_id)}
-            alt={`Avatar de ${player.username}`}
-            onError={(event) => {
-              event.currentTarget.src = getAvatarImage("avatar_3");
-            }}
-          />
-        </div>
-
-        <div className="polis-player-stats">
-          <div className="polis-stat-row polis-stat-corruption" style={{ backgroundImage: `url(/corrupcao${imageSuffix}.png)` }}><span>{player.match_corruption ?? 0}%</span></div>
-          <div className="polis-stat-row polis-stat-money" style={{ backgroundImage: `url(/dinheiro${imageSuffix}.png)` }}><span>{player.match_money ?? 0}$</span></div>
-          <div className="polis-stat-row polis-stat-states" style={{ backgroundImage: `url(/estados${imageSuffix}.png)` }}><span>{controlledTerritories}</span></div>
-        </div>
-      </div>
-      <div className="polis-player-name">{player.username}</div>
-    </div>
-  );
-}
-
-function LastActionResult({ result }) {
-  if (!result) {
-    return (
-      <section className="polis-last-action-section">
-        <div className="polis-last-action-card">
-          <h2>Última ação</h2>
-
-          <p className="polis-last-action-empty">
-            Nenhuma ação realizada ainda.
-          </p>
-        </div>
-      </section>
-    );
-  }
-
-  const formatValue = (value) => {
-    const number = Number(value ?? 0);
-
-    if (number > 0) {
-      return `+${number}`;
-    }
-
-    return String(number);
-  };
-
-  return (
-    <section className="polis-last-action-section">
-
-      <div
-        className={[
-          "polis-last-action-card",
-          result.success
-            ? "polis-action-success"
-            : "polis-action-failure",
-        ].join(" ")}
-      >
-
-        <div className="polis-last-action-header">
-
-          <div>
-            <span className="polis-last-action-label">
-              Última ação
-            </span>
-
-            <h2>
-              {result.title ?? "Ação realizada"}
-            </h2>
-          </div>
-
-          <span className="polis-last-action-status">
-            {result.success
-              ? "SUCESSO"
-              : "FALHA"}
-          </span>
-
-        </div>
-
-
-        <div className="polis-last-action-content">
-
-          {result.type && (
-            <p>
-              <span>Tipo:</span>{" "}
-              {result.type}
-            </p>
-          )}
-
-
-          {result.territory_name && (
-            <p>
-              <span>Território:</span>{" "}
-              {result.territory_name}
-            </p>
-          )}
-
-
-          {result.response && (
-            <p className="polis-last-action-response">
-              {result.response}
-            </p>
-          )}
-
-
-          <div className="polis-last-action-values">
-
-            {Number(result.influence_generated ?? 0) !== 0 && (
-              <div>
-                <span>Influência</span>
-
-                <span>
-                  {formatValue(
-                    result.influence_generated
-                  )}
-                </span>
-              </div>
-            )}
-
-
-            {Number(result.money_generated ?? 0) !== 0 && (
-              <div>
-                <span>Dinheiro</span>
-
-                <span>
-                  {formatValue(
-                    result.money_generated
-                  )}
-                </span>
-              </div>
-            )}
-
-
-            {Number(result.corruption_generated ?? 0) !== 0 && (
-              <div>
-                <span>Corrupção</span>
-
-                <span>
-                  {formatValue(
-                    result.corruption_generated
-                  )}
-                </span>
-              </div>
-            )}
-
-          </div>
-
-
-          <div className="polis-last-action-details">
-
-            {result.conquered === true && (
-              <p>
-                ✓ Território conquistado
-              </p>
-            )}
-
-
-            {result.question_was_correct === true && (
-              <p>
-                ✓ Pergunta respondida corretamente
-              </p>
-            )}
-
-
-            {result.question_was_correct === false && (
-              <p>
-                ✕ Pergunta respondida incorretamente
-              </p>
-            )}
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-  );
-}
-
 
 export default function DemoGameScreen({
   onReturnRoom,
@@ -669,9 +252,9 @@ export default function DemoGameScreen({
     distributionAmount === ""
       ? 0
       : Math.min(
-          maxDistributionInfluence,
-          Math.max(0, Number(distributionAmount) || 0)
-        );
+        maxDistributionInfluence,
+        Math.max(0, Number(distributionAmount) || 0)
+      );
 
   const isMyTurn =
     Boolean(matchState) &&
@@ -722,8 +305,6 @@ export default function DemoGameScreen({
     });
   }, [players, territories, matchState?.winner_id]);
 
-  const victoryWinner = victoryRanking[0] ?? null;
-
   function handleWinnerAlert(newMatchState) {
     if (
       newMatchState?.status === "finished" &&
@@ -732,12 +313,7 @@ export default function DemoGameScreen({
     ) {
       winnerAlertShownRef.current = true;
 
-      const winnerName = getPlayerNameById(
-        newMatchState.winner_id,
-        newMatchState.players ?? []
-      );
-
-      alert(`Fim de jogo! Vencedor: ${winnerName}`);
+      setShowVictoryScreen(true);
     }
   }
 
@@ -1108,6 +684,31 @@ export default function DemoGameScreen({
 
   }
 
+function sendInfluenceDistribution() {
+  if (
+    !wsRef.current ||
+    wsRef.current.readyState !== WebSocket.OPEN
+  ) {
+    showGameNotice("error", "Sem conexão com a partida.");
+    return;
+  }
+
+  if (!distributionTerritory || distributionAmountValue <= 0) {
+    showGameNotice("error", "Escolha um território e uma quantidade positiva.");
+    return;
+  }
+
+  wsRef.current.send(
+    JSON.stringify({
+      type: "distribute_influence",
+      payload: {
+        territory_id: distributionTerritory.territory_id,
+        amount: distributionAmountValue,
+      },
+    })
+  );
+}
+
   useEffect(() => {
     if (!matchId || !playerId) {
       return;
@@ -1324,91 +925,14 @@ export default function DemoGameScreen({
           </div>
         </aside>
 
-        {selectedTerritory && (
-          <div className="polis-choice-overlay">
-            <section className="polis-choice-board" aria-label="Escolhas do território">
-              <header className="polis-choice-board-header">
-                <div className="polis-choice-territory">
-                  <h2>
-                    {selectedTerritory.name &&
-                    selectedTerritory.name !== selectedTerritory.territory_id
-                      ? `${selectedTerritory.name} (${selectedTerritory.territory_id})`
-                      : selectedTerritory.territory_id}
-                  </h2>
-                  <span>{selectedTerritory.region ?? "-"}</span>
-                </div>
-                <div className="polis-choice-influence">
-                  <span>Influência do estado</span>
-                  <span>{selectedTerritory.current_influence ?? 0}</span>
-                </div>
-              </header>
-
-              {isMyTurn ? (
-                <div className="polis-choice-cards">
-                  {availableActions.length === 0 && (
-                    <p className="polis-no-choice">Nenhuma ação disponível.</p>
-                  )}
-                  {availableActions.slice(0, 4).map((option) => (
-                    <button
-                      type="button"
-                      className="polis-choice-card"
-                      key={option.action_id}
-                      onClick={() => sendAttack(option.action_id, option.action_type)}
-                    >
-                      <span className="polis-choice-card-title">
-                        <strong>{option.title}</strong>
-                      </span>
-                      <span className="polis-choice-card-risk">
-                        {({
-                          low: "Risco baixo",
-                          medium: "Risco médio",
-                          high: "Risco alto",
-                          insane: "Risco insano",
-                        })[option.risk_level] ?? option.risk_level ?? "Risco não informado"}
-                      </span>
-                      {option.description && (
-                        <span className="polis-choice-card-description">{option.description}</span>
-                      )}
-                      <span className="polis-choice-card-status">
-                        {(option.influence ?? option.influence_generated) !== undefined && (
-                          <span className="polis-choice-gain-influence">+{option.influence ?? option.influence_generated} influência</span>
-                        )}
-                        {option.money !== undefined && Number(option.money) !== 0 && (
-                          <span className="polis-choice-gain-money">+{option.money}$</span>
-                        )}
-                        {option.corruption !== undefined && Number(option.corruption) !== 0 && (
-                          <span className="polis-choice-gain-corruption">
-                            {Number(option.corruption) > 0 ? "+" : ""}{option.corruption}% corrupção
-                          </span>
-                        )}
-                      </span>
-                      {option.cost !== undefined && option.cost !== null && (
-                        <span className="polis-choice-card-cost">
-                          <span className="polis-choice-card-cost-value">-{option.cost}$</span>
-                        </span>
-                      )}
-                      {option.success_chance !== undefined && option.success_chance !== null && (
-                        <span className="polis-choice-success">
-                          <img className="polis-choice-die-icon" src="/DADO.png" alt="Dado" />
-                          <span>{option.success_chance}</span>
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <p className="polis-not-your-turn">Aguarde sua vez para realizar uma ação.</p>
-              )}
-            </section>
-            <button
-              type="button"
-              className="polis-choice-back"
-              onClick={() => setSelectedTerritory(null)}
-            >
-              Voltar
-            </button>
-          </div>
-        )}
+        {selectedTerritory &&
+          <TerritoryActions
+            selectedTerritory={selectedTerritory}
+            isMyTurn={isMyTurn}
+            availableActions={availableActions}
+            onChooseAction={sendAttack}
+            onClose={() => setSelectedTerritory(null)}
+          />}
         {pendingQuestion && (
           <QuestionPresentation
             question={pendingQuestion}
@@ -1425,133 +949,29 @@ export default function DemoGameScreen({
             question={previewQuestion}
             targetName="São Paulo"
             isDemo
-            onAnswer={() => {}}
+            onAnswer={() => { }}
             onDismiss={() => setShowQuestionPreview(false)}
           />
         )}
 
-        {showInitialDistribution && (
-          <div className="polis-distribution-overlay" role="dialog" aria-modal="true" aria-label="Distribuição inicial de territórios">
-            <section className="polis-distribution-panel">
-              <img className="polis-distribution-art" src="/distribuicaosec.png" alt="Distribuição" />
-
-              <div
-                className="polis-distribution-state-card"
-                style={{
-                  backgroundColor: PARTY_COLORS[me?.party_id] ?? "#30C067",
-                  display: distributionConfirmed ? "none" : "flex",
-                }}
-              >
-                {myTerritories.length > 0 ? (
-                  <>
-                    <span className="polis-distribution-state-title">
-                      {distributionTerritory?.name ?? "Selecione no mapa"}
-                      {distributionTerritory?.region && (
-                        <>
-                          <br />
-                          <span className="polis-distribution-region">
-                            {distributionTerritory.region}
-                          </span>
-                        </>
-                      )}
-                    </span>
-                    <div className="polis-distribution-controls" aria-label="Quantidade de influência">
-                      <button
-                        type="button"
-                        className="polis-distribution-step"
-                        onClick={() =>
-                          setDistributionAmount(
-                            Math.max(0, distributionAmountValue - 10)
-                          )
-                        }
-                        aria-label="Diminuir influência em 10"
-                      >
-                        −
-                      </button>
-                      <input
-                        className="polis-distribution-amount"
-                        type="number"
-                        min="0"
-                        max={maxDistributionInfluence}
-                        step="10"
-                        value={distributionAmount === "" ? "" : distributionAmountValue}
-                        onChange={(event) => {
-                          const value = event.target.value;
-                          setDistributionAmount(
-                            value === ""
-                              ? ""
-                              : Math.min(
-                                  maxDistributionInfluence,
-                                  Math.max(0, Number(value) || 0)
-                                )
-                          );
-                        }}
-                        aria-label="Influência a distribuir"
-                      />
-                      <button
-                        type="button"
-                        className="polis-distribution-step"
-                        onClick={() =>
-                          setDistributionAmount(
-                            Math.min(
-                              maxDistributionInfluence,
-                              distributionAmountValue + 10
-                            )
-                          )
-                        }
-                        aria-label="Aumentar influência em 10"
-                      >
-                        +
-                      </button>
-                      <button
-                        type="button"
-                        className="polis-distribution-confirm"
-                        onClick={() => setDistributionConfirmed(true)}
-                        aria-label="Confirmar distribuição"
-                      >
-                        <img src="/confirmar.png" alt="" />
-                      </button>
-                    </div>
-                    <div className="polis-distribution-total">
-                      Restante: {Math.max(
-                        0,
-                        maxDistributionInfluence - distributionAmountValue
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <p className="polis-distribution-empty">Aguardando os territórios da partida…</p>
-                )}
-              </div>
-
-              <div className="polis-distribution-map-wrap" aria-label="Mapa dos territórios da partida">
-                <BrazilMapSvg
-                  territories={territories}
-                  players={players}
-                  partyColors={PARTY_COLORS}
-                  currentPlayerId={matchState?.your_player_id}
-                  selectedTerritoryId={distributionTerritory?.territory_id ?? null}
-                  selectableTerritoryIds={myTerritories.map((territory) => territory.territory_id)}
-                  isActionable={true}
-                  onSelectTerritory={(territory) => {
-                    setDistributionTerritoryId(territory.territory_id);
-                    setDistributionConfirmed(false);
-                  }}
-                  className="polis-distribution-map"
-                />
-              </div>
-
-              <button
-                type="button"
-                className="polis-distribution-finish"
-                onClick={() => setShowInitialDistribution(false)}
-                disabled={!matchState || territories.length === 0 || !distributionTerritory}
-                aria-label="Finalizar distribuição e começar a partida"
-              >
-                <img src="/finalizar.png" alt="" />
-              </button>
-            </section>
-          </div>
+        {matchState?.must_distribute && (
+          <InfluenceDistributionScreen
+            matchState={matchState}
+            territories={territories}
+            players={players}
+            me={me}
+            partyColors={PARTY_COLORS}
+            myTerritories={myTerritories}
+            distributionTerritory={distributionTerritory}
+            distributionConfirmed={distributionConfirmed}
+            setDistributionConfirmed={setDistributionConfirmed}
+            distributionAmount={distributionAmount}
+            setDistributionAmount={setDistributionAmount}
+            distributionAmountValue={distributionAmountValue}
+            maxDistributionInfluence={maxDistributionInfluence}
+            setDistributionTerritoryId={setDistributionTerritoryId}
+            onConfirm={sendInfluenceDistribution}
+          />
         )}
 
         {!connected && (
@@ -1560,138 +980,23 @@ export default function DemoGameScreen({
           </div>
         )}
 
-        {gameNotice && (
-          <div
-            className="polis-game-notice-backdrop"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            <p
-              key={gameNotice.id}
-              className={`polis-game-notice polis-game-notice-${gameNotice.kind}`}
-              role="status"
-            >
-              {gameNotice.message}
-            </p>
-          </div>
-        )}
+        <GameNotice notice={gameNotice} />
 
         {showVictoryScreen && (
-          <div className="polis-victory-overlay" role="dialog" aria-modal="true" aria-label="Tela de vitória">
-            <section className="polis-victory-screen">
-              <img className="polis-victory-background" src="/fundovitoria.png" alt="" />
-              <img className="polis-victory-title" src="/vencedor.png" alt="Vencedor" />
-
-              <div className="polis-victory-winner-area">
-                <div className="polis-victory-winner-card">
-                  <img
-                    className="polis-victory-winner-avatar"
-                    src={getAvatarImage(victoryWinner?.avatar_id)}
-                    alt={victoryWinner ? `Avatar de ${victoryWinner.username}` : ""}
-                    onError={(event) => {
-                      event.currentTarget.src = getAvatarImage("avatar_3");
-                    }}
-                  />
-                  <img className="polis-victory-winner-podium" src="/podio.png" alt="" />
-                  <div className="polis-victory-winner-label">
-                    <span className="polis-victory-winner-name">
-                      {victoryWinner?.username ?? "Aguardando jogadores"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <section className="polis-victory-missions" aria-label="Colocação e missões dos jogadores">
-                <img className="polis-victory-missions-art" src="/missoesrev.png" alt="Missões reveladas" />
-                <div className="polis-victory-missions-list">
-                  {victoryRanking.map((rankedPlayer, index) => {
-                    const storedMission = matchState?.missions?.find(
-                      (item) => item.owner_id === rankedPlayer.player_id
-                    );
-                    const mission = (rankedPlayer.player_id === matchState?.your_player_id
-                      ? matchState?.your_mission
-                      : null) ?? rankedPlayer.mission ?? rankedPlayer.secret_mission ??
-                        storedMission?.mission ?? storedMission;
-                    const missionText = mission
-                      ? formatMission(mission, players)
-                      : "Missão não disponível.";
-
-                    return (
-                      <div
-                        className="polis-victory-player"
-                        key={rankedPlayer.player_id}
-                        style={{ "--victory-party-color": PARTY_COLORS[rankedPlayer.party_id] ?? "#2b334e" }}
-                      >
-                        <span className="polis-victory-rank">{index + 1}º</span>
-                        <div className="polis-victory-avatar-wrap">
-                          <img
-                            className="polis-victory-avatar"
-                            src={getAvatarImage(rankedPlayer.avatar_id)}
-                            alt={`Avatar de ${rankedPlayer.username}`}
-                            style={{ borderColor: PARTY_COLORS[rankedPlayer.party_id] ?? "#2b334e" }}
-                            onError={(event) => {
-                              event.currentTarget.src = getAvatarImage("avatar_3");
-                            }}
-                          />
-                        </div>
-                        <div className="polis-victory-player-info">
-                          <div className="polis-victory-player-heading">
-                            <span className="polis-victory-player-name">{rankedPlayer.username}</span>
-                            <span className="polis-victory-player-count">
-                              {rankedPlayer.controlledTerritories} ⚑
-                            </span>
-                          </div>
-                          <span className="polis-victory-mission-text">{missionText}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {victoryRanking.length === 0 && (
-                    <p className="polis-victory-empty">Ainda não há jogadores na partida.</p>
-                  )}
-                </div>
-              </section>
-
-              <button
-                type="button"
-                className="polis-victory-back"
-                onClick={() => onReturnRoom()}
-                aria-label="Voltar para a sala"
-              >
-                <img src="/voltarsala.png" alt="Voltar para a sala" />
-              </button>
-              <button
-                type="button"
-                className="polis-victory-exit"
-                onClick={onLeaveRoom}
-                aria-label="Sair da partida"
-              >
-                <img src="/sair2.png" alt="Sair" />
-              </button>
-            </section>
-          </div>
+          <VictoryScreen
+            victoryRanking={victoryRanking}
+            matchState={matchState}
+            players={players}
+            formatMission={formatMission}
+            partyColors={PARTY_COLORS}
+            onReturnRoom={onReturnRoom}
+            onLeaveRoom={onLeaveRoom}
+          />
         )}
-      </main>
+      </main >
 
 
-      {diceAnimation && (
-        <div
-          className="polis-dice-result-overlay"
-          role="status"
-          aria-live="assertive"
-          aria-label={diceAnimation.rolling ? "Sorteando o dado" : `${diceAnimation.success ? "Sucesso" : "Fracasso"}, resultado ${diceAnimation.roll}, CD ${diceAnimation.threshold}`}
-        >
-          <div className={`polis-dice-result ${diceAnimation.rolling ? "is-rolling" : diceAnimation.success ? "is-success" : "is-failure"}`}>
-            <div className="polis-dice-roll">
-              <img src="/DADO.png" alt="" aria-hidden="true" />
-              <span key={`${diceAnimation.steps}-${diceAnimation.roll}`}>{diceAnimation.roll}</span>
-            </div>
-            <p>{diceAnimation.rolling || !diceAnimation.outcomeVisible ? "Sorteando..." : diceAnimation.success ? "SUCESSO" : "FRACASSO"}</p>
-            {diceAnimation.outcomeVisible && <small>CD {diceAnimation.threshold}</small>}
-          </div>
-        </div>
-      )}
-
+      <DiceAnimation diceAnimation={diceAnimation} />
       <LastActionResult
         result={lastActionResult}
       />
