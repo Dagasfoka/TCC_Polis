@@ -684,30 +684,30 @@ export default function DemoGameScreen({
 
   }
 
-function sendInfluenceDistribution() {
-  if (
-    !wsRef.current ||
-    wsRef.current.readyState !== WebSocket.OPEN
-  ) {
-    showGameNotice("error", "Sem conexão com a partida.");
-    return;
-  }
+  function sendInfluenceDistribution() {
+    if (
+      !wsRef.current ||
+      wsRef.current.readyState !== WebSocket.OPEN
+    ) {
+      showGameNotice("error", "Sem conexão com a partida.");
+      return;
+    }
 
-  if (!distributionTerritory || distributionAmountValue <= 0) {
-    showGameNotice("error", "Escolha um território e uma quantidade positiva.");
-    return;
-  }
+    if (!distributionTerritory || distributionAmountValue <= 0) {
+      showGameNotice("error", "Escolha um território e uma quantidade positiva.");
+      return;
+    }
 
-  wsRef.current.send(
-    JSON.stringify({
-      type: "distribute_influence",
-      payload: {
-        territory_id: distributionTerritory.territory_id,
-        amount: distributionAmountValue,
-      },
-    })
-  );
-}
+    wsRef.current.send(
+      JSON.stringify({
+        type: "distribute_influence",
+        payload: {
+          territory_id: distributionTerritory.territory_id,
+          amount: distributionAmountValue,
+        },
+      })
+    );
+  }
 
   useEffect(() => {
     if (!matchId || !playerId) {
@@ -954,7 +954,7 @@ function sendInfluenceDistribution() {
           />
         )}
 
-        {matchState?.must_distribute && (
+        {(matchState?.must_distribute || showInitialDistribution) && (
           <InfluenceDistributionScreen
             matchState={matchState}
             territories={territories}
