@@ -26,29 +26,31 @@ export default function MissionModal({
         : Math.max(0, Math.ceil((endsAt * 1000 - now) / 1000));
 
     return (
-        <div className="polis-mission-modal-overlay">
-            <section
-                className="polis-mission-modal"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="mission-modal-title"
-            >
-                <h2 id="mission-modal-title">Sua missão secreta</h2>
+        <aside
+            className="polis-mission-card polis-mission-right polis-mission-consult"
+            aria-label="Sua missão secreta"
+        >
+            <img
+                className="polis-mission-art"
+                src="/missaosec.png"
+                alt="Missão Secreta"
+            />
 
+            <div className="polis-mission-copy">
                 <p>{formatMission(mission, players)}</p>
 
                 {remainingSeconds !== null ? (
-                    <p>
+                    <p className="polis-mission-countdown">
                         {remainingSeconds > 0
-                            ? `A distribuição começa em ${remainingSeconds}s`
-                            : "Aguardando início da distribuição…"}
+                            ? `Distribuição em ${remainingSeconds}s`
+                            : "Aguardando distribuição…"}
                     </p>
                 ) : (
                     <button type="button" onClick={onClose}>
                         Fechar
                     </button>
                 )}
-            </section>
-        </div>
+            </div>
+        </aside>
     );
 }

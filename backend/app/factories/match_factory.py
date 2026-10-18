@@ -113,4 +113,4 @@ class MatchFactory:
         )
     def start_mission_reveal(self, match_dict):
         match_dict["phase"] = "mission_reveal"
-        match_dict["mission_reveal_ends_at"] = time.time() + 30
+        match_dict["mission_reveal_ends_at"] = time.time() + 15

@@ -761,7 +761,7 @@ export default function DemoGameScreen({
       {matchState?.status === "running" && !isMissionReveal && (
         <button
           type="button"
-          className="polis-mission-open"
+          className="polis-victory-open polis-mission-open"
           onClick={() => setShowMission(true)}
         >
           Minha missão
