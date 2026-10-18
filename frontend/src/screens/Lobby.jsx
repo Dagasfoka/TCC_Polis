@@ -15,12 +15,12 @@ import { getAvatarImage } from "../utils/avatarAssets.js";
 const MAX_PLAYERS = 4;
 const REFRESH_INTERVAL = 2000;
 
-const FIXED_PARTIES = [
-  { id: "1", name: "Vermelho", file: "/Vermelho.svg", colorHex: "#DA3A3C" },
-  { id: "2", name: "Amarelo", file: "/Amarelo.svg", colorHex: "#E0A12A" },
-  { id: "3", name: "Azul", file: "/Azul.svg", colorHex: "#28A3E0" },
-  { id: "4", name: "Verde", file: "/Verde.svg", colorHex: "#30C067" },
-];
+const PARTY_IMAGES = {
+  PR: "/Vermelho.svg",
+  PD: "/Amarelo.svg",
+  PA: "/Azul.svg",
+  PV: "/Verde.svg",
+};
 
 export default function Lobby({
   player,
@@ -318,15 +318,12 @@ export default function Lobby({
     });
   }
 
-  const activePartiesList = FIXED_PARTIES.map((fixed, idx) => {
-    const apiParty = parties[idx];
-    return {
-      id: apiParty?.id || fixed.id,
-      name: apiParty?.name || fixed.name,
-      file: fixed.file,
-      colorHex: fixed.colorHex,
-    };
-  });
+const activePartiesList = parties.map((party) => ({
+  id: party.id,
+  name: party.name,
+  file: PARTY_IMAGES[party.id],
+  colorHex: party.color,
+}));
 
   return (
     <div className="lobby-body">
