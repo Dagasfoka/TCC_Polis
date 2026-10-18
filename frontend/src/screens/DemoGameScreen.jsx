@@ -764,6 +764,7 @@ export default function DemoGameScreen({
           className="polis-victory-open polis-mission-open"
           onClick={() => setShowMission(true)}
         >
+          <span aria-hidden="true">📜</span>
           Minha missão
         </button>
       )}
@@ -944,12 +945,6 @@ export default function DemoGameScreen({
           />
         </section>
 
-        <aside className="polis-mission-card polis-mission-right">
-          <img className="polis-mission-art" src="/missaosec.png" alt="Missão Secreta" />
-          <div className="polis-mission-copy">
-            <p>{missionText}</p>
-          </div>
-        </aside>
 
         {selectedTerritory &&
           <TerritoryActions
