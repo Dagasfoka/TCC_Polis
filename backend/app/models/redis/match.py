@@ -22,9 +22,10 @@ class Match:
         activate_defense_actions_list: str | None = None,
         round_attack_actions: list[dict] | None = None,
         round_defense_actions: list[dict] | None = None,
-        phase: str = "initial_distribution",
+        phase: str = "mission_reveal",
         last_action_result: dict | None = None,
-    ):
+        mission_reveal_ends_at: float | None = None,
+            ):
         self.match_id = match_id
         self.territories = territories
         self.room_code = room_code
@@ -33,7 +34,7 @@ class Match:
         self.current_turn_player_id = current_turn_player_id
         self.round = round
         self.phase = phase
-
+        self.mission_reveal_ends_at = mission_reveal_ends_at
         self.missions = missions if missions is not None else []
         self.pending_action = pending_action
         self.winner_id = winner_id
@@ -91,6 +92,7 @@ class Match:
             "activate_defense_actions_list": self.activate_defense_actions_list,
             "round_attack_actions": self.round_attack_actions,
             "round_defense_actions": self.round_defense_actions,
+            "mission_reveal_ends_at": self.mission_reveal_ends_at,
         }
 
     @classmethod
@@ -119,6 +121,8 @@ class Match:
         round_defense_actions: list[dict] | None = None,
         phase: str = "initial_distribution",
         last_action_result: dict | None = None,
+        mission_reveal_ends_at: float | None = None,
+        
     ) -> dict:
         return cls(
             match_id=match_id,
@@ -144,4 +148,5 @@ class Match:
             round_defense_actions=round_defense_actions,
             phase=phase,
             last_action_result=last_action_result,
+            mission_reveal_ends_at=mission_reveal_ends_at,
         ).to_dict()

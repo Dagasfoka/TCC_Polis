@@ -1,7 +1,8 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import random
 import logging
-
+import asyncio
+import time
 from backend.app.services.redis.round_service import distribute_match_influence
 from backend.app.gateways.match_gateways import MatchGateway
 from backend.app.services.redis.action_service import (
@@ -79,7 +80,42 @@ async def match_websocket(
         )
 
         while True:
-            data = await websocket.receive_json()
+            match = match_gateway.get_match(match_id)
+            match = match_validator.match_exist(match)
+
+            if (
+                match["status"] == "running"
+                and match.get("phase") == "mission_reveal"
+            ):
+                remaining_seconds = (
+                    match["mission_reveal_ends_at"] - time.time()
+                )
+
+                if remaining_seconds <= 0:
+                    match["phase"] = "initial_distribution"
+                    match_factory.update_match(match)
+
+                    await manager.send_to_all(
+                        match_id,
+                        lambda recipient_id: {
+                            "type": "match_state",
+                            "payload": prepare_match_for_player(
+                                match,
+                                recipient_id,
+                            ),
+                        },
+                    )
+                    continue
+
+                try:
+                    data = await asyncio.wait_for(
+                        websocket.receive_json(),
+                        timeout=remaining_seconds,
+                    )
+                except asyncio.TimeoutError:
+                    continue
+            else:
+                data = await websocket.receive_json()
 
             try:
                 event_type = data.get("type")

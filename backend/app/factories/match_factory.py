@@ -3,7 +3,7 @@ from backend.app.repositories.redis.match_repo import MatchRepo
 from backend.app.repositories.db.territory_repo import TerritoryRepo
 from backend.app.gateways.player_gateways import PlayerGateway
 from backend.app.models.redis.match import Match
-import random
+import random,time
 class MatchFactory:
     def __init__(self) -> None:
         self.match_repository=MatchRepo()
@@ -60,11 +60,8 @@ class MatchFactory:
         missions=[],
     )
         random.shuffle(match_dict["players"])
-
-        match_dict["phase"] = "initial_distribution"
-
-        match_dict["phase"] = "initial_distribution"
         self.set_first_turn_player(match_dict)
+        self.start_mission_reveal(match_dict)
         return match_dict
     def advance_turn(self, match_dict: dict):
         players = match_dict["players"]
@@ -114,3 +111,6 @@ class MatchFactory:
         match_dict["current_turn_player_id"] = (
             match_dict["players"][0]["player_id"]
         )
+    def start_mission_reveal(self, match_dict):
+        match_dict["phase"] = "mission_reveal"
+        match_dict["mission_reveal_ends_at"] = time.time() + 30

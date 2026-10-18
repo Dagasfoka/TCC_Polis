@@ -77,6 +77,12 @@ def prepare_attack_action(
     round=match_gateway.get_round(match)
     round=match_validator.round_exist(round)
     match_validator.verify_action_phase(match)
+    match_validator.verify_action_phase(match)
+
+    match_validator.verify_influence_distribution_finished(
+        match,
+        player,
+    )
     target = match_gateway.find_territory(match, target_territory_id)
     target=match_territory_validator.territory_exist(target)
     target=match_territory_validator.verify_territory_owner_id_action_type(target,player_id,action_type)

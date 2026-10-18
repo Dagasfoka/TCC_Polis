@@ -10,6 +10,7 @@ import InfluenceDistributionScreen from "./InfluenceDistributionScreen.jsx";
 import DiceAnimation from "../components/DiceAnimation.jsx";
 import TerritoryActions from "../components/TerritoryActions.jsx";
 import GameNotice from "../components/GameNotice.jsx";
+import MissionModal from "../components/MissionModal.jsx";
 
 const PARTY_COLORS = {
   PR: "#DA3A3C",
@@ -37,6 +38,7 @@ export default function DemoGameScreen({
 
   const [lastActionResult, setLastActionResult] = useState(null);
 
+  const [showMission, setShowMission] = useState(false);
   const [selectedTerritory, setSelectedTerritory] = useState(null);
   const [showInitialDistribution, setShowInitialDistribution] = useState(false);
   const [distributionConfirmed, setDistributionConfirmed] = useState(false);
@@ -751,9 +753,33 @@ export default function DemoGameScreen({
     matchState?.your_mission,
     players
   );
-
+  const isMissionReveal =
+    matchState?.status === "running" &&
+    matchState?.phase === "mission_reveal";
   return (
     <div className={`polis-game-page${showVictoryScreen ? " polis-victory-opened" : ""}`}>
+      {matchState?.status === "running" && !isMissionReveal && (
+        <button
+          type="button"
+          className="polis-mission-open"
+          onClick={() => setShowMission(true)}
+        >
+          Minha missão
+        </button>
+      )}
+
+      {(isMissionReveal || showMission) && (
+        <MissionModal
+          mission={matchState?.your_mission}
+          players={players}
+          endsAt={
+            isMissionReveal
+              ? matchState?.mission_reveal_ends_at
+              : null
+          }
+          onClose={() => setShowMission(false)}
+        />
+      )}
       {skipTurnMessage && (
         <div className="polis-skip-turn-message" role="status" aria-live="polite">
           {skipTurnMessage}

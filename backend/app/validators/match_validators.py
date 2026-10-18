@@ -6,11 +6,11 @@ class MatchValidator:
 #_________________________________________________ Simples
     def match_exist(self,match_dict):
         if match_dict is None:
-           raise Exception("Partida não existe") 
+            raise Exception("Partida não existe") 
         return match_dict 
     def territory_exist(self,territory):
         if territory is None:
-           raise Exception("Território não existe") 
+            raise Exception("Território não existe") 
         return territory 
     def verify_match_status(self,match_dict,status):
         if match_dict["status"] != status:
@@ -22,11 +22,11 @@ class MatchValidator:
         return match_dict
     def round_exist(self,round):
         if round is None:
-           raise Exception("Round não encontrado") 
+            raise Exception("Round não encontrado") 
         return round
     def questions_exist(self,questions):
         if questions is None:
-           raise Exception("Questões não encontradas") 
+            raise Exception("Questões não encontradas") 
         return questions
     def verify_player_match_influence_is_not_below_zero(self,match_influence):
         if match_influence<0:
@@ -91,17 +91,34 @@ class MatchValidator:
         return True
     def must_distribute_influence(self, match,player):
         return (
-            match["status"] == "running"
-            and match["current_turn_player_id"] == player["player_id"]
-            and player.get("match_influence", 0) > 0
-        )
+                match["status"] == "running"
+                and match.get("phase") in (
+                    "initial_distribution",
+                    "playing",
+                )
+                and match["current_turn_player_id"] == player["player_id"]
+                and player.get("match_influence", 0) > 0
+            )
     def verify_influence_distribution_finished(self, match, player):
         if self.must_distribute_influence(match, player):
             raise ValueError(
                 "Distribua toda a influência geral antes de realizar uma ação."
             )
     def verify_action_phase(self, match):
+        if match.get("phase") == "mission_reveal":
+            raise ValueError(
+                "Aguarde o tempo de leitura das missões."
+            )
+
         if match.get("phase") == "initial_distribution":
             raise ValueError(
                 "Aguarde todos terminarem a distribuição inicial."
+            )
+    def verify_distribution_phase(self, match):
+        if match.get("phase") not in (
+            "initial_distribution",
+            "playing",
+        ):
+            raise ValueError(
+                "A distribuição não está disponível nesta fase."
             )
