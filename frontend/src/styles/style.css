@@ -3765,21 +3765,6 @@ html,
     3px 4px 0 #000,
     4px 4px 0 #000 !important;
 }
-.polis-mission-open {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 13000;
-
-  padding: 12px 20px;
-  border: 2px solid #eee8d8;
-  border-radius: 8px;
-
-  background: #111827;
-  color: #fff;
-  font-size: 18px;
-  cursor: pointer;
-}
 
 .polis-mission-modal-overlay {
   position: fixed;
