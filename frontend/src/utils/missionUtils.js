@@ -1,8 +1,25 @@
 export function getPlayerNameById(playerId, players) {
-    const player = players.find((item) => item.player_id === playerId);
-    return player?.username ?? playerId ?? "jogador desconhecido";
-}
+    const player = players.find(
+        (item) => item.player_id === playerId
+    );
 
+    if (!player) {
+        return playerId ?? "jogador desconhecido";
+    }
+
+    const partyNames = {
+        PR: "Vermelho",
+        PD: "Amarelo",
+        PA: "Azul",
+        PV: "Verde",
+    };
+
+    const partyName = partyNames[player.party_id];
+
+    return partyName
+        ? `${player.username} (${partyName})`
+        : player.username;
+}
 
 export function formatMission(mission, players = []) {
     if (!mission) {
