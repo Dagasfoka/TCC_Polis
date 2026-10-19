@@ -372,12 +372,7 @@ export default function Menu({ player, onEnterRoom, onLogout }) {
 
   min-height: 420px;
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(30, 46, 78, 0.98),
-      rgba(13, 18, 29, 0.98)
-    );
+  background: rgba(30, 46, 78, 0.98);
 
   border: 2px solid #2e3e6e;
   border-radius: 16px;
@@ -392,17 +387,18 @@ export default function Menu({ player, onEnterRoom, onLogout }) {
   color: #ffffff;
 
   text-align: center;
+  letter-spacing: 1px;
 }
 
 .avatar-modal-title {
   font-size: 25px;
-  font-weight: 800;
+  font-family: "Coolvetica", sans-serif !important;
+  font-weight: 400 !important;
 
   margin-bottom: 30px;
 
   color: #ffffff;
 
-  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.7);
 }
 
 .avatar-modal-close {

@@ -608,7 +608,6 @@ const activePartiesList = parties.map((party) => ({
         }
 
         .code-badge {
-          background-color: #000000;
           color: #ffffff;
           padding: 6px 16px;
           border-radius: 0;
@@ -618,13 +617,18 @@ const activePartiesList = parties.map((party) => ({
 
         .code-badge span {
           display: block;
-          font-size: 11px;
+          font-size: 18px;
           color: #ffffff;
           font-weight: 700;
+          -webkit-text-stroke: 4px #000000;
+          paint-order: stroke fill;
         }
 
         .code-badge strong {
-          font-size: 1.3rem;
+          display: inline-block;
+          background-color: #000000;
+          padding: 2px 8px;
+          font-size: 18px;
           letter-spacing: 2px;
         }
 
@@ -636,7 +640,7 @@ const activePartiesList = parties.map((party) => ({
         }
 
         .private-badge-img {
-          height: 38px;
+          height: 48px;
           width: auto;
           display: block;
           transition: transform 0.15s ease;
@@ -801,7 +805,9 @@ const activePartiesList = parties.map((party) => ({
 
                 const avatarId =
                   playerInfo?.avatar_id ?? null;
-                const bgColor = selectedParty?.colorHex || "#2b334e";
+                const bgColor = String(roomPlayer.party_id) === "PD"
+                  ? "#E0A12A"
+                  : selectedParty?.colorHex || "#2b334e";
 
                 return (
                   <div className="player-slot-item" key={id}>
@@ -968,7 +974,7 @@ const activePartiesList = parties.map((party) => ({
                   aria-pressed={isReady}
                 >
                   <img
-                    src={isReady ? "/CANCELAR.png" : "/PRONTO.png"}
+                    src={isReady ? "/CANCELAR.png" : "/Pronto.png"}
                     alt={isReady ? "Cancelar pronto" : "Estou Pronto"}
                   />
                 </button>

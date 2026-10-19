@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import BrazilMapSvg from "../components/BrazilMapSvg.jsx";
 
 export default function InfluenceDistributionScreen({
@@ -17,6 +18,12 @@ export default function InfluenceDistributionScreen({
     setDistributionTerritoryId,
     onConfirm,
 }) {
+    useEffect(() => {
+        if (distributionTerritory?.territory_id) {
+            setDistributionAmount(0);
+        }
+    }, [distributionTerritory?.territory_id, maxDistributionInfluence, setDistributionAmount]);
+
     return (
         <div className="polis-distribution-overlay" role="dialog" aria-modal="true" aria-label="Distribuição inicial de territórios">
             <section className="polis-distribution-panel">
@@ -46,6 +53,7 @@ export default function InfluenceDistributionScreen({
                                 <button
                                     type="button"
                                     className="polis-distribution-step"
+                                    disabled={distributionAmountValue <= 0}
                                     onClick={() =>
                                         setDistributionAmount(
                                             Math.max(0, distributionAmountValue - 10)
@@ -61,18 +69,11 @@ export default function InfluenceDistributionScreen({
                                     min="0"
                                     max={maxDistributionInfluence}
                                     step="10"
-                                    value={distributionAmount === "" ? "" : distributionAmountValue}
+                                    value={distributionAmount}
                                     onChange={(event) => {
-                                        const value = event.target.value;
-                                        setDistributionAmount(
-                                            value === ""
-                                                ? ""
-                                                : Math.min(
-                                                    maxDistributionInfluence,
-                                                    Math.max(0, Number(value) || 0)
-                                                )
-                                        );
+                                        setDistributionAmount(event.target.value);
                                     }}
+                                    onBlur={() => setDistributionAmount(distributionAmountValue)}
                                     aria-label="Influência a distribuir"
                                 />
                                 <button
@@ -94,15 +95,20 @@ export default function InfluenceDistributionScreen({
                                     type="button"
                                     className="polis-distribution-confirm"
                                     onClick={onConfirm}
+                                    disabled={distributionAmountValue <= 0}
                                     aria-label="Confirmar distribuição"
                                 >
                                     <img src="/confirmar.png" alt="" />
                                 </button>
                             </div>
+                            <div className="polis-distribution-result" aria-live="polite">
+                                <span>Nova influência:</span>
+                                <strong>
+                                    {Number(distributionTerritory?.current_influence ?? 0) + distributionAmountValue}
+                                </strong>
+                            </div>
                             <div className="polis-distribution-total">
-
-                                Falta distribuir: {maxDistributionInfluence}
-
+                                Restante: {Math.max(0, maxDistributionInfluence - distributionAmountValue)}
                             </div>
                         </>
                     ) : (

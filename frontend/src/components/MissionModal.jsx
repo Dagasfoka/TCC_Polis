@@ -5,7 +5,9 @@ export default function MissionModal({
     mission,
     players,
     endsAt,
+    isOpen = false,
     onClose,
+    onOpen,
 }) {
     const [now, setNow] = useState(() => Date.now());
 
@@ -27,12 +29,22 @@ export default function MissionModal({
 
     return (
         <aside
-            className="polis-mission-card polis-mission-right polis-mission-consult"
+            className={`polis-mission-card polis-mission-right polis-mission-consult${isOpen ? " is-open" : ""}`}
             aria-label="Sua missão secreta"
+            aria-expanded={isOpen}
+            onClick={isOpen ? onClose : onOpen}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    (isOpen ? onClose : onOpen)?.();
+                }
+            }}
         >
             <img
                 className="polis-mission-art"
-                src="/missaosec.png"
+                src="/missaosecreta.png"
                 alt="Missão Secreta"
             />
 
@@ -45,11 +57,7 @@ export default function MissionModal({
                             ? `Distribuição em ${remainingSeconds}s`
                             : "Aguardando distribuição…"}
                     </p>
-                ) : (
-                    <button type="button" onClick={onClose}>
-                        Fechar
-                    </button>
-                )}
+                ) : null}
             </div>
         </aside>
     );

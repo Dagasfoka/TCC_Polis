@@ -125,12 +125,14 @@ export default function QuestionPresentation({
                         </div>
                     )}
                     <div>
-                        {feedback && (
+                        {(feedback || (isDemo && selectedAnswer !== null)) && (
                             <button
                                 type="button"
+                                className="polis-question-preview-continue"
                                 onClick={onDismiss}
+                                aria-label="Continuar"
                             >
-                                Continuar
+                                <img src="/CONTINUAR.png" alt="" />
                             </button>
                         )}
                     </div>

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TERRITORY_PATHS } from "./brazilTerritoryPaths.js";
 
 const REGION_COLORS = {
@@ -62,12 +62,49 @@ export default function BrazilMapSvg({
   isActionable = true,
   currentPlayerId = null,
   selectableTerritoryIds = null,
+  attackedTerritoryId = null,
+  attackAnimationNonce = 0,
+  influenceAnimation = null,
   className = "",
 }) {
+  const [animatedInfluenceValue, setAnimatedInfluenceValue] = useState(null);
+  const [influenceAnimationComplete, setInfluenceAnimationComplete] = useState(true);
   const territoryById = useMemo(
     () => Object.fromEntries(territories.map((territory) => [territory.territory_id, territory])),
     [territories]
   );
+
+  useEffect(() => {
+    if (!influenceAnimation) {
+      setAnimatedInfluenceValue(null);
+      setInfluenceAnimationComplete(true);
+      return undefined;
+    }
+
+    setAnimatedInfluenceValue(influenceAnimation.from);
+    setInfluenceAnimationComplete(false);
+    if (!influenceAnimation.active || influenceAnimation.from === influenceAnimation.to) {
+      return undefined;
+    }
+
+    const direction = influenceAnimation.to > influenceAnimation.from ? 1 : -1;
+    let currentValue = influenceAnimation.from;
+    const intervalId = window.setInterval(() => {
+      currentValue += direction;
+      const reachedTarget = direction > 0
+        ? currentValue >= influenceAnimation.to
+        : currentValue <= influenceAnimation.to;
+      if (reachedTarget) {
+        window.clearInterval(intervalId);
+        setAnimatedInfluenceValue(influenceAnimation.to);
+        setInfluenceAnimationComplete(true);
+        return;
+      }
+      setAnimatedInfluenceValue(currentValue);
+    }, 70);
+
+    return () => window.clearInterval(intervalId);
+  }, [influenceAnimation?.nonce, influenceAnimation?.active, influenceAnimation?.from, influenceAnimation?.to]);
 
   function isTerritorySelectable(territoryId) {
     if (Array.isArray(selectableTerritoryIds)) {
@@ -150,7 +187,7 @@ export default function BrazilMapSvg({
 
       {TERRITORY_IDS.map((territoryId) => (
         <path
-          key={`fill-${territoryId}`}
+          key={`fill-${territoryId}${attackedTerritoryId === territoryId ? `-${attackAnimationNonce}` : ""}`}
           id={territoryId}
           d={TERRITORY_PATHS[territoryId]}
           fill={getFill(territoryId)}
@@ -161,7 +198,7 @@ export default function BrazilMapSvg({
               ? "url(#mask-df-neighbors)"
               : undefined
           }
-          className="polis-territory"
+          className={`polis-territory${attackedTerritoryId === territoryId ? " is-under-attack" : ""}`}
           style={{
             cursor: isTerritorySelectable(territoryId) ? "pointer" : "not-allowed",
             transition: "fill 0.15s ease",
@@ -251,7 +288,9 @@ export default function BrazilMapSvg({
                   paintOrder: "stroke",
                 }}
               >
-                {territory.current_influence ?? 0}
+                {influenceAnimation?.territoryId === territoryId && !influenceAnimationComplete
+                  ? animatedInfluenceValue ?? influenceAnimation.from
+                  : territory.current_influence ?? 0}
               </text>
             </g>
           );

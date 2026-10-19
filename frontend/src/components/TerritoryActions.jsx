@@ -40,7 +40,7 @@ export default function TerritoryActions({
                                     onClick={() =>  onChooseAction(option.action_id, option.action_type)}
                                 >
                                     <span className="polis-choice-card-title">
-                                        <strong>{option.title}</strong>
+                                        {option.title}
                                     </span>
                                     <span className="polis-choice-card-risk">
                                         {({
