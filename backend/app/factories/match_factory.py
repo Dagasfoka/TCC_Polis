@@ -4,7 +4,8 @@ from backend.app.repositories.db.territory_repo import TerritoryRepo
 from backend.app.gateways.player_gateways import PlayerGateway
 from backend.app.models.redis.match import Match
 import random,time
-class MatchFactory:
+TAX_PER_ROUND = 10
+class MatchFactory: 
     def __init__(self) -> None:
         self.match_repository=MatchRepo()
         self.territory_repo=TerritoryRepo()
@@ -65,25 +66,17 @@ class MatchFactory:
         return match_dict
     def advance_turn(self, match_dict: dict):
         players = match_dict["players"]
-        current_player_id = match_dict["current_turn_player_id"]
-
-        current_index = next(
-            index
-            for index, player in enumerate(players)
-            if player["player_id"] == current_player_id
-        )
-
-        next_index = (current_index + 1) % len(players)
-
+        current_player_id = (match_dict["current_turn_player_id"])
+        current_index = next(index for index, player in enumerate(players) if player["player_id"] == current_player_id)
+        next_index = ( current_index + 1) % len(players)
         if next_index == 0:
-            if match_dict.get("phase") == "initial_distribution":
+            if (match_dict.get("phase") == "initial_distribution"):
                 match_dict["phase"] = "playing"
             else:
                 match_dict["round"] += 1
-
-        match_dict["current_turn_player_id"] = (
-            players[next_index]["player_id"]
-        )
+                self.distribute_round_tax(match_dict)
+        match_dict["current_turn_player_id"] = (players[next_index]["player_id"])
+        return match_dict
     def change_key_value(self,match_dict,key,newValue):
         match_dict[key]=newValue
         return match_dict
@@ -111,6 +104,10 @@ class MatchFactory:
         match_dict["current_turn_player_id"] = (
             match_dict["players"][0]["player_id"]
         )
+    def distribute_round_tax(self, match_dict):
+        for player in match_dict["players"]:
+            player["match_money"] += TAX_PER_ROUND
+        return match_dict
     def start_mission_reveal(self, match_dict):
         match_dict["phase"] = "mission_reveal"
         match_dict["mission_reveal_ends_at"] = time.time() + 15
