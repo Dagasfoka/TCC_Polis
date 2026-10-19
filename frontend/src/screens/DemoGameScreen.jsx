@@ -56,6 +56,7 @@ export default function DemoGameScreen({
   const [questionFeedback, setQuestionFeedback] = useState(null);
   const [attackedTerritory, setAttackedTerritory] = useState(null);
   const [influenceAnimation, setInfluenceAnimation] = useState(null);
+  const [playerTurnAnimationPending, setPlayerTurnAnimationPending] = useState(false);
 
 
   const wsRef = useRef(null);
@@ -74,6 +75,7 @@ export default function DemoGameScreen({
   const pendingActionMatchStateRef = useRef(null);
   const lastAttackAnimationRef = useRef(null);
   const attackAnimationTimerRef = useRef(null);
+  const playerTurnAnimationTimerRef = useRef(null);
   const receivedInitialStateRef = useRef(false);
   const shouldReconnectRef = useRef(true);
   const isUnmountingRef = useRef(false);
@@ -144,7 +146,8 @@ export default function DemoGameScreen({
       attackedTerritory ||
       diceAnimation ||
       gameNotice ||
-      completionNoticePending
+      completionNoticePending ||
+      playerTurnAnimationPending
     ) return;
 
     setInfluenceAnimation((current) =>
@@ -152,7 +155,14 @@ export default function DemoGameScreen({
         ? { ...current, active: true }
         : current
     );
-  }, [influenceAnimation, attackedTerritory, diceAnimation, gameNotice, completionNoticePending]);
+  }, [
+    influenceAnimation,
+    attackedTerritory,
+    diceAnimation,
+    gameNotice,
+    completionNoticePending,
+    playerTurnAnimationPending,
+  ]);
 
   useEffect(() => {
     if (!questionFeedback) return undefined;
@@ -316,6 +326,18 @@ export default function DemoGameScreen({
   }
 
   function applyMatchState(newMatchState) {
+    const previousTurnPlayerId = matchState?.current_turn_player_id;
+    const nextTurnPlayerId = newMatchState?.current_turn_player_id;
+    if (previousTurnPlayerId && nextTurnPlayerId && previousTurnPlayerId !== nextTurnPlayerId) {
+      setPlayerTurnAnimationPending(true);
+      if (playerTurnAnimationTimerRef.current) {
+        window.clearTimeout(playerTurnAnimationTimerRef.current);
+      }
+      playerTurnAnimationTimerRef.current = window.setTimeout(() => {
+        setPlayerTurnAnimationPending(false);
+        playerTurnAnimationTimerRef.current = null;
+      }, 250);
+    }
     setMatchState(newMatchState);
     handleWinnerAlert(newMatchState);
   }
@@ -844,6 +866,11 @@ export default function DemoGameScreen({
       if (attackAnimationTimerRef.current) {
         clearTimeout(attackAnimationTimerRef.current);
         attackAnimationTimerRef.current = null;
+      }
+
+      if (playerTurnAnimationTimerRef.current) {
+        clearTimeout(playerTurnAnimationTimerRef.current);
+        playerTurnAnimationTimerRef.current = null;
       }
 
       if (wsRef.current) {
