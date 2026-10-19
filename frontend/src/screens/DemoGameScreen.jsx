@@ -4,6 +4,7 @@ import BrazilMapSvg from "../components/BrazilMapSvg.jsx";
 import QUESTION_PREVIEW_BANK from "../data/questionPreviewBank.json";
 import VictoryScreen from "./VictoryScreen.jsx";
 import PlayerCard from "../components/PlayerCard.jsx";
+import LastActionResult from "../components/LastActionResult.jsx";
 import QuestionPresentation from "../components/QuestionPresentation.jsx";
 import InfluenceDistributionScreen from "./InfluenceDistributionScreen.jsx";
 import DiceAnimation from "../components/DiceAnimation.jsx";
@@ -35,12 +36,14 @@ export default function DemoGameScreen({
   const [connected, setConnected] = useState(false);
   const [matchState, setMatchState] = useState(null);
 
+  const [lastActionResult, setLastActionResult] = useState(null);
+
   const [showMission, setShowMission] = useState(false);
   const [selectedTerritory, setSelectedTerritory] = useState(null);
   const [showInitialDistribution, setShowInitialDistribution] = useState(false);
   const [distributionConfirmed, setDistributionConfirmed] = useState(false);
   const [distributionTerritoryId, setDistributionTerritoryId] = useState("");
-  const [distributionAmount, setDistributionAmount] = useState(0);
+  const [distributionAmount, setDistributionAmount] = useState(200);
   const [showVictoryScreen, setShowVictoryScreen] = useState(false);
   const [showQuestionPreview, setShowQuestionPreview] = useState(false);
   const [previewQuestion, setPreviewQuestion] = useState(null);
@@ -50,13 +53,9 @@ export default function DemoGameScreen({
   const [pendingQuestion, setPendingQuestion] = useState(null);
   const [pendingActionInfo, setPendingActionInfo] = useState(null);
   const [gameNotice, setGameNotice] = useState(null);
-  const [completionNoticePending, setCompletionNoticePending] = useState(false);
   const [skipTurnMessage, setSkipTurnMessage] = useState(null);
   const [diceAnimation, setDiceAnimation] = useState(null);
   const [questionFeedback, setQuestionFeedback] = useState(null);
-  const [attackedTerritory, setAttackedTerritory] = useState(null);
-  const [influenceAnimation, setInfluenceAnimation] = useState(null);
-  const [playerTurnAnimationPending, setPlayerTurnAnimationPending] = useState(false);
 
 
   const wsRef = useRef(null);
@@ -72,10 +71,6 @@ export default function DemoGameScreen({
   const answeredQuestionRef = useRef(null);
   const pendingDiceResultRef = useRef(null);
   const pendingCompletionNoticesRef = useRef([]);
-  const pendingActionMatchStateRef = useRef(null);
-  const lastAttackAnimationRef = useRef(null);
-  const attackAnimationTimerRef = useRef(null);
-  const playerTurnAnimationTimerRef = useRef(null);
   const receivedInitialStateRef = useRef(false);
   const shouldReconnectRef = useRef(true);
   const isUnmountingRef = useRef(false);
@@ -124,45 +119,13 @@ export default function DemoGameScreen({
 
     const timeoutId = window.setTimeout(() => {
       setDiceAnimation(null);
-      if (pendingActionMatchStateRef.current) {
-        const completedMatchState = pendingActionMatchStateRef.current;
-        pendingActionMatchStateRef.current = null;
-        applyMatchState(completedMatchState);
-      }
       if (pendingCompletionNoticesRef.current.length > 0) {
-        showGameNotices(pendingCompletionNoticesRef.current, () => {
-          setCompletionNoticePending(false);
-        });
+        showGameNotices(pendingCompletionNoticesRef.current);
         pendingCompletionNoticesRef.current = [];
       }
     }, 1800);
     return () => window.clearTimeout(timeoutId);
   }, [diceAnimation?.rolling]);
-
-  useEffect(() => {
-    if (
-      !influenceAnimation ||
-      influenceAnimation.active ||
-      attackedTerritory ||
-      diceAnimation ||
-      gameNotice ||
-      completionNoticePending ||
-      playerTurnAnimationPending
-    ) return;
-
-    setInfluenceAnimation((current) =>
-      current?.nonce === influenceAnimation.nonce
-        ? { ...current, active: true }
-        : current
-    );
-  }, [
-    influenceAnimation,
-    attackedTerritory,
-    diceAnimation,
-    gameNotice,
-    completionNoticePending,
-    playerTurnAnimationPending,
-  ]);
 
   useEffect(() => {
     if (!questionFeedback) return undefined;
@@ -175,7 +138,7 @@ export default function DemoGameScreen({
     showGameNotices([{ kind, message }]);
   }
 
-  function showGameNotices(notices, onFinish) {
+  function showGameNotices(notices) {
     if (!notices.length) return;
 
     if (gameNoticeTimerRef.current) {
@@ -192,7 +155,6 @@ export default function DemoGameScreen({
         } else {
           setGameNotice(null);
           gameNoticeTimerRef.current = null;
-          onFinish?.();
         }
       }, 2200);
     };
@@ -249,105 +211,14 @@ export default function DemoGameScreen({
       const actionSucceeded = typeof result.success === "boolean"
         ? result.success
         : Number(result.roll) >= threshold;
-      const completionNotice = actionSucceeded
-        ? { kind: "success", message: "Ação concluída!" }
-        : { kind: "error", message: "Ação fracassada!" };
-      setCompletionNoticePending(true);
-      if (Number.isFinite(Number(result.roll))) {
-        pendingCompletionNoticesRef.current = [completionNotice];
-      } else {
-        showGameNotices([completionNotice], () => {
-          setCompletionNoticePending(false);
-        });
-      }
+      pendingCompletionNoticesRef.current = [
+        actionSucceeded
+          ? { kind: "success", message: "Ação concluída!" }
+          : { kind: "error", message: "Ação fracassada!" },
+      ];
       localActionPendingRef.current = false;
     }
     lastActionNoticeRef.current = signature;
-  }
-
-  function animateAttackedTerritory(result) {
-    if (!["attack_result", "attack_no_question"].includes(result?.type)) return;
-
-    const territoryId = result.target_territory_id ?? result.territory_id;
-    if (!territoryId) return;
-
-    const signature = [
-      result.type,
-      territoryId,
-      result.option_id ?? "",
-      result.roll ?? "",
-      result.new_current_influence ?? result.new_influence ?? "",
-      result.new_owner_id ?? "",
-    ].join(":");
-    if (lastAttackAnimationRef.current === signature) return;
-
-    lastAttackAnimationRef.current = signature;
-    setAttackedTerritory({ id: territoryId, nonce: Date.now() });
-
-    const newInfluence = Number(
-      result.new_current_influence ?? result.new_influence
-    );
-    const previousInfluence = Number(
-      matchState?.territories?.find((territory) => territory.territory_id === territoryId)
-        ?.current_influence
-    );
-    if (
-      Number.isFinite(previousInfluence) &&
-      Number.isFinite(newInfluence) &&
-      previousInfluence !== newInfluence
-    ) {
-      setInfluenceAnimation({
-        territoryId,
-        from: previousInfluence,
-        to: newInfluence,
-        nonce: Date.now(),
-        active: false,
-      });
-    }
-
-    if (attackAnimationTimerRef.current) {
-      window.clearTimeout(attackAnimationTimerRef.current);
-    }
-    attackAnimationTimerRef.current = window.setTimeout(() => {
-      setAttackedTerritory(null);
-      attackAnimationTimerRef.current = null;
-    }, 1900);
-  }
-
-  function shouldDeferMatchState(result) {
-    if (pendingActionMatchStateRef.current) return true;
-    return (
-      localActionPendingRef.current &&
-      receivedInitialStateRef.current &&
-      ["attack_result", "attack_no_question"].includes(result?.type) &&
-      Number.isFinite(Number(result?.roll)) &&
-      JSON.stringify(result) !== lastActionNoticeRef.current
-    );
-  }
-
-  function applyMatchState(newMatchState) {
-    const previousTurnPlayerId = matchState?.current_turn_player_id;
-    const nextTurnPlayerId = newMatchState?.current_turn_player_id;
-    if (previousTurnPlayerId && nextTurnPlayerId && previousTurnPlayerId !== nextTurnPlayerId) {
-      setPlayerTurnAnimationPending(true);
-      if (playerTurnAnimationTimerRef.current) {
-        window.clearTimeout(playerTurnAnimationTimerRef.current);
-      }
-      playerTurnAnimationTimerRef.current = window.setTimeout(() => {
-        setPlayerTurnAnimationPending(false);
-        playerTurnAnimationTimerRef.current = null;
-      }, 250);
-    }
-    setMatchState(newMatchState);
-    handleWinnerAlert(newMatchState);
-  }
-
-  function applyOrDeferMatchState(newMatchState, defer) {
-    if (defer) {
-      pendingActionMatchStateRef.current = newMatchState;
-      return;
-    }
-    applyMatchState(newMatchState);
   }
 
   const currentPlayer = useMemo(() => {
@@ -554,8 +425,20 @@ export default function DemoGameScreen({
 
       if (data.type === "match_state") {
         const newMatchState = data.payload;
+
+        const newRound = newMatchState?.round;
+
+        if (newRound != null) {
+          if (
+            previousRoundRef.current !== null &&
+            newRound > previousRoundRef.current
+          ) {
+            showGameNotice("Nova rodada! O dinheiro foi distribuído aos jogadores.");
+          }
+
+          previousRoundRef.current = newRound;
+        }
         const actionResult = newMatchState?.last_action_result;
-        const deferMatchState = shouldDeferMatchState(actionResult);
         const skippedPlayerId = newMatchState?.skipped_player_id ?? null;
 
         if (!skippedPlayerId || !receivedInitialStateRef.current) {
@@ -582,21 +465,21 @@ export default function DemoGameScreen({
 
         if (receivedInitialStateRef.current) {
           notifyActionCompleted(actionResult);
-          animateAttackedTerritory(actionResult);
         } else if (["attack_result", "attack_no_question"].includes(actionResult?.type)) {
           lastActionNoticeRef.current = JSON.stringify(actionResult);
-          lastAttackAnimationRef.current = [
-            actionResult.type,
-            actionResult.target_territory_id ?? actionResult.territory_id ?? "",
-            actionResult.option_id ?? "",
-            actionResult.roll ?? "",
-            actionResult.new_current_influence ?? actionResult.new_influence ?? "",
-            actionResult.new_owner_id ?? "",
-          ].join(":");
         }
         receivedInitialStateRef.current = true;
 
-        applyOrDeferMatchState(newMatchState, deferMatchState);
+        setMatchState(newMatchState);
+
+        // Atualiza o painel de última ação
+        if (newMatchState?.last_action_result) {
+          setLastActionResult(
+            newMatchState.last_action_result
+          );
+        }
+
+        handleWinnerAlert(newMatchState);
 
         return;
       }
@@ -604,11 +487,15 @@ export default function DemoGameScreen({
 
       if (data.result?.type === "attack_result") {
         const newMatchState = data.match;
-        const deferMatchState = shouldDeferMatchState(data.result);
 
-        animateAttackedTerritory(data.result);
         notifyActionCompleted(data.result);
-        applyOrDeferMatchState(newMatchState, deferMatchState);
+
+        setMatchState(newMatchState);
+
+        // Atualiza o painel imediatamente
+        setLastActionResult(data.result);
+
+        handleWinnerAlert(newMatchState);
 
         return;
       }
@@ -616,16 +503,20 @@ export default function DemoGameScreen({
 
       if (data.match && data.result) {
         const newMatchState = data.match;
-        const deferMatchState = shouldDeferMatchState(data.result);
 
-        animateAttackedTerritory(data.result);
         notifyActionCompleted(data.result);
-        applyOrDeferMatchState(newMatchState, deferMatchState);
+
+        setMatchState(newMatchState);
+
+        // Atualiza o painel imediatamente
+        setLastActionResult(data.result);
 
         if (!["attack_result", "attack_no_question"].includes(data.result?.type)) {
           setPendingQuestion(null);
           setPendingActionInfo(null);
         }
+
+        handleWinnerAlert(newMatchState);
 
         return;
       }
@@ -863,16 +754,6 @@ export default function DemoGameScreen({
         skipTurnTimerRef.current = null;
       }
 
-      if (attackAnimationTimerRef.current) {
-        clearTimeout(attackAnimationTimerRef.current);
-        attackAnimationTimerRef.current = null;
-      }
-
-      if (playerTurnAnimationTimerRef.current) {
-        clearTimeout(playerTurnAnimationTimerRef.current);
-        playerTurnAnimationTimerRef.current = null;
-      }
-
       if (wsRef.current) {
         wsRef.current.close();
 
@@ -888,25 +769,29 @@ export default function DemoGameScreen({
   const isMissionReveal =
     matchState?.status === "running" &&
     matchState?.phase === "mission_reveal";
-
-  useEffect(() => {
-    setShowMission(isMissionReveal);
-  }, [isMissionReveal]);
-
   return (
     <div className={`polis-game-page${showVictoryScreen ? " polis-victory-opened" : ""}`}>
-      {matchState?.status === "running" && !showVictoryScreen && (
+      {matchState?.status === "running" && !isMissionReveal && (
+        <button
+          type="button"
+          className="polis-victory-open polis-mission-open"
+          onClick={() => setShowMission(true)}
+        >
+          <span aria-hidden="true">📜</span>
+          Minha missão
+        </button>
+      )}
+
+      {(isMissionReveal || showMission) && (
         <MissionModal
           mission={matchState?.your_mission}
           players={players}
-          isOpen={showMission}
           endsAt={
             isMissionReveal
               ? matchState?.mission_reveal_ends_at
               : null
           }
           onClose={() => setShowMission(false)}
-          onOpen={() => setShowMission(true)}
         />
       )}
       {skipTurnMessage && (
@@ -952,28 +837,6 @@ export default function DemoGameScreen({
         >
           <span className="polis-question-preview-icon" aria-hidden="true">?</span>
           Pergunta
-        </button>
-      )}
-      {!showVictoryScreen && !diceAnimation && (
-        <button
-          type="button"
-          className="polis-victory-open polis-dice-test-open"
-          onClick={() => {
-            const roll = Math.floor(Math.random() * 20) + 1;
-            setDiceAnimation({
-              roll: Math.floor(Math.random() * 20) + 1,
-              finalRoll: roll,
-              success: roll >= 10,
-              threshold: 10,
-              rolling: true,
-              outcomeVisible: false,
-              steps: 0,
-            });
-          }}
-          aria-label="Simular lançamento de dado"
-        >
-          <span aria-hidden="true">🎲</span>
-          Dado
         </button>
       )}
 
@@ -1089,9 +952,6 @@ export default function DemoGameScreen({
             selectedTerritoryId={
               selectedTerritory?.territory_id
             }
-            attackedTerritoryId={attackedTerritory?.id}
-            attackAnimationNonce={attackedTerritory?.nonce}
-            influenceAnimation={influenceAnimation}
             isActionable={isMyTurn}
             onSelectTerritory={handleTerritorySelection}
             className="polis-main-map"
@@ -1171,6 +1031,12 @@ export default function DemoGameScreen({
 
 
       <DiceAnimation diceAnimation={diceAnimation} />
+      <LastActionResult
+        result={lastActionResult}  
+      />
+
+
     </div>
   );
 }
+  
