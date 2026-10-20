@@ -27,24 +27,35 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate}) {
 }, [player?.avatar_id]);
 
   async function handleChooseAvatar(avatarId) {
-    try {
-      setLoading(true);
-      setError("");
+  try {
+    setLoading(true);
+    setError("");
 
-      const updatedPlayer = await chooseAvatar(player.player_id, avatarId);
-      setSelectedAvatar(updatedPlayer.avatar_id);
-      onPlayerUpdate(updatedPlayer);
-      console.log("PLAYER ATUALIZADO:", updatedPlayer);
+    const updatedPlayer = await chooseAvatar(
+      player.player_id,
+      avatarId
+    );
 
-      setSelectedAvatar(updatedPlayer.avatar_id);
-      setShowAvatarModal(false);
+    const newAvatarId = updatedPlayer?.avatar_id ?? avatarId;
 
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
+    setSelectedAvatar(newAvatarId);
+
+    onPlayerUpdate({
+      ...player,
+      ...updatedPlayer,
+      avatar_id: newAvatarId,
+    });
+
+    console.log("PLAYER ATUALIZADO:", updatedPlayer);
+
+    setShowAvatarModal(false);
+
+  } catch (error) {
+    setError(error.message);
+  } finally {
+    setLoading(false);
   }
+}
   // Criar sala privada
   async function handleCreatePrivateRoom() {
     try {
