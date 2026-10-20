@@ -161,7 +161,7 @@ export default function InfluenceDistributionScreen({
                                     onClick={onSaveDistribution}
                                     disabled={
                                         !distributionTerritory ||
-                                        distributionAmountValue < 0
+                                        distributionAmountValue <= 0
                                     }
                                     aria-label="Salvar distribuição deste território"
                                 >
