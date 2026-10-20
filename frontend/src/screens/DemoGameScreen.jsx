@@ -15,7 +15,7 @@ import LastActionResult from "../components/LastActionResult.jsx";
 const PARTY_COLORS = {
   PR: "#DA3A3C",
   PA: "#28A3E0",
-  PV: "#30C067",
+  PV: "#30C067", 
   PD: "#E0A12A",
   1: "#DA3A3C",
   2: "#E0A12A",
