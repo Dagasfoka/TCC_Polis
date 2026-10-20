@@ -168,6 +168,9 @@ export default function InfluenceDistributionScreen({
                                     <img src="/confirmar.png" alt="" />
                                 </button>
 
+                                
+                            </div>
+                            <div>
                                 <button
                                     type="button"
                                     className="polis-distribution-finish"
