@@ -20,6 +20,23 @@ export default function InfluenceDistributionScreen({
     onConfirm,
 }) {
 
+    useEffect(() => {
+        if (!distributionTerritory) {
+            setDistributionAmount(0);
+            return;
+        }
+
+        const territoryId = String(distributionTerritory.territory_id);
+
+        setDistributionAmount(
+            pendingDistributions[territoryId] ?? 0
+        );
+    }, [
+        distributionTerritory?.territory_id,
+        pendingDistributions,
+        setDistributionAmount,
+    ]);
+
     const totalPendingInfluence = Object.values(
         pendingDistributions
     ).reduce((total, amount) => total + Number(amount || 0), 0);
