@@ -228,7 +228,7 @@ export default function App() {
 
 
   // ==============================
-  // INICIAR PARTIDA
+  // INICIAR PARTIDA 
   // ==============================
 
   function handleStartGame(newMatchId) {
@@ -251,7 +251,7 @@ export default function App() {
         </div>
       )}
 
-
+ 
       {screen === "menu" &&
         player && (
           <div className="non-game-screen-zoom">
@@ -262,6 +262,7 @@ export default function App() {
             />
           </div>
         )}
+
 
 
       {screen === "lobby" &&
