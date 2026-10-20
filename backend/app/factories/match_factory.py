@@ -84,6 +84,9 @@ class MatchFactory:
                 match_dict["round"] += 1
                 self.distribute_round_tax(match_dict)
         match_dict["current_turn_player_id"] = (players[next_index]["player_id"])
+        for player in match_dict["players"]:
+            if player["player_id"] == match_dict["current_turn_player_id"]:
+                player["match_influence"] = self.calculate_region_bonus(match_dict, match_dict["current_turn_player_id"])
         return match_dict
     def change_key_value(self,match_dict,key,newValue):
         match_dict[key]=newValue
@@ -114,7 +117,7 @@ class MatchFactory:
         )
     def distribute_round_tax(self, match_dict):
         for player in match_dict["players"]:
-            player["match_influence"] = self.calculate_region_bonus(match_dict, player["player_id"])
+            
             total_money = TAX_PER_ROUND 
             player["match_money"] += total_money
         return match_dict
