@@ -114,8 +114,8 @@ class MatchFactory:
         )
     def distribute_round_tax(self, match_dict):
         for player in match_dict["players"]:
-            region_bonus = self.calculate_region_bonus(match_dict, player["player_id"])
-            total_money = TAX_PER_ROUND + region_bonus
+            player["match_influence"] = self.calculate_region_bonus(match_dict, player["player_id"])
+            total_money = TAX_PER_ROUND 
             player["match_money"] += total_money
         return match_dict
     def start_mission_reveal(self, match_dict):
