@@ -2973,6 +2973,26 @@ html,
   transform: translateY(4%);
   filter: none;
 }
+.polis-distribution-finish-container {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: auto;
+    box-sizing: border-box;
+    z-index: 3;
+}
+
+.polis-distribution-finish-container .polis-distribution-finish {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
 
 .polis-distribution-map .polis-transport-markers path {
   stroke: #000 !important;
@@ -2985,6 +3005,17 @@ html,
 
   .polis-distribution-panel {
     width: min(98vw, 142vh);
+  }
+  .polis-distribution-finish-container {
+      left: 10px;
+      right: 10px;
+      bottom: 5px;
+  }
+
+  .polis-distribution-finish-container .polis-distribution-finish {
+      width: 100%;
+      font-size: 12px;
+      padding: 6px 4px;
   }
 
   .polis-distribution-state-card {
