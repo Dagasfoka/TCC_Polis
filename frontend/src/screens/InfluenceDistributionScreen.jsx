@@ -170,7 +170,12 @@ export default function InfluenceDistributionScreen({
 
                                 
                             </div>
-                            <div>
+
+
+                            <div
+                                className="polis-distribution-result"
+                                aria-live="polite"
+                            >
                                 <button
                                     type="button"
                                     className="polis-distribution-finish"
@@ -179,12 +184,7 @@ export default function InfluenceDistributionScreen({
                                 >
                                     Finalizar distribuição
                                 </button>
-                            </div>
 
-                            <div
-                                className="polis-distribution-result"
-                                aria-live="polite"
-                            >
                                 <span>Nova influência:</span>
                                 <strong>
                                     {Number(
