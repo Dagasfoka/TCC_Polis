@@ -39,10 +39,10 @@ RETURN_MONEY = {INSANE_ACTION : 8,
                 MEDIUM_ACTION:2,
                 LOW_ACTION:1.5}
 
-CORRUPTION = {INSANE_ACTION : 5,
-              HIGH_ACTION : 5, 
-              MEDIUM_ACTION:5,
-              LOW_ACTION:5}
+CORRUPTION = {INSANE_ACTION : 15,
+              HIGH_ACTION : 15, 
+              MEDIUM_ACTION:15,
+              LOW_ACTION:15}
 
 
 class ActionsFactory:
