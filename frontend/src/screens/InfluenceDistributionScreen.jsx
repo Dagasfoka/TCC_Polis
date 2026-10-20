@@ -19,14 +19,6 @@ export default function InfluenceDistributionScreen({
     onRemoveDistribution,
     onConfirm,
 }) {
-    useEffect(() => {
-        if (distributionTerritory?.territory_id) {
-            setDistributionAmount(0);
-        }
-    }, [
-        distributionTerritory?.territory_id,
-        setDistributionAmount,
-    ]);
 
     const totalPendingInfluence = Object.values(
         pendingDistributions
