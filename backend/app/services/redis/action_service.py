@@ -384,6 +384,7 @@ def execute_attack_roll(
                 f"porque você está no nível {corruption_level} de corrupção."
             )
 
+    print(response)
     conquered = False
     leftover = 0
 
