@@ -2974,26 +2974,21 @@ html,
   filter: none;
 }
 .polis-distribution-finish-container {
-    position: absolute;
-    left: 20px;
-    right: 20px;
-    bottom: 8px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: auto;
-    box-sizing: border-box;
-    z-index: 3;
+    position: relative;
+    margin-top: 20px;
+    padding-top: 8px;
 }
 
 .polis-distribution-finish-container .polis-distribution-finish {
     width: 100%;
     min-height: 38px;
-    margin-top: 10px;
+    margin-top: 24px;
     padding: 8px 6px;
     font-size: 18px;
     font-weight: 700;
     box-sizing: border-box;
+    position: relative;
+    top: 0;
 }
 
 .polis-distribution-map .polis-transport-markers path {
