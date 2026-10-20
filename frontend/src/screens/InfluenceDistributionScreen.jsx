@@ -171,16 +171,6 @@ export default function InfluenceDistributionScreen({
                                 
                             </div>
 
-                            <div>
-                                <button
-                                    type="button"
-                                    className="polis-distribution-finish"
-                                    onClick={onConfirm}
-                                    disabled={savedDistributions.length === 0}
-                                >
-                                    Finalizar distribuição
-                                </button>
-                            </div>
 
 
                             <div
@@ -201,6 +191,16 @@ export default function InfluenceDistributionScreen({
                             </div>
 
 
+                            <div className="polis-distribution-finish-container">
+                                <button
+                                    type="button"
+                                    className="polis-distribution-finish"
+                                    onClick={onConfirm}
+                                    disabled={savedDistributions.length === 0}
+                                >
+                                    Finalizar distribuição
+                                </button>
+                            </div>
                             
                         </>
                     ) : (
