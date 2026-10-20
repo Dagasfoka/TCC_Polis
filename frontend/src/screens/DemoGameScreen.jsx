@@ -10,6 +10,7 @@ import DiceAnimation from "../components/DiceAnimation.jsx";
 import TerritoryActions from "../components/TerritoryActions.jsx";
 import GameNotice from "../components/GameNotice.jsx";
 import MissionModal from "../components/MissionModal.jsx";
+import LastActionResult from "../components/LastActionResult.jsx";
 
 const PARTY_COLORS = {
   PR: "#DA3A3C",
@@ -20,6 +21,22 @@ const PARTY_COLORS = {
   2: "#E0A12A",
   3: "#28A3E0",
   4: "#30C067",
+};
+
+const DEMO_ACTION_RESULT = {
+  type: "action_result",
+  success: true,
+  title: "Mapeamento Voluntário de Obras Ociosas",
+  description: "Ampliar a presença do partido por meio de uma política pública.",
+  territory_name: "Mato Grosso",
+  response: "Construí uma base de dados sobre o desperdício estatal.",
+  money_generated: 120,
+  influence_generated: 45,
+  corruption_generated: -3,
+  conquered: true,
+  question_was_correct: true,
+  old_current_influence: 90,
+  new_current_influence: 135,
 };
 
 export default function DemoGameScreen({
@@ -44,6 +61,7 @@ export default function DemoGameScreen({
   const [distributionAmount, setDistributionAmount] = useState(0);
   const [showVictoryScreen, setShowVictoryScreen] = useState(false);
   const [showQuestionPreview, setShowQuestionPreview] = useState(false);
+  const [showActionResultDemo, setShowActionResultDemo] = useState(false);
   const [previewQuestion, setPreviewQuestion] = useState(null);
   const [availableActions, setAvailableActions] = useState([]);
   const [actionType, setActionType] = useState(null);
@@ -54,6 +72,8 @@ export default function DemoGameScreen({
   const [skipTurnMessage, setSkipTurnMessage] = useState(null);
   const [diceAnimation, setDiceAnimation] = useState(null);
   const [questionFeedback, setQuestionFeedback] = useState(null);
+  const [lastActionResult, setLastActionResult] = useState(null);
+  const [queuedActionResult, setQueuedActionResult] = useState(null);
 
   const [pendingDistributions, setPendingDistributions] = useState({});
 
@@ -65,6 +85,7 @@ export default function DemoGameScreen({
   const lastSkippedTurnRef = useRef(null);
   const previousRoundRef = useRef(null);
   const lastActionNoticeRef = useRef(null);
+  const lastActionResultSignatureRef = useRef(null);
   const gameNoticeIdRef = useRef(0);
   const localActionPendingRef = useRef(false);
   const lastDiceResultRef = useRef(null);
@@ -176,6 +197,13 @@ export default function DemoGameScreen({
 
     return () => window.clearTimeout(timeoutId);
   }, [questionFeedback]);
+
+  useEffect(() => {
+    if (!queuedActionResult || diceAnimation || questionFeedback) return;
+
+    setLastActionResult(queuedActionResult.result);
+    setQueuedActionResult(null);
+  }, [queuedActionResult, diceAnimation, questionFeedback]);
 
   function showGameNotice(kind, message) {
     showGameNotices([{ kind, message }]);
@@ -353,6 +381,16 @@ export default function DemoGameScreen({
     }
 
     lastActionNoticeRef.current = signature;
+  }
+
+  function queueActionResult(result) {
+    if (!result || typeof result !== "object") return;
+
+    const signature = JSON.stringify(result);
+    if (signature === lastActionResultSignatureRef.current) return;
+
+    lastActionResultSignatureRef.current = signature;
+    setQueuedActionResult({ result, signature });
   }
 
   const currentPlayer = useMemo(() => {
@@ -607,10 +645,14 @@ export default function DemoGameScreen({
 
         if (receivedInitialStateRef.current) {
           notifyActionCompleted(actionResult);
-        } else if (
-          ["attack_result", "attack_no_question"].includes(actionResult?.type)
-        ) {
-          lastActionNoticeRef.current = JSON.stringify(actionResult);
+          queueActionResult(actionResult);
+        } else {
+          if (actionResult) {
+            lastActionResultSignatureRef.current = JSON.stringify(actionResult);
+          }
+          if (["attack_result", "attack_no_question"].includes(actionResult?.type)) {
+            lastActionNoticeRef.current = JSON.stringify(actionResult);
+          }
         }
 
         receivedInitialStateRef.current = true;
@@ -625,6 +667,7 @@ export default function DemoGameScreen({
         const newMatchState = data.match;
 
         notifyActionCompleted(data.result);
+        queueActionResult(data.result);
         setMatchState(newMatchState);
         handleWinnerAlert(newMatchState);
 
@@ -635,6 +678,7 @@ export default function DemoGameScreen({
         const newMatchState = data.match;
 
         notifyActionCompleted(data.result);
+        queueActionResult(data.result);
         setMatchState(newMatchState);
         if (
           !["attack_result", "attack_no_question"].includes(data.result?.type)
@@ -937,6 +981,12 @@ export default function DemoGameScreen({
     matchState?.status === "running" &&
     matchState?.phase === "mission_reveal";
 
+  const demoActionResult = {
+    ...DEMO_ACTION_RESULT,
+    old_owner_id: players[1]?.player_id ?? players[0]?.player_id,
+    new_owner_id: players[0]?.player_id,
+  };
+
   return (
     <div
       className={`polis-game-page${
@@ -1035,6 +1085,18 @@ export default function DemoGameScreen({
             ?
           </span>
           Pergunta
+        </button>
+      )}
+
+      {!showVictoryScreen && !showQuestionPreview && (
+        <button
+          type="button"
+          className="polis-victory-open polis-action-result-preview-open"
+          onClick={() => setShowActionResultDemo(true)}
+          aria-label="Abrir tela demonstrativa de resultado da ação"
+        >
+          <span aria-hidden="true">✓</span>
+          Resultado (demo)
         </button>
       )}
 
@@ -1216,6 +1278,18 @@ export default function DemoGameScreen({
         )}
 
         <GameNotice notice={gameNotice} />
+        <LastActionResult
+          result={showActionResultDemo ? demoActionResult : lastActionResult}
+          players={players}
+          partyColors={PARTY_COLORS}
+          onClose={() => {
+            if (showActionResultDemo) {
+              setShowActionResultDemo(false);
+            } else {
+              setLastActionResult(null);
+            }
+          }}
+        />
 
         {showVictoryScreen && (
           <VictoryScreen
