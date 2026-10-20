@@ -2987,10 +2987,11 @@ html,
 }
 
 .polis-distribution-finish-container .polis-distribution-finish {
-    position: relative;
     width: 100%;
-    max-width: 100%;
-    min-width: 0;
+    min-height: 34px;
+    padding: 8px 6px;
+    font-size: 14px;
+    font-weight: 700;
     box-sizing: border-box;
 }
 
