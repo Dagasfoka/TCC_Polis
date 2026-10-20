@@ -140,9 +140,9 @@ export default function LastActionResult({ result, onClose, players = [], partyC
                     <h2 className="polis-action-result-action-title">
                         {result.title ?? "Ação realizada"}
                     </h2>
-                    {(result.description ?? result.response) && (
+                    {result.response && (
                         <p className="polis-action-result-description">
-                            {result.description ?? result.response}
+                            {result.response}
                         </p>
                     )}
                 </section>
