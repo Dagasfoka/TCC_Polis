@@ -28,9 +28,11 @@ export default function InfluenceDistributionScreen({
 
         const territoryId = String(distributionTerritory.territory_id);
 
-        setDistributionAmount(
+        const savedAmount = Number(
             pendingDistributions[territoryId] ?? 0
         );
+
+        setDistributionAmount(savedAmount);
     }, [
         distributionTerritory?.territory_id,
         pendingDistributions,
