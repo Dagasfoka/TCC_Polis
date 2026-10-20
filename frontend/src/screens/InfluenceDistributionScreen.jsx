@@ -98,8 +98,13 @@ export default function InfluenceDistributionScreen({
                                     type="number"
                                     min="0"
                                     max={maxDistributionInfluence}
-                                    step="10"
+                                    step="1"
                                     value={distributionAmount}
+                                    onKeyDown={(event) => {
+                                        if ([".", ",", "e", "E", "+", "-"].includes(event.key)) {
+                                            event.preventDefault();
+                                        }
+                                    }}
                                     onChange={(event) => {
                                         const value = event.target.value;
 
@@ -108,25 +113,21 @@ export default function InfluenceDistributionScreen({
                                             return;
                                         }
 
+                                        if (!/^\d+$/.test(value)) {
+                                            return;
+                                        }
+
                                         const numericValue = Number(value);
 
                                         setDistributionAmount(
-                                            Math.min(
-                                                maxDistributionInfluence,
-                                                Math.max(
-                                                    0,
-                                                    Number.isFinite(numericValue)
-                                                        ? numericValue
-                                                        : 0
-                                                )
-                                            )
+                                            Math.min(maxDistributionInfluence, numericValue)
                                         );
                                     }}
                                     onBlur={() => {
-                                        if (distributionAmount !== "") {
-                                            setDistributionAmount(
-                                                distributionAmountValue
-                                            );
+                                        if (distributionAmount === "") {
+                                            setDistributionAmount(0);
+                                        } else {
+                                            setDistributionAmount(distributionAmountValue);
                                         }
                                     }}
                                     aria-label="Influência a distribuir"
@@ -160,7 +161,7 @@ export default function InfluenceDistributionScreen({
                                     onClick={onSaveDistribution}
                                     disabled={
                                         !distributionTerritory ||
-                                        distributionAmountValue <= 0
+                                        distributionAmountValue < 0
                                     }
                                     aria-label="Salvar distribuição deste território"
                                 >
@@ -184,56 +185,6 @@ export default function InfluenceDistributionScreen({
                                 Influência restante: {remainingInfluence}
                             </div>
 
-                            <div className="polis-distribution-pending">
-                                <h3>Distribuições salvas</h3>
-
-                                {savedDistributions.length === 0 ? (
-                                    <p>
-                                        Nenhum território configurado ainda.
-                                    </p>
-                                ) : (
-                                    <ul>
-                                        {savedDistributions.map(
-                                            ([territoryId, amount]) => {
-                                                const territory =
-                                                    myTerritories.find(
-                                                        (item) =>
-                                                            String(
-                                                                item.territory_id
-                                                            ) ===
-                                                            String(territoryId)
-                                                    );
-
-                                                return (
-                                                    <li key={territoryId}>
-                                                        <span>
-                                                            {territory?.name ??
-                                                                `Território ${territoryId}`}
-                                                            : {amount} de
-                                                            influência
-                                                        </span>
-
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                onRemoveDistribution(
-                                                                    territoryId
-                                                                )
-                                                            }
-                                                            aria-label={`Remover distribuição de ${
-                                                                territory?.name ??
-                                                                territoryId
-                                                            }`}
-                                                        >
-                                                            Remover
-                                                        </button>
-                                                    </li>
-                                                );
-                                            }
-                                        )}
-                                    </ul>
-                                )}
-                            </div>
 
                             <button
                                 type="button"
