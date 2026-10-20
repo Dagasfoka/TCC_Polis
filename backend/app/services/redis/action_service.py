@@ -379,6 +379,11 @@ def execute_attack_roll(
 
             influence_generated -= option["influence"] * penalty_multiplier
 
+            response += (
+                f" Você perdeu mais {penalty_multiplier:.0%} "
+                f"porque você está no nível {corruption_level} de corrupção."
+            )
+
     conquered = False
     leftover = 0
 
