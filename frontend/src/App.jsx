@@ -259,6 +259,7 @@ export default function App() {
               player={player}
               onEnterRoom={handleEnterRoom}
               onLogout={handleLogout}
+              onPlayerUpdate={setPlayer}
             />
           </div>
         )}
