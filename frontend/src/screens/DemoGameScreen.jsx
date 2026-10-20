@@ -4,7 +4,6 @@ import BrazilMapSvg from "../components/BrazilMapSvg.jsx";
 import QUESTION_PREVIEW_BANK from "../data/questionPreviewBank.json";
 import VictoryScreen from "./VictoryScreen.jsx";
 import PlayerCard from "../components/PlayerCard.jsx";
-import LastActionResult from "../components/LastActionResult.jsx";
 import QuestionPresentation from "../components/QuestionPresentation.jsx";
 import InfluenceDistributionScreen from "./InfluenceDistributionScreen.jsx";
 import DiceAnimation from "../components/DiceAnimation.jsx";
@@ -36,9 +35,8 @@ export default function DemoGameScreen({
   const [connected, setConnected] = useState(false);
   const [matchState, setMatchState] = useState(null);
 
-  const [lastActionResult, setLastActionResult] = useState(null);
-
   const [showMission, setShowMission] = useState(false);
+  const [showLargeMission, setShowLargeMission] = useState(false);
   const [selectedTerritory, setSelectedTerritory] = useState(null);
   const [showInitialDistribution, setShowInitialDistribution] = useState(false);
   const [distributionConfirmed, setDistributionConfirmed] = useState(false);
@@ -210,10 +208,18 @@ export default function DemoGameScreen({
       return;
     }
 
-    setPendingDistributions((previous) => ({
-      ...previous,
-      [distributionTerritory.territory_id]: distributionAmountValue,
-    }));
+    setPendingDistributions((previous) => {
+      const updated = { ...previous };
+      const territoryId = String(distributionTerritory.territory_id);
+
+      if (distributionAmountValue === 0) {
+        delete updated[territoryId];
+      } else {
+        updated[territoryId] = distributionAmountValue;
+      }
+
+      return updated;
+    });
 
     showGameNotice(
       "success",
@@ -610,10 +616,6 @@ export default function DemoGameScreen({
         receivedInitialStateRef.current = true;
         setMatchState(newMatchState);
 
-        if (newMatchState?.last_action_result) {
-          setLastActionResult(newMatchState.last_action_result);
-        }
-
         handleWinnerAlert(newMatchState);
 
         return;
@@ -624,7 +626,6 @@ export default function DemoGameScreen({
 
         notifyActionCompleted(data.result);
         setMatchState(newMatchState);
-        setLastActionResult(data.result);
         handleWinnerAlert(newMatchState);
 
         return;
@@ -635,8 +636,6 @@ export default function DemoGameScreen({
 
         notifyActionCompleted(data.result);
         setMatchState(newMatchState);
-        setLastActionResult(data.result);
-
         if (
           !["attack_result", "attack_no_question"].includes(data.result?.type)
         ) {
@@ -944,18 +943,18 @@ export default function DemoGameScreen({
         showVictoryScreen ? " polis-victory-opened" : ""
       }`}
     >
-      {matchState?.status === "running" && !isMissionReveal && (
+      {matchState?.status === "running" && matchState?.your_mission && !isMissionReveal && (
         <button
           type="button"
-          className="polis-victory-open polis-mission-open"
-          onClick={() => setShowMission(true)}
+          className="polis-victory-open polis-mission-preview-open"
+          onClick={() => setShowLargeMission(true)}
         >
           <span aria-hidden="true">📜</span>
-          Minha missão
+          Missão grande
         </button>
       )}
 
-      {(isMissionReveal || showMission) && (
+      {matchState?.status === "running" && (isMissionReveal || showMission || matchState?.your_mission) && (
         <MissionModal
           mission={matchState?.your_mission}
           players={players}
@@ -964,7 +963,12 @@ export default function DemoGameScreen({
               ? matchState?.mission_reveal_ends_at
               : null
           }
+          isOpen={showMission && !isMissionReveal}
+          isRevealing={isMissionReveal}
+          showLargeMission={showLargeMission}
+          onOpen={() => setShowMission(true)}
           onClose={() => setShowMission(false)}
+          onCloseLarge={() => setShowLargeMission(false)}
         />
       )}
 
@@ -1228,7 +1232,6 @@ export default function DemoGameScreen({
 
       <DiceAnimation diceAnimation={diceAnimation} />
 
-      <LastActionResult result={lastActionResult} />
     </div>
   );
 }

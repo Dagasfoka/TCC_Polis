@@ -2761,6 +2761,7 @@ html,
   position: relative;
   width: min(1200px, 96vw, 165vh);
   aspect-ratio: 1585 / 891;
+  transform: translateY(-2vh);
 }
 
 .polis-distribution-art {
@@ -2772,7 +2773,7 @@ html,
 
 .polis-distribution-state-card {
   position: absolute;
-  top: 32%;
+  top: 28%;
   left: 9%;
   width: 27%;
   height: calc(50% - 10px);
@@ -3013,21 +3014,30 @@ html,
 
 /* Botão de finalizar */
 .polis-distribution-finish-container {
-  position: relative;
-  margin-top: 5px;
-  padding-top: 8px;
+  position: absolute;
+  left: 9%;
+  bottom: 3%;
+  z-index: 2;
 }
 
 .polis-distribution-finish-container .polis-distribution-finish {
-  position: relative;
-  top: 0;
+  display: block;
+  width: clamp(170px, 22vw, 280px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.polis-distribution-finish-container .polis-distribution-finish img {
+  display: block;
   width: 100%;
-  min-height: 38px;
-  margin-top: 24px;
-  padding: 8px 6px;
-  font-size: 18px;
-  font-weight: 700;
-  box-sizing: border-box;
+  height: auto;
+}
+
+.polis-distribution-finish-container .polis-distribution-finish:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .polis-distribution-map .polis-transport-markers path {
@@ -3048,7 +3058,7 @@ html,
   }
 
   .polis-distribution-state-card {
-    top: 26.5%;
+    top: 22.5%;
     left: 9%;
     width: 31%;
     height: calc(55% - 10px);
@@ -3119,15 +3129,12 @@ html,
   }
 
   .polis-distribution-finish-container {
-    left: 10px;
-    right: 10px;
-    bottom: 5px;
+    left: 9%;
+    bottom: 3%;
   }
 
   .polis-distribution-finish-container .polis-distribution-finish {
-    width: 100%;
-    font-size: 12px;
-    padding: 6px 4px;
+    width: clamp(130px, 32vw, 205px);
   }
 }
 
@@ -4003,6 +4010,77 @@ html,
   font-size: 18px;
   cursor: pointer;
 }
+
+.polis-mission-reveal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 15500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.84);
+}
+
+.polis-mission-reveal-paper {
+  position: relative;
+  width: min(680px, 92vw, 70vh);
+  aspect-ratio: 414 / 480;
+  filter: drop-shadow(0 18px 38px rgba(0, 0, 0, 0.6));
+}
+
+.polis-mission-reveal-paper > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.polis-mission-reveal-copy {
+  position: absolute;
+  top: 44%;
+  right: 13%;
+  bottom: 22%;
+  left: 13%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 12px;
+  border-radius: 8px;
+  background: #d9d1c8;
+  color: #3C57C5;
+  text-align: center;
+}
+
+.polis-mission-reveal-copy p {
+  width: 100%;
+  margin: 8px 0;
+  font-size: clamp(18px, 2.2vw, 30px);
+  line-height: 1.35;
+  text-align: center;
+}
+
+.polis-mission-reveal-copy .polis-mission-countdown {
+  margin-top: 16px;
+  font-size: clamp(14px, 1.5vw, 20px);
+}
+
+.polis-mission-reveal-close {
+  position: absolute;
+  top: 5%;
+  right: 7%;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 4px;
+  background: #111827;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
 /* Gaveta da missão secreta: estilos isolados das cartas de ação. */
 .polis-mission-consult {
   position: fixed;
@@ -4099,6 +4177,11 @@ html,
   cursor: pointer;
 }
 
+.polis-mission-consult.is-locked {
+  pointer-events: none;
+}
+
+
 .polis-mission-consult .polis-mission-copy p {
   color: #3C57C5;
   font-size: clamp(14px, 1.3vw, 18px);
@@ -4110,5 +4193,9 @@ html,
 }
 .polis-mission-open {
   top: calc(50% + 144px);
+}
+
+.polis-mission-preview-open {
+  top: calc(50% + 190px);
 }
 

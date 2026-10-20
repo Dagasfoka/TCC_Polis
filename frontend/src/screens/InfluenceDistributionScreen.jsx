@@ -39,16 +39,27 @@ export default function InfluenceDistributionScreen({
         setDistributionAmount,
     ]);
 
-    const totalPendingInfluence = Object.values(
-        pendingDistributions
-    ).reduce((total, amount) => total + Number(amount || 0), 0);
-
+    const totalPendingInfluence = Object.values(pendingDistributions)
+        .reduce((total, amount) => total + Number(amount || 0), 0);
+    const selectedTerritorySavedInfluence = Number(
+        pendingDistributions[String(distributionTerritory?.territory_id ?? "")] ?? 0
+    );
+    const draftInfluenceChange = distributionTerritory
+        ? distributionAmountValue - selectedTerritorySavedInfluence
+        : 0;
     const remainingInfluence = Math.max(
         0,
-        Number(me?.match_influence ?? 0) - totalPendingInfluence
+        Number(me?.match_influence ?? 0)
+            - totalPendingInfluence
+            - draftInfluenceChange
     );
-
-    const savedDistributions = Object.entries(pendingDistributions);
+    const canSaveDistribution = Boolean(distributionTerritory)
+        && distributionAmountValue !== selectedTerritorySavedInfluence;
+    const previewTerritories = territories.map((territory) => ({
+        ...territory,
+        current_influence: Number(territory.current_influence ?? 0)
+            + Number(pendingDistributions[String(territory.territory_id)] ?? 0),
+    }));
 
     return (
         <div
@@ -178,11 +189,8 @@ export default function InfluenceDistributionScreen({
                                     type="button"
                                     className="polis-distribution-confirm"
                                     onClick={onSaveDistribution}
-                                    disabled={
-                                        !distributionTerritory ||
-                                        distributionAmountValue <= 0
-                                    }
-                                    aria-label="Salvar distribuição deste território"
+                                    disabled={!canSaveDistribution}
+                                    aria-label="Aplicar distribuição deste território na prévia"
                                 >
                                     <img src="/confirmar.png" alt="" />
                                 </button>
@@ -208,19 +216,6 @@ export default function InfluenceDistributionScreen({
                             <div className="polis-distribution-total">
                                 Influência restante: {remainingInfluence}
                             </div>
-
-
-                            <div className="polis-distribution-finish-container">
-                                <button
-                                    type="button"
-                                    className="polis-distribution-finish"
-                                    onClick={onConfirm}
-                                    disabled={savedDistributions.length === 0}
-                                >
-                                    Finalizar distribuição
-                                </button>
-                            </div>
-                            
                         </>
                     ) : (
                         <p className="polis-distribution-empty">
@@ -234,7 +229,7 @@ export default function InfluenceDistributionScreen({
                     aria-label="Mapa dos territórios da partida"
                 >
                     <BrazilMapSvg
-                        territories={territories}
+                        territories={previewTerritories}
                         players={players}
                         partyColors={partyColors}
                         currentPlayerId={matchState?.your_player_id}
@@ -251,6 +246,23 @@ export default function InfluenceDistributionScreen({
                         className="polis-distribution-map"
                     />
                 </div>
+
+                {myTerritories.length > 0 && (
+                    <div className="polis-distribution-finish-container">
+                        <button
+                            type="button"
+                            className="polis-distribution-finish"
+                            onClick={onConfirm}
+                            disabled={
+                                remainingInfluence !== 0 ||
+                                totalPendingInfluence !== Number(me?.match_influence ?? 0)
+                            }
+                            aria-label="Finalizar distribuição"
+                        >
+                            <img src="/finalizar.png" alt="Finalizar" />
+                        </button>
+                    </div>
+                )}
             </section>
         </div>
     );
