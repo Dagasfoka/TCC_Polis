@@ -383,7 +383,7 @@ html,
   left: 50%;
   top: 50%;
 
-  transform: translate(-50%, -50%) scale(1.16);
+  transform: translate(-50%, -50%) scale(1.334);
 
   width: min(58vw, 850px);
   height: min(80vh, 760px);
@@ -3432,6 +3432,7 @@ html,
 }
 
 .polis-victory-open {
+  display: none !important;
   position: fixed;
   top: 50%;
   left: 12px;
