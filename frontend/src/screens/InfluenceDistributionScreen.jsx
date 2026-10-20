@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import BrazilMapSvg from "../components/BrazilMapSvg.jsx";
 
 export default function InfluenceDistributionScreen({
@@ -18,6 +19,15 @@ export default function InfluenceDistributionScreen({
     onRemoveDistribution,
     onConfirm,
 }) {
+    useEffect(() => {
+        if (distributionTerritory?.territory_id) {
+            setDistributionAmount(0);
+        }
+    }, [
+        distributionTerritory?.territory_id,
+        setDistributionAmount,
+    ]);
+
     const totalPendingInfluence = Object.values(
         pendingDistributions
     ).reduce((total, amount) => total + Number(amount || 0), 0);
@@ -26,6 +36,8 @@ export default function InfluenceDistributionScreen({
         0,
         Number(me?.match_influence ?? 0) - totalPendingInfluence
     );
+
+    const savedDistributions = Object.entries(pendingDistributions);
 
     return (
         <div
@@ -44,14 +56,16 @@ export default function InfluenceDistributionScreen({
                 <div
                     className="polis-distribution-state-card"
                     style={{
-                        backgroundColor: partyColors[me?.party_id] ?? "#30C067",
+                        backgroundColor:
+                            partyColors[me?.party_id] ?? "#30C067",
                         display: "flex",
                     }}
                 >
                     {myTerritories.length > 0 ? (
                         <>
                             <span className="polis-distribution-state-title">
-                                {distributionTerritory?.name ?? "Selecione no mapa"}
+                                {distributionTerritory?.name ??
+                                    "Selecione no mapa"}
 
                                 {distributionTerritory?.region && (
                                     <>
@@ -181,44 +195,50 @@ export default function InfluenceDistributionScreen({
                             <div className="polis-distribution-pending">
                                 <h3>Distribuições salvas</h3>
 
-                                {Object.entries(pendingDistributions).length === 0 ? (
-                                    <p>Nenhum território configurado ainda.</p>
+                                {savedDistributions.length === 0 ? (
+                                    <p>
+                                        Nenhum território configurado ainda.
+                                    </p>
                                 ) : (
                                     <ul>
-                                        {Object.entries(
-                                            pendingDistributions
-                                        ).map(([territoryId, amount]) => {
-                                            const territory = myTerritories.find(
-                                                (item) =>
-                                                    String(item.territory_id) ===
-                                                    String(territoryId)
-                                            );
+                                        {savedDistributions.map(
+                                            ([territoryId, amount]) => {
+                                                const territory =
+                                                    myTerritories.find(
+                                                        (item) =>
+                                                            String(
+                                                                item.territory_id
+                                                            ) ===
+                                                            String(territoryId)
+                                                    );
 
-                                            return (
-                                                <li key={territoryId}>
-                                                    <span>
-                                                        {territory?.name ??
-                                                            `Território ${territoryId}`}
-                                                        : {amount} de influência
-                                                    </span>
+                                                return (
+                                                    <li key={territoryId}>
+                                                        <span>
+                                                            {territory?.name ??
+                                                                `Território ${territoryId}`}
+                                                            : {amount} de
+                                                            influência
+                                                        </span>
 
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            onRemoveDistribution(
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                onRemoveDistribution(
+                                                                    territoryId
+                                                                )
+                                                            }
+                                                            aria-label={`Remover distribuição de ${
+                                                                territory?.name ??
                                                                 territoryId
-                                                            )
-                                                        }
-                                                        aria-label={`Remover distribuição de ${
-                                                            territory?.name ??
-                                                            territoryId
-                                                        }`}
-                                                    >
-                                                        Remover
-                                                    </button>
-                                                </li>
-                                            );
-                                        })}
+                                                            }`}
+                                                        >
+                                                            Remover
+                                                        </button>
+                                                    </li>
+                                                );
+                                            }
+                                        )}
                                     </ul>
                                 )}
                             </div>
@@ -227,9 +247,7 @@ export default function InfluenceDistributionScreen({
                                 type="button"
                                 className="polis-distribution-finish"
                                 onClick={onConfirm}
-                                disabled={
-                                    Object.keys(pendingDistributions).length === 0
-                                }
+                                disabled={savedDistributions.length === 0}
                             >
                                 Finalizar distribuição
                             </button>
