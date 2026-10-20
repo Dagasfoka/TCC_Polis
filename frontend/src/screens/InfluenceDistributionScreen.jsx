@@ -171,7 +171,7 @@ export default function InfluenceDistributionScreen({
                                 
                             </div>
 
-                            <div className="polis-distribution-finish-container">
+                            <div>
                                 <button
                                     type="button"
                                     className="polis-distribution-finish"
