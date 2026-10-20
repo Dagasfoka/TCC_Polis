@@ -43,7 +43,7 @@ export default function DemoGameScreen({
   const [showInitialDistribution, setShowInitialDistribution] = useState(false);
   const [distributionConfirmed, setDistributionConfirmed] = useState(false);
   const [distributionTerritoryId, setDistributionTerritoryId] = useState("");
-  const [distributionAmount, setDistributionAmount] = useState(200);
+  const [distributionAmount, setDistributionAmount] = useState(0);
   const [showVictoryScreen, setShowVictoryScreen] = useState(false);
   const [showQuestionPreview, setShowQuestionPreview] = useState(false);
   const [previewQuestion, setPreviewQuestion] = useState(null);
