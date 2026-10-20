@@ -90,7 +90,7 @@ export default function DemoGameScreen({
             String(territory.territory_id) ===
             String(distributionTerritoryId)
     ) ?? myTerritories[0] ?? null;
-    
+
   useEffect(() => {
     if (!diceAnimation?.rolling) return undefined;
 
@@ -183,7 +183,7 @@ export default function DemoGameScreen({
 
     if (
       !Number.isInteger(distributionAmountValue) ||
-      distributionAmountValue <= 0
+      distributionAmountValue < 0
     ) {
       showGameNotice(
         "error",
