@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   createPrivateRoom,
   joinRandomRoom,
@@ -7,7 +7,7 @@ import {
 } from "../service/api.jsx";
 import { getAvatarImage } from "../utils/avatarAssets.js";
 
-export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate}) {
+export default function Menu({ player, onEnterRoom, onLogout }) {
 
   const avatars = [
     "avatar_1",
@@ -22,40 +22,28 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate}) {
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(player?.avatar_id || null);
 
-  useEffect(() => {
-  setSelectedAvatar(player?.avatar_id ?? null);
-}, [player?.avatar_id]);
-
   async function handleChooseAvatar(avatarId) {
-  try {
-    setLoading(true);
-    setError("");
+    try {
+      setLoading(true);
+      setError("");
 
-    const updatedPlayer = await chooseAvatar(
-      player.player_id,
-      avatarId
-    );
+      const updatedPlayer = await chooseAvatar(
+        player.player_id,
+        avatarId
+      );
 
-    const newAvatarId = updatedPlayer?.avatar_id ?? avatarId;
+      console.log("PLAYER ATUALIZADO:", updatedPlayer);
 
-    setSelectedAvatar(newAvatarId);
 
-    onPlayerUpdate({
-      ...player,
-      ...updatedPlayer,
-      avatar_id: newAvatarId,
-    });
+      setSelectedAvatar(updatedPlayer.avatar_id);
+      setShowAvatarModal(false);
 
-    console.log("PLAYER ATUALIZADO:", updatedPlayer);
-
-    setShowAvatarModal(false);
-
-  } catch (error) {
-    setError(error.message);
-  } finally {
-    setLoading(false);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   }
-}
   // Criar sala privada
   async function handleCreatePrivateRoom() {
     try {
