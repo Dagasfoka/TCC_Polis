@@ -97,7 +97,7 @@ export default function InfluenceDistributionScreen({
                                     className="polis-distribution-step"
                                     disabled={
                                         !distributionTerritory ||
-                                        distributionAmountValue <= 0
+                                        distributionAmountValue < 0
                                     }
                                     onClick={() =>
                                         setDistributionAmount(

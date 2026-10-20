@@ -92,6 +92,24 @@ export default function DemoGameScreen({
     ) ?? myTerritories[0] ?? null;
 
   useEffect(() => {
+      if (myTerritories.length === 0) {
+          return;
+      }
+
+      const selectedTerritoryExists = myTerritories.some(
+          (territory) =>
+              String(territory.territory_id) ===
+              String(distributionTerritoryId)
+      );
+
+      if (!selectedTerritoryExists) {
+          setDistributionTerritoryId(
+              String(myTerritories[0].territory_id)
+          );
+      }
+  }, [myTerritories, distributionTerritoryId]);
+
+  useEffect(() => {
     if (!diceAnimation?.rolling) return undefined;
 
     const intervalId = window.setInterval(() => {
@@ -360,7 +378,9 @@ export default function DemoGameScreen({
     .reduce((total, amount) => total + Number(amount || 0), 0);
 
   const currentTerritoryPendingInfluence = Number(
-    pendingDistributions[distributionTerritoryId] ?? 0
+      pendingDistributions[
+          String(distributionTerritory?.territory_id ?? "")
+      ] ?? 0
   );
 
   const maxDistributionInfluence = Math.max(
