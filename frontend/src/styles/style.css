@@ -3054,7 +3054,7 @@ html,
   position: relative;
   width: min(1200px, 96vw, 165vh);
   aspect-ratio: 1585 / 891;
-  transform: translateY(-2vh);
+  transform: translate(-20px, -2vh);
 }
 
 .polis-distribution-art {
@@ -3432,7 +3432,6 @@ html,
 }
 
 .polis-victory-open {
-  display: none !important;
   position: fixed;
   top: 50%;
   left: 12px;
@@ -3449,6 +3448,10 @@ html,
   font-weight: 400;
   cursor: pointer;
   transform: translateY(-50%);
+}
+
+.polis-game-page > .polis-victory-open {
+  display: none !important;
 }
 
 .polis-victory-open img {
