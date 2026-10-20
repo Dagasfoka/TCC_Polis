@@ -1876,7 +1876,7 @@ html,
   width: min(920px, 94vw, 155vh);
   height: min(88vh, 760px);
   max-height: 88vh;
-  padding: clamp(125px, 15vw, 150px) 6% 4%;
+  padding: clamp(145px, calc(15vw + 20px), 170px) 6% 4% 3%;
   overflow: hidden;
   border: 0;
   border-radius: 28px;
@@ -1902,26 +1902,31 @@ html,
   z-index: 1;
 }
 
-.polis-action-result-card .polis-last-action-header {
+.polis-action-result-action-section {
   flex: 0 0 auto;
-  position: static;
-  align-items: flex-start;
-  justify-content: flex-start;
-  min-height: 0;
-  padding: 0 0 8px;
+  padding-bottom: 20px;
   border-bottom: 2px solid #000;
 }
 
-.polis-action-result-title-block {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 5px;
-  max-width: 72%;
+.polis-action-result-card > .polis-action-result-outcome {
+  position: absolute;
+  top: calc(3% - 60px);
+  right: calc(5% - 150px);
+  z-index: 3;
+  width: clamp(439px, 58.66vw, 714px);
+  margin: 0;
 }
 
-.polis-action-result-territory {
+.polis-action-result-card > .polis-action-result-outcome img {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+}
+
+.polis-action-result-section-heading {
   display: inline-block;
+  margin-bottom: 8px;
   padding: 5px 12px;
   color: #fff;
   background: #000;
@@ -1929,8 +1934,15 @@ html,
   font-weight: 800;
 }
 
-.polis-action-result-card .polis-last-action-header .polis-action-result-action-title {
-  display: inline-block;
+.polis-action-result-territory {
+  display: block;
+  margin-bottom: 4px;
+  font-size: clamp(15px, 1.6vw, 19px);
+  font-weight: 800;
+}
+
+.polis-action-result-action-title {
+  display: block;
   max-width: 100%;
   margin: 0;
   padding: 0;
@@ -1941,23 +1953,8 @@ html,
   line-height: 1.1;
 }
 
-.polis-action-result-outcome {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  margin: 8px 0 12px;
-}
-
-.polis-action-result-stamp {
-  display: block;
-  position: static !important;
-  width: clamp(180px, 25vw, 280px);
-  max-height: 95px;
-  object-fit: contain;
-}
-
 .polis-action-result-description {
-  margin: 0;
+  margin: 6px 0 0;
   line-height: 1.4;
 }
 
@@ -1965,16 +1962,14 @@ html,
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin: 6px 0 14px;
+  margin: 36px 0 34px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #000;
 }
 
-.polis-action-result-state-heading {
+.polis-action-result-state-change .polis-action-result-section-heading,
+.polis-action-result-status-section .polis-action-result-section-heading {
   margin-bottom: 8px;
-  padding: 5px 12px;
-  color: #fff;
-  background: #000;
-  font-size: clamp(16px, 1.8vw, 22px);
-  font-weight: 800;
 }
 
 .polis-action-result-state-flow {
@@ -1983,19 +1978,44 @@ html,
   gap: clamp(12px, 3vw, 30px);
 }
 
-.polis-action-result-party-ball {
+.polis-action-result-state-marker {
   display: flex;
-  width: clamp(64px, 8vw, 86px);
-  aspect-ratio: 1;
+  flex: 0 1 170px;
+  flex-direction: column;
+  align-items: center;
+  width: clamp(110px, 15vw, 170px);
+}
+
+.polis-action-result-influence-value {
+  margin-bottom: -5px;
+  color: #fff;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1;
+  text-align: center;
+  -webkit-text-stroke: 8px #000;
+  paint-order: stroke fill;
+}
+
+.polis-action-result-state-shape {
+  display: block;
+  width: clamp(110px, 15vw, 170px);
+  height: clamp(90px, 13vw, 145px);
+  overflow: visible;
+  flex: 0 1 170px;
+}
+
+.polis-action-result-state-fallback {
+  display: flex;
+  width: clamp(110px, 15vw, 170px);
+  height: clamp(90px, 13vw, 145px);
   align-items: center;
   justify-content: center;
-  border: 2px solid #17130f;
-  border-radius: 50%;
+  clip-path: polygon(20% 5%, 82% 0, 100% 26%, 83% 88%, 51% 100%, 7% 75%, 0 37%);
   color: #fff;
-  font-size: clamp(20px, 2.3vw, 28px);
-  font-weight: 900;
-  line-height: 1;
-  text-shadow: 0 1px 2px #000, 1px 0 2px #000, -1px 0 2px #000;
+  font-size: 32px;
+  font-weight: 400;
+  text-shadow: 0 1px 2px #000, 1px 0 2px #000, -1px 0 2px #000, 0 -1px 2px #000;
 }
 
 .polis-action-result-arrow {
@@ -2003,15 +2023,9 @@ html,
   font-weight: 800;
 }
 
-.polis-action-result-card .polis-last-action-content {
+.polis-action-result-status-section {
+  flex: 0 0 auto;
   color: #17130f;
-  min-height: 0;
-  padding-top: 8px;
-  overflow: hidden;
-}
-
-.polis-action-result-card .polis-last-action-response {
-  background: rgba(0, 0, 0, 0.08);
 }
 
 .polis-action-result-card .polis-last-action-status {
@@ -2024,34 +2038,78 @@ html,
 .polis-action-result-card .polis-action-result-close {
   position: absolute;
   top: auto;
-  right: 5%;
-  bottom: 7%;
+  right: 4%;
+  bottom: 4%;
   left: auto;
-  width: auto;
+  display: flex;
+  width: clamp(150px, 22vw, 230px);
   height: auto;
+  aspect-ratio: 400 / 110;
+  align-items: center;
+  justify-content: center;
   margin: 0;
-  padding: 8px 20px;
+  padding: 0;
   border: 0;
   border-radius: 0;
-  color: #fff;
-  background: #000;
-  font-size: 16px;
-  font-weight: 800;
+  background: transparent;
+  cursor: pointer;
 }
 
-.polis-action-result-values > div {
-  min-width: 125px;
+.polis-action-result-card .polis-action-result-close img {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: none;
+  transition: opacity 220ms ease;
+}
+
+.polis-action-result-card .polis-action-result-close:hover,
+.polis-action-result-card .polis-action-result-close:focus-visible {
+  background: transparent;
+  box-shadow: none;
+  filter: none;
+}
+
+.polis-action-result-card .polis-action-result-close .continue-hover {
+  opacity: 0;
+}
+
+.polis-action-result-card .polis-action-result-close:hover .continue-normal,
+.polis-action-result-card .polis-action-result-close:focus-visible .continue-normal {
+  opacity: 0;
+}
+
+.polis-action-result-card .polis-action-result-close:hover .continue-hover,
+.polis-action-result-card .polis-action-result-close:focus-visible .continue-hover {
+  opacity: 1;
+}
+
+.polis-action-result-card .polis-action-result-values > div {
+  width: max-content;
+  max-width: none;
+  min-width: 0;
+  flex: 0 0 auto;
+  box-sizing: border-box;
   align-items: center;
+  justify-content: center;
+  padding: 14px 18px;
   border-radius: 0 !important;
   color: #fff;
   text-align: center;
   background: #284fb3;
 }
 
+.polis-action-result-values > div > span:first-child {
+  font-size: 14px;
+}
+
 .polis-action-result-values .result-influence { background: #284fb3; }
-.polis-action-result-values .result-money-positive { background: #2f7355; }
-.polis-action-result-values .result-money-negative { background: #b63838; }
-.polis-action-result-values .result-corruption { background: #581f72; }
+.polis-action-result-card .polis-action-result-values > div.result-money-positive { background: #2f7355 !important; }
+.polis-action-result-card .polis-action-result-values > div.result-money-negative { background: #b63838 !important; }
+.polis-action-result-card .polis-action-result-values > div.result-corruption { background: #581f72 !important; }
 
 .polis-action-result-values > div span {
   color: #fff;
@@ -2059,8 +2117,10 @@ html,
 }
 
 .polis-action-result-values > div .result-value-number {
-  font-size: clamp(22px, 2.4vw, 30px);
-  font-weight: 800;
+  width: max-content;
+  white-space: nowrap;
+  font-size: clamp(30px, 3.4vw, 42px) !important;
+  font-weight: 400;
   line-height: 1;
 }
 

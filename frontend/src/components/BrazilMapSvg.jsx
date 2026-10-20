@@ -16,7 +16,7 @@ const DEFAULT_PARTY_COLORS = {
   PD: "#E0A12A",
 };
 
-const LABEL_POSITIONS = {
+export const LABEL_POSITIONS = {
   AC: { x: 67.3, y: 279.6 }, RO: { x: 209.2, y: 310.2 }, AM: { x: 182.2, y: 166.7 },
   PA: { x: 393.9, y: 167.1 }, MA: { x: 537.1, y: 198.6 }, PI: { x: 580.2, y: 243 },
   CE: { x: 657.4, y: 203.3 }, PE: { x: 680.5, y: 252.5 }, AL: { x: 691.8, y: 292.5 },

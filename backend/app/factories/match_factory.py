@@ -4,7 +4,15 @@ from backend.app.repositories.db.territory_repo import TerritoryRepo
 from backend.app.gateways.player_gateways import PlayerGateway
 from backend.app.models.redis.match import Match
 import random,time
-TAX_PER_ROUND = 10
+TAX_PER_ROUND = 400
+
+REGION_BONUS = {
+    "Norte": 100,
+    "Nordeste": 150,
+    "Centro_Oeste": 100,
+    "Sudeste": 100,
+    "Sul":70
+}
 class MatchFactory: 
     def __init__(self) -> None:
         self.match_repository=MatchRepo()
@@ -106,8 +114,25 @@ class MatchFactory:
         )
     def distribute_round_tax(self, match_dict):
         for player in match_dict["players"]:
-            player["match_money"] += TAX_PER_ROUND
+            region_bonus = self.calculate_region_bonus(match_dict, player["player_id"])
+            total_money = TAX_PER_ROUND + region_bonus
+            player["match_money"] += total_money
         return match_dict
     def start_mission_reveal(self, match_dict):
         match_dict["phase"] = "mission_reveal"
         match_dict["mission_reveal_ends_at"] = time.time() + 15
+
+    def calculate_region_bonus(self, match_dict, player_id):
+        territories = match_dict["territories"]
+        regions = {}
+        for territory in territories:
+            region = territory["region"]
+            if region not in regions:
+                regions[region] = []
+            regions[region].append(territory)
+        bonus = 0
+        for region, region_territories in regions.items():
+            controls_region = all(territory["owner_id"] == player_id for territory in region_territories)
+            if controls_region:
+                bonus += REGION_BONUS.get(region, 0)
+        return bonus

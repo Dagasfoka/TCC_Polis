@@ -255,10 +255,11 @@ export default function App() {
       {screen === "menu" &&
         player && (
           <div className="non-game-screen-zoom">
-            <MenuScreen
-              player={player}
-              onEnterRoom={handleEnterRoom}
-              onLogout={handleLogout}
+          <MenuScreen
+            player={player}
+            onEnterRoom={handleEnterRoom}
+            onLogout={handleLogout}
+            onPlayerUpdate={setPlayer}
             />
           </div>
         )}

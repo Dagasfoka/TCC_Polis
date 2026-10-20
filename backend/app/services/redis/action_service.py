@@ -373,6 +373,12 @@ def execute_attack_roll(
             money_generated -= option["cost"]
             response = option["responses"]["low_critical"]
 
+        if option["corruption"] > 10:
+            corruption_level = (option["corruption"] - 1) // 10
+            penalty_multiplier = corruption_level * 0.05
+
+            influence_generated -= option["influence"] * penalty_multiplier
+
     conquered = False
     leftover = 0
 
@@ -423,7 +429,7 @@ def execute_attack_roll(
             if target["current_influence"] <= 0:
                     target["current_influence"] = 1
 
-    if negative_influence > 0:
+    if negative_influence < 0:
         influence_generated -= negative_influence
 
     if corruption_generated < 0 and not success:
