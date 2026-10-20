@@ -20,6 +20,8 @@ export default function InfluenceDistributionScreen({
     onConfirm,
 }) {
 
+    
+
     useEffect(() => {
         if (!distributionTerritory) {
             setDistributionAmount(0);
