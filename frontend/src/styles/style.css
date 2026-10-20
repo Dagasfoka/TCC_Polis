@@ -2742,7 +2742,10 @@ html,
   transform-origin: center;
 }
 
-/* Tela inicial de distribuição, baseada na arte do protótipo jogo.html */
+/* =========================================================
+   TELA INICIAL DE DISTRIBUIÇÃO
+   ========================================================= */
+
 .polis-distribution-overlay {
   position: fixed;
   inset: 0;
@@ -2751,7 +2754,7 @@ html,
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(0, 0, 0, .75);
+  background: rgba(0, 0, 0, 0.75);
 }
 
 .polis-distribution-panel {
@@ -2855,26 +2858,47 @@ html,
   font-weight: 400;
 }
 
+/* Controles de distribuição */
 .polis-distribution-controls {
   position: absolute;
   top: 46%;
   left: 20px;
+  right: 20px;
+  width: auto;
+  height: 46px;
+  min-width: 0;
   display: flex;
   align-items: stretch;
-  width: calc(100% - 40px);
-  min-width: 0;
-  height: 46px;
+  gap: 0;
   transform: translateY(-50%);
-  background: #fff;
+  box-sizing: border-box;
   overflow: hidden;
+  background: #fff;
+  z-index: 5;
+
+  /* A área vazia do container não intercepta cliques. */
+  pointer-events: none;
+}
+
+/* Apenas os controles recebem eventos de clique. */
+.polis-distribution-controls > button,
+.polis-distribution-controls > input {
+  position: relative;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: auto;
 }
 
 .polis-distribution-step {
   flex: 0 0 46px;
   width: 46px;
-  height: 100%;
-  aspect-ratio: 1 / 1;
-  border: 0;
+  min-width: 46px;
+  height: 46px;
+  padding: 0;
+  border: none;
+  outline: none;
+  box-sizing: border-box;
   background: #fff;
   color: #000;
   font-size: 28px;
@@ -2888,20 +2912,23 @@ html,
 }
 
 .polis-distribution-step:disabled {
-  opacity: .5;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .polis-distribution-amount {
   flex: 1 1 0%;
-  width: 0 !important;
+  width: 0;
   min-width: 0;
   max-width: 100%;
-  height: 100%;
-  box-sizing: border-box;
+  height: 46px;
+  margin: 0;
   padding: 0 2px;
-  border: 0;
-  outline: 0;
+  border: none;
+  outline: none;
+  border-radius: 0;
+  box-shadow: none;
+  box-sizing: border-box;
   appearance: textfield;
   background: #fff;
   color: #000;
@@ -2918,40 +2945,50 @@ html,
 
 .polis-distribution-confirm {
   position: relative;
-  z-index: 2;
-  flex: 0 0 46px !important;
-  width: 46px !important;
+  z-index: 6;
+  flex: 0 0 46px;
+  width: 46px;
   min-width: 46px;
   max-width: 46px;
   height: 46px;
-  aspect-ratio: 1 / 1;
+  margin: 0;
+  padding: 4px;
+  border: none;
+  outline: none;
+  border-radius: 0;
+  box-shadow: none;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  border: 0;
-  background: #fff;
+  background: #000;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .polis-distribution-confirm img {
   display: block;
   width: 100%;
   height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
   object-fit: contain;
   filter: invert(1);
+  pointer-events: none;
+  user-select: none;
 }
 
 .polis-distribution-confirm:disabled {
   cursor: not-allowed;
-  opacity: .48;
+  opacity: 0.48;
 }
 
 .polis-distribution-empty {
   font-size: clamp(11px, 1.1vw, 15px);
 }
 
+/* Mapa */
 .polis-distribution-map-wrap {
   position: absolute;
   top: 9%;
@@ -2973,27 +3010,33 @@ html,
   transform: translateY(4%);
   filter: none;
 }
+
+/* Botão de finalizar */
 .polis-distribution-finish-container {
-    position: relative;
-    margin-top: 5px;
-    padding-top: 8px;
+  position: relative;
+  margin-top: 5px;
+  padding-top: 8px;
 }
 
 .polis-distribution-finish-container .polis-distribution-finish {
-    width: 100%;
-    min-height: 38px;
-    margin-top: 24px;
-    padding: 8px 6px;
-    font-size: 18px;
-    font-weight: 700;
-    box-sizing: border-box;
-    position: relative;
-    top: 0;
+  position: relative;
+  top: 0;
+  width: 100%;
+  min-height: 38px;
+  margin-top: 24px;
+  padding: 8px 6px;
+  font-size: 18px;
+  font-weight: 700;
+  box-sizing: border-box;
 }
 
 .polis-distribution-map .polis-transport-markers path {
   stroke: #000 !important;
 }
+
+/* =========================================================
+   RESPONSIVO — DISTRIBUIÇÃO
+   ========================================================= */
 
 @media (max-width: 600px) {
   .polis-distribution-overlay {
@@ -3002,17 +3045,6 @@ html,
 
   .polis-distribution-panel {
     width: min(98vw, 142vh);
-  }
-  .polis-distribution-finish-container {
-      left: 10px;
-      right: 10px;
-      bottom: 5px;
-  }
-
-  .polis-distribution-finish-container .polis-distribution-finish {
-      width: 100%;
-      font-size: 12px;
-      padding: 6px 4px;
   }
 
   .polis-distribution-state-card {
@@ -3035,32 +3067,27 @@ html,
   .polis-distribution-controls {
     top: 44%;
     left: 10px;
-    width: calc(100% - 20px);
+    right: 10px;
+    width: auto;
     height: 34px;
-    min-width: 0;
-    align-items: stretch;
-    flex-basis: auto;
   }
 
   .polis-distribution-step {
     flex: 0 0 34px;
     width: 34px;
     min-width: 34px;
+    height: 34px;
     font-size: 22px;
   }
 
   .polis-distribution-amount {
-    flex: 1 1 0%;
-    width: 0 !important;
-    min-width: 0;
-    max-width: 100%;
-    box-sizing: border-box;
+    height: 34px;
     font-size: 12px;
   }
 
   .polis-distribution-confirm {
-    flex: 0 0 34px !important;
-    width: 34px !important;
+    flex: 0 0 34px;
+    width: 34px;
     min-width: 34px;
     max-width: 34px;
     height: 34px;
@@ -3091,6 +3118,17 @@ html,
     height: 74%;
   }
 
+  .polis-distribution-finish-container {
+    left: 10px;
+    right: 10px;
+    bottom: 5px;
+  }
+
+  .polis-distribution-finish-container .polis-distribution-finish {
+    width: 100%;
+    font-size: 12px;
+    padding: 6px 4px;
+  }
 }
 
 .polis-victory-open {
