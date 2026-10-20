@@ -86,7 +86,7 @@ class MatchFactory:
         match_dict["current_turn_player_id"] = (players[next_index]["player_id"])
         for player in match_dict["players"]:
             if player["player_id"] == match_dict["current_turn_player_id"]:
-                player["match_influence"] = self.calculate_region_bonus(match_dict, match_dict["current_turn_player_id"])
+                player["match_influence"] += self.calculate_region_bonus(match_dict, match_dict["current_turn_player_id"])
         return match_dict
     def change_key_value(self,match_dict,key,newValue):
         match_dict[key]=newValue
