@@ -57,6 +57,7 @@ export default function DemoGameScreen({
   const [diceAnimation, setDiceAnimation] = useState(null);
   const [questionFeedback, setQuestionFeedback] = useState(null);
 
+  const [pendingDistributions, setPendingDistributions] = useState({});
 
   const wsRef = useRef(null);
   const winnerAlertShownRef = useRef(false);
@@ -64,6 +65,7 @@ export default function DemoGameScreen({
   const gameNoticeTimerRef = useRef(null);
   const skipTurnTimerRef = useRef(null);
   const lastSkippedTurnRef = useRef(null);
+  const previousRoundRef = useRef(null);
   const lastActionNoticeRef = useRef(null);
   const gameNoticeIdRef = useRef(0);
   const localActionPendingRef = useRef(false);
@@ -77,13 +79,15 @@ export default function DemoGameScreen({
 
   const players = matchState?.players ?? [];
   const territories = matchState?.territories ?? [];
+
   const myTerritories = territories.filter(
     (territory) => territory.owner_id === matchState?.your_player_id
   );
-  const distributionTerritory =
-    myTerritories.find((territory) => territory.territory_id === distributionTerritoryId) ??
-    myTerritories[0] ??
-    null;
+
+  const distributionTerritory = myTerritories.find(
+    (territory) =>
+      String(territory.territory_id) === String(distributionTerritoryId)
+  ) ?? null;
 
   useEffect(() => {
     if (!diceAnimation?.rolling) return undefined;
@@ -91,9 +95,15 @@ export default function DemoGameScreen({
     const intervalId = window.setInterval(() => {
       setDiceAnimation((current) => {
         if (!current?.rolling) return current;
+
         if (current.steps >= 18) {
-          return { ...current, roll: current.finalRoll, rolling: false };
+          return {
+            ...current,
+            roll: current.finalRoll,
+            rolling: false,
+          };
         }
+
         return {
           ...current,
           roll: Math.floor(Math.random() * 20) + 1,
@@ -106,11 +116,20 @@ export default function DemoGameScreen({
   }, [diceAnimation?.rolling]);
 
   useEffect(() => {
-    if (!diceAnimation || diceAnimation.rolling || diceAnimation.outcomeVisible) return undefined;
+    if (
+      !diceAnimation ||
+      diceAnimation.rolling ||
+      diceAnimation.outcomeVisible
+    ) {
+      return undefined;
+    }
 
     const timeoutId = window.setTimeout(() => {
-      setDiceAnimation((current) => current ? { ...current, outcomeVisible: true } : current);
+      setDiceAnimation((current) =>
+        current ? { ...current, outcomeVisible: true } : current
+      );
     }, 450);
+
     return () => window.clearTimeout(timeoutId);
   }, [diceAnimation?.rolling, diceAnimation?.outcomeVisible]);
 
@@ -119,23 +138,79 @@ export default function DemoGameScreen({
 
     const timeoutId = window.setTimeout(() => {
       setDiceAnimation(null);
+
       if (pendingCompletionNoticesRef.current.length > 0) {
         showGameNotices(pendingCompletionNoticesRef.current);
         pendingCompletionNoticesRef.current = [];
       }
     }, 1800);
+
     return () => window.clearTimeout(timeoutId);
   }, [diceAnimation?.rolling]);
 
   useEffect(() => {
     if (!questionFeedback) return undefined;
 
-    const timeoutId = window.setTimeout(() => closeQuestionFeedback(), 30000);
+    const timeoutId = window.setTimeout(
+      () => closeQuestionFeedback(),
+      30000
+    );
+
     return () => window.clearTimeout(timeoutId);
   }, [questionFeedback]);
 
   function showGameNotice(kind, message) {
     showGameNotices([{ kind, message }]);
+  }
+
+  function handleSelectDistributionTerritory(territoryId) {
+    setDistributionTerritoryId(territoryId);
+
+    setDistributionAmount(
+      pendingDistributions[territoryId] ?? 0
+    );
+
+    setDistributionConfirmed(false);
+  }
+
+  function savePendingDistribution() {
+    if (!distributionTerritory) {
+      showGameNotice("error", "Selecione um território.");
+      return;
+    }
+
+    if (
+      !Number.isInteger(distributionAmountValue) ||
+      distributionAmountValue <= 0
+    ) {
+      showGameNotice(
+        "error",
+        "Informe uma quantidade inteira e positiva."
+      );
+      return;
+    }
+
+    setPendingDistributions((previous) => ({
+      ...previous,
+      [distributionTerritory.territory_id]: distributionAmountValue,
+    }));
+
+    showGameNotice(
+      "success",
+      "Distribuição do território salva."
+    );
+  }
+
+  function removePendingDistribution(territoryId) {
+    setPendingDistributions((previous) => {
+      const updated = { ...previous };
+      delete updated[territoryId];
+      return updated;
+    });
+
+    if (String(distributionTerritoryId) === String(territoryId)) {
+      setDistributionAmount(0);
+    }
   }
 
   function showGameNotices(notices) {
@@ -146,10 +221,16 @@ export default function DemoGameScreen({
     }
 
     let noticeIndex = 0;
+
     const showNextNotice = () => {
-      setGameNotice({ ...notices[noticeIndex], id: ++gameNoticeIdRef.current });
+      setGameNotice({
+        ...notices[noticeIndex],
+        id: ++gameNoticeIdRef.current,
+      });
+
       gameNoticeTimerRef.current = setTimeout(() => {
         noticeIndex += 1;
+
         if (noticeIndex < notices.length) {
           showNextNotice();
         } else {
@@ -169,7 +250,9 @@ export default function DemoGameScreen({
       roll: Math.floor(Math.random() * 20) + 1,
       finalRoll: Number(result.roll),
       success: Boolean(result.success),
-      threshold: Number(result.minimum_roll_to_succeed ?? result.success_chance ?? 0),
+      threshold: Number(
+        result.minimum_roll_to_succeed ?? result.success_chance ?? 0
+      ),
       rolling: true,
       outcomeVisible: false,
       steps: 0,
@@ -180,8 +263,10 @@ export default function DemoGameScreen({
     setQuestionFeedback(null);
     setPendingQuestion(null);
     setPendingActionInfo(null);
+
     const result = pendingDiceResultRef.current;
     pendingDiceResultRef.current = null;
+
     if (result) startDiceAnimation(result);
   }
 
@@ -191,33 +276,56 @@ export default function DemoGameScreen({
     }
 
     const signature = JSON.stringify(result);
-    if (receivedInitialStateRef.current && signature !== lastActionNoticeRef.current && localActionPendingRef.current) {
-      if (Number.isFinite(Number(result.roll)) && lastDiceResultRef.current !== signature) {
+
+    if (
+      receivedInitialStateRef.current &&
+      signature !== lastActionNoticeRef.current &&
+      localActionPendingRef.current
+    ) {
+      if (
+        Number.isFinite(Number(result.roll)) &&
+        lastDiceResultRef.current !== signature
+      ) {
         lastDiceResultRef.current = signature;
+
         const answeredQuestion = answeredQuestionRef.current;
-        if (answeredQuestion && typeof result.question_was_correct === "boolean") {
+
+        if (
+          answeredQuestion &&
+          typeof result.question_was_correct === "boolean"
+        ) {
           pendingDiceResultRef.current = result;
+
           setQuestionFeedback({
             question: answeredQuestion.question,
             selectedAnswer: answeredQuestion.selectedAnswer,
             correctAnswer: result.correct_answer,
           });
+
           answeredQuestionRef.current = null;
         } else {
           startDiceAnimation(result);
         }
       }
-      const threshold = Number(result.minimum_roll_to_succeed ?? result.success_chance ?? 0);
-      const actionSucceeded = typeof result.success === "boolean"
-        ? result.success
-        : Number(result.roll) >= threshold;
+
+      const threshold = Number(
+        result.minimum_roll_to_succeed ?? result.success_chance ?? 0
+      );
+
+      const actionSucceeded =
+        typeof result.success === "boolean"
+          ? result.success
+          : Number(result.roll) >= threshold;
+
       pendingCompletionNoticesRef.current = [
         actionSucceeded
           ? { kind: "success", message: "Ação concluída!" }
           : { kind: "error", message: "Ação fracassada!" },
       ];
+
       localActionPendingRef.current = false;
     }
+
     lastActionNoticeRef.current = signature;
   }
 
@@ -246,17 +354,27 @@ export default function DemoGameScreen({
     );
   }, [matchState, players]);
 
+  const totalPendingInfluence = Object.values(pendingDistributions)
+    .reduce((total, amount) => total + Number(amount || 0), 0);
+
+  const currentTerritoryPendingInfluence = Number(
+    pendingDistributions[distributionTerritoryId] ?? 0
+  );
+
   const maxDistributionInfluence = Math.max(
     0,
     Number(me?.match_influence ?? 0)
+      - totalPendingInfluence
+      + currentTerritoryPendingInfluence
   );
+
   const distributionAmountValue =
     distributionAmount === ""
       ? 0
       : Math.min(
-        maxDistributionInfluence,
-        Math.max(0, Number(distributionAmount) || 0)
-      );
+          maxDistributionInfluence,
+          Math.max(0, Number(distributionAmount) || 0)
+        );
 
   const isMyTurn =
     Boolean(matchState) &&
@@ -281,8 +399,7 @@ export default function DemoGameScreen({
   }, [players, matchState?.current_turn_player_id]);
 
   const playerPositions = useMemo(() => {
-    // IMPORTANTE:
-    // os cards ficam sempre nas mesmas posições.
+    // Os cards ficam sempre nas mesmas posições.
     // A troca de turno altera apenas o destaque e o rótulo "Próximo".
     return players.slice(0, 4);
   }, [players]);
@@ -294,11 +411,13 @@ export default function DemoGameScreen({
         (territory) => territory.owner_id === player.player_id
       ).length,
     }));
+
     const winnerId = matchState?.winner_id;
 
     return rankedPlayers.sort((a, b) => {
       if (winnerId && a.player_id === winnerId) return -1;
       if (winnerId && b.player_id === winnerId) return 1;
+
       return (
         b.controlledTerritories - a.controlledTerritories ||
         (b.match_money ?? 0) - (a.match_money ?? 0) ||
@@ -314,7 +433,6 @@ export default function DemoGameScreen({
       !winnerAlertShownRef.current
     ) {
       winnerAlertShownRef.current = true;
-
       setShowVictoryScreen(true);
     }
   }
@@ -355,8 +473,6 @@ export default function DemoGameScreen({
 
       setConnected(true);
 
-      // Se havia uma tentativa de reconexão pendente,
-      // ela não é mais necessária.
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;
@@ -382,17 +498,9 @@ export default function DemoGameScreen({
       if (data.type === "territory_selected") {
         console.log("Território selecionado:", data.payload);
 
-        setSelectedTerritory(
-          data.payload.territory
-        );
-
-        setAvailableActions(
-          data.payload.available_actions
-        );
-
-        setActionType(
-          data.payload.action_type
-        );
+        setSelectedTerritory(data.payload.territory);
+        setAvailableActions(data.payload.available_actions);
+        setActionType(data.payload.action_type);
 
         return;
       }
@@ -401,23 +509,12 @@ export default function DemoGameScreen({
         setPendingQuestion(data.question);
 
         setPendingActionInfo({
-          target_territory_id:
-            data.target_territory_id,
-
-          territory_id:
-            data.territory_id,
-
-          territory_name:
-            data.territory_name,
-
-          option_id:
-            data.option_id,
-
-          title:
-            data.title,
-
-          success_chance:
-            data.success_chance,
+          target_territory_id: data.target_territory_id,
+          territory_id: data.territory_id,
+          territory_name: data.territory_name,
+          option_id: data.option_id,
+          title: data.title,
+          success_chance: data.success_chance,
         });
 
         return;
@@ -425,7 +522,6 @@ export default function DemoGameScreen({
 
       if (data.type === "match_state") {
         const newMatchState = data.payload;
-
         const newRound = newMatchState?.round;
 
         if (newRound != null) {
@@ -433,29 +529,40 @@ export default function DemoGameScreen({
             previousRoundRef.current !== null &&
             newRound > previousRoundRef.current
           ) {
-            showGameNotice("Nova rodada! O dinheiro foi distribuído aos jogadores.");
+            showGameNotice(
+              "success",
+              "Nova rodada! O dinheiro foi distribuído aos jogadores."
+            );
           }
 
           previousRoundRef.current = newRound;
         }
+
         const actionResult = newMatchState?.last_action_result;
-        const skippedPlayerId = newMatchState?.skipped_player_id ?? null;
+        const skippedPlayerId =
+          newMatchState?.skipped_player_id ?? null;
 
         if (!skippedPlayerId || !receivedInitialStateRef.current) {
           lastSkippedTurnRef.current = null;
         } else {
-          const skippedTurnKey = `${skippedPlayerId}:${newMatchState?.current_turn_player_id ?? ""}`;
+          const skippedTurnKey =
+            `${skippedPlayerId}:${newMatchState?.current_turn_player_id ?? ""}`;
+
           if (lastSkippedTurnRef.current !== skippedTurnKey) {
             lastSkippedTurnRef.current = skippedTurnKey;
+
             const skippedPlayer = newMatchState.players?.find(
               (player) => player.player_id === skippedPlayerId
             );
+
             setSkipTurnMessage(
               `${skippedPlayer?.username ?? "O jogador"} não possui dinheiro suficiente. A vez foi pulada.`
             );
+
             if (skipTurnTimerRef.current) {
               clearTimeout(skipTurnTimerRef.current);
             }
+
             skipTurnTimerRef.current = setTimeout(() => {
               setSkipTurnMessage(null);
               skipTurnTimerRef.current = null;
@@ -465,53 +572,45 @@ export default function DemoGameScreen({
 
         if (receivedInitialStateRef.current) {
           notifyActionCompleted(actionResult);
-        } else if (["attack_result", "attack_no_question"].includes(actionResult?.type)) {
+        } else if (
+          ["attack_result", "attack_no_question"].includes(actionResult?.type)
+        ) {
           lastActionNoticeRef.current = JSON.stringify(actionResult);
         }
-        receivedInitialStateRef.current = true;
 
+        receivedInitialStateRef.current = true;
         setMatchState(newMatchState);
 
-        // Atualiza o painel de última ação
         if (newMatchState?.last_action_result) {
-          setLastActionResult(
-            newMatchState.last_action_result
-          );
+          setLastActionResult(newMatchState.last_action_result);
         }
 
         handleWinnerAlert(newMatchState);
 
         return;
       }
-
 
       if (data.result?.type === "attack_result") {
         const newMatchState = data.match;
 
         notifyActionCompleted(data.result);
-
         setMatchState(newMatchState);
-
-        // Atualiza o painel imediatamente
         setLastActionResult(data.result);
-
         handleWinnerAlert(newMatchState);
 
         return;
       }
 
-
       if (data.match && data.result) {
         const newMatchState = data.match;
 
         notifyActionCompleted(data.result);
-
         setMatchState(newMatchState);
-
-        // Atualiza o painel imediatamente
         setLastActionResult(data.result);
 
-        if (!["attack_result", "attack_no_question"].includes(data.result?.type)) {
+        if (
+          !["attack_result", "attack_no_question"].includes(data.result?.type)
+        ) {
           setPendingQuestion(null);
           setPendingActionInfo(null);
         }
@@ -529,15 +628,11 @@ export default function DemoGameScreen({
 
         console.error("Erro recebido do servidor:", message);
 
-        /*
-         * IMPORTANTE:
-         *
-         * Um erro de jogada NÃO deve derrubar a conexão.
-         * Apenas mostramos o erro.
-         */
         const normalizedMessage = message.toLowerCase();
+
         if (
-          (normalizedMessage.includes("partida") && normalizedMessage.includes("encontrada")) ||
+          (normalizedMessage.includes("partida") &&
+            normalizedMessage.includes("encontrada")) ||
           normalizedMessage.includes("match not found")
         ) {
           onMatchNotFound?.(message);
@@ -555,10 +650,14 @@ export default function DemoGameScreen({
           normalizedMessage.includes("not supported between instances") ||
           normalizedMessage.includes("nonetype") ||
           normalizedMessage.includes("traceback");
+
         showGameNotice(
           "error",
-          isTechnicalError ? "Não foi possível concluir a ação. Tente novamente." : message
+          isTechnicalError
+            ? "Não foi possível concluir a ação. Tente novamente."
+            : message
         );
+
         localActionPendingRef.current = false;
 
         return;
@@ -568,12 +667,7 @@ export default function DemoGameScreen({
     ws.onerror = (error) => {
       console.error("Erro no WebSocket:", error);
 
-      /*
-       * Não chamamos ws.close() aqui.
-       *
-       * Deixamos o navegador disparar onclose
-       * caso a conexão realmente tenha caído.
-       */
+      // Deixamos o navegador disparar onclose caso a conexão caia.
     };
 
     ws.onclose = (event) => {
@@ -589,22 +683,15 @@ export default function DemoGameScreen({
         wsRef.current = null;
       }
 
-      /*
-       * Se a tela ainda está aberta e não foi uma
-       * desconexão intencional, tenta reconectar.
-       */
       if (
         shouldReconnectRef.current &&
         !isUnmountingRef.current
       ) {
-        console.log(
-          "Tentando reconectar em 2 segundos..."
-        );
+        console.log("Tentando reconectar em 2 segundos...");
 
-        reconnectTimerRef.current =
-          setTimeout(() => {
-            connect();
-          }, 2000);
+        reconnectTimerRef.current = setTimeout(() => {
+          connect();
+        }, 2000);
       }
     };
   }
@@ -623,7 +710,6 @@ export default function DemoGameScreen({
       JSON.stringify({
         type: "select_territory",
         territory_id: territory.territory_id,
-
         payload: {
           territory_id: territory.territory_id,
         },
@@ -633,6 +719,7 @@ export default function DemoGameScreen({
 
   function sendAttack(optionId, action_type) {
     console.log("ACTION ID:", optionId);
+
     if (
       !wsRef.current ||
       wsRef.current.readyState !== WebSocket.OPEN
@@ -651,20 +738,19 @@ export default function DemoGameScreen({
     answeredQuestionRef.current = null;
     pendingDiceResultRef.current = null;
     pendingCompletionNoticesRef.current = [];
+
     wsRef.current.send(
       JSON.stringify({
         type: "choose_attack_option",
-
         target_territory_id: selectedTerritory.territory_id,
         territory_id: selectedTerritory.territory_id,
         action_id: optionId,
-        action_type: action_type,
-
+        action_type,
         payload: {
           target_territory_id: selectedTerritory.territory_id,
           territory_id: selectedTerritory.territory_id,
           action_id: optionId,
-          action_type: action_type,
+          action_type,
         },
       })
     );
@@ -690,13 +776,11 @@ export default function DemoGameScreen({
       JSON.stringify({
         type: "answer_attack_question",
         answer,
-
         payload: {
           answer,
         },
       })
     );
-
   }
 
   function sendInfluenceDistribution() {
@@ -708,8 +792,53 @@ export default function DemoGameScreen({
       return;
     }
 
-    if (!distributionTerritory || distributionAmountValue <= 0) {
-      showGameNotice("error", "Escolha um território e uma quantidade positiva.");
+    const distributions = Object.entries(pendingDistributions)
+      .filter(([, amount]) => Number(amount) > 0)
+      .map(([territoryId, amount]) => {
+        const territory = myTerritories.find(
+          (item) =>
+            String(item.territory_id) === String(territoryId)
+        );
+
+        return {
+          territory_id: territory?.territory_id ?? territoryId,
+          distributed_influence: Number(amount),
+        };
+      });
+
+    if (distributions.length === 0) {
+      showGameNotice(
+        "error",
+        "Salve a distribuição de pelo menos um território."
+      );
+      return;
+    }
+
+    if (
+      distributions.some(
+        (distribution) =>
+          !Number.isInteger(distribution.distributed_influence) ||
+          distribution.distributed_influence <= 0
+      )
+    ) {
+      showGameNotice(
+        "error",
+        "Todas as quantidades devem ser inteiros positivos."
+      );
+      return;
+    }
+
+    const totalDistributed = distributions.reduce(
+      (total, distribution) =>
+        total + distribution.distributed_influence,
+      0
+    );
+
+    if (totalDistributed > Number(me?.match_influence ?? 0)) {
+      showGameNotice(
+        "error",
+        "A distribuição ultrapassa sua influência disponível."
+      );
       return;
     }
 
@@ -717,8 +846,7 @@ export default function DemoGameScreen({
       JSON.stringify({
         type: "distribute_influence",
         payload: {
-          territory_id: distributionTerritory.territory_id,
-          amount: distributionAmountValue,
+          distributions,
         },
       })
     );
@@ -740,7 +868,6 @@ export default function DemoGameScreen({
 
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current);
-
         reconnectTimerRef.current = null;
       }
 
@@ -756,7 +883,6 @@ export default function DemoGameScreen({
 
       if (wsRef.current) {
         wsRef.current.close();
-
         wsRef.current = null;
       }
     };
@@ -766,11 +892,17 @@ export default function DemoGameScreen({
     matchState?.your_mission,
     players
   );
+
   const isMissionReveal =
     matchState?.status === "running" &&
     matchState?.phase === "mission_reveal";
+
   return (
-    <div className={`polis-game-page${showVictoryScreen ? " polis-victory-opened" : ""}`}>
+    <div
+      className={`polis-game-page${
+        showVictoryScreen ? " polis-victory-opened" : ""
+      }`}
+    >
       {matchState?.status === "running" && !isMissionReveal && (
         <button
           type="button"
@@ -794,11 +926,17 @@ export default function DemoGameScreen({
           onClose={() => setShowMission(false)}
         />
       )}
+
       {skipTurnMessage && (
-        <div className="polis-skip-turn-message" role="status" aria-live="polite">
+        <div
+          className="polis-skip-turn-message"
+          role="status"
+          aria-live="polite"
+        >
           {skipTurnMessage}
         </div>
       )}
+
       {!showVictoryScreen && (
         <button
           type="button"
@@ -810,6 +948,7 @@ export default function DemoGameScreen({
           Vitória
         </button>
       )}
+
       {!showInitialDistribution && !showVictoryScreen && (
         <button
           type="button"
@@ -820,22 +959,36 @@ export default function DemoGameScreen({
           }}
           aria-label="Abrir distribuição"
         >
-          <span className="polis-distribution-open-icon" aria-hidden="true">+</span>
+          <span
+            className="polis-distribution-open-icon"
+            aria-hidden="true"
+          >
+            +
+          </span>
           Distribuição
         </button>
       )}
+
       {!showVictoryScreen && !showQuestionPreview && (
         <button
           type="button"
           className="polis-victory-open polis-question-preview-open"
           onClick={() => {
-            const randomIndex = Math.floor(Math.random() * QUESTION_PREVIEW_BANK.length);
+            const randomIndex = Math.floor(
+              Math.random() * QUESTION_PREVIEW_BANK.length
+            );
+
             setPreviewQuestion(QUESTION_PREVIEW_BANK[randomIndex]);
             setShowQuestionPreview(true);
           }}
           aria-label="Abrir tela demonstrativa de pergunta"
         >
-          <span className="polis-question-preview-icon" aria-hidden="true">?</span>
+          <span
+            className="polis-question-preview-icon"
+            aria-hidden="true"
+          >
+            ?
+          </span>
           Pergunta
         </button>
       )}
@@ -944,36 +1097,38 @@ export default function DemoGameScreen({
             alt=""
             aria-hidden="true"
           />
+
           <BrazilMapSvg
             territories={territories}
             players={players}
             partyColors={PARTY_COLORS}
             currentPlayerId={matchState?.your_player_id}
-            selectedTerritoryId={
-              selectedTerritory?.territory_id
-            }
+            selectedTerritoryId={selectedTerritory?.territory_id}
             isActionable={isMyTurn}
             onSelectTerritory={handleTerritorySelection}
             className="polis-main-map"
           />
         </section>
 
-
-        {selectedTerritory &&
+        {selectedTerritory && (
           <TerritoryActions
             selectedTerritory={selectedTerritory}
             isMyTurn={isMyTurn}
             availableActions={availableActions}
             onChooseAction={sendAttack}
             onClose={() => setSelectedTerritory(null)}
-          />}
+          />
+        )}
+
         {pendingQuestion && (
           <QuestionPresentation
             question={pendingQuestion}
             targetName={pendingActionInfo?.territory_name}
             onAnswer={answerAttackQuestion}
             feedback={questionFeedback}
-            onDismiss={questionFeedback ? closeQuestionFeedback : undefined}
+            onDismiss={
+              questionFeedback ? closeQuestionFeedback : undefined
+            }
           />
         )}
 
@@ -983,7 +1138,7 @@ export default function DemoGameScreen({
             question={previewQuestion}
             targetName="São Paulo"
             isDemo
-            onAnswer={() => { }}
+            onAnswer={() => {}}
             onDismiss={() => setShowQuestionPreview(false)}
           />
         )}
@@ -997,13 +1152,14 @@ export default function DemoGameScreen({
             partyColors={PARTY_COLORS}
             myTerritories={myTerritories}
             distributionTerritory={distributionTerritory}
-            distributionConfirmed={distributionConfirmed}
-            setDistributionConfirmed={setDistributionConfirmed}
             distributionAmount={distributionAmount}
             setDistributionAmount={setDistributionAmount}
             distributionAmountValue={distributionAmountValue}
             maxDistributionInfluence={maxDistributionInfluence}
-            setDistributionTerritoryId={setDistributionTerritoryId}
+            pendingDistributions={pendingDistributions}
+            onSelectTerritory={handleSelectDistributionTerritory}
+            onSaveDistribution={savePendingDistribution}
+            onRemoveDistribution={removePendingDistribution}
             onConfirm={sendInfluenceDistribution}
           />
         )}
@@ -1027,16 +1183,11 @@ export default function DemoGameScreen({
             onLeaveRoom={onLeaveRoom}
           />
         )}
-      </main >
-
+      </main>
 
       <DiceAnimation diceAnimation={diceAnimation} />
-      <LastActionResult
-        result={lastActionResult}  
-      />
 
-
+      <LastActionResult result={lastActionResult} />
     </div>
   );
 }
-  

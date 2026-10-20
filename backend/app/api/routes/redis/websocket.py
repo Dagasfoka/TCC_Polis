@@ -3,6 +3,7 @@ import random
 import logging
 import asyncio
 import time
+
 from backend.app.services.redis.round_service import distribute_match_influence
 from backend.app.gateways.match_gateways import MatchGateway
 from backend.app.services.redis.action_service import (
@@ -18,29 +19,41 @@ from backend.app.validators.match_validators import MatchValidator
 from backend.app.validators.player_validators import PlayerValidator
 from backend.app.websocket.manager import manager
 
+
 router_websocket = APIRouter()
 logger = logging.getLogger(__name__)
 
-player_validator=PlayerValidator()
-match_gateway=MatchGateway()
-match_validator=MatchValidator()
-territory_validator=TerritoryValidator()
+player_validator = PlayerValidator()
+match_gateway = MatchGateway()
+match_validator = MatchValidator()
+territory_validator = TerritoryValidator()
 match_factory = MatchFactory()
 
-def prepare_match_for_player(match: dict,player_id: str,skipped_player_id=None,):
+
+def prepare_match_for_player(
+    match: dict,
+    player_id: str,
+    skipped_player_id=None,
+):
     match_for_player = match.copy()
+
     player = match_gateway.find_player(match, player_id)
     player = player_validator.not_exist(player)
 
     match_for_player["your_player_id"] = player_id
-    match_for_player["your_mission"] = (match_gateway.find_your_mission(match, player_id))
+    match_for_player["your_mission"] = (
+        match_gateway.find_your_mission(match, player_id)
+    )
     match_for_player["skipped_player_id"] = skipped_player_id
-    match_for_player["must_distribute"] = (match_validator.must_distribute_influence(match, player))
+    match_for_player["must_distribute"] = (
+        match_validator.must_distribute_influence(match, player)
+    )
 
     if match["status"] != "finished":
         match_for_player.pop("missions", None)
 
     return match_for_player
+
 
 @router_websocket.websocket("/ws/match/{match_id}/{player_id}")
 async def match_websocket(
@@ -121,7 +134,6 @@ async def match_websocket(
                 event_type = data.get("type")
                 payload = data.get("payload", {})
 
-
                 if event_type == "choose_attack_option":
                     target_territory_id = (
                         data.get("target_territory_id")
@@ -130,18 +142,30 @@ async def match_websocket(
                         or payload.get("territory_id")
                     )
 
-                    option_id = data.get("action_id") or payload.get("action_id")
-                    action_type = data.get("action_type") or payload.get("action_type")
+                    option_id = (
+                        data.get("action_id")
+                        or payload.get("action_id")
+                    )
+
+                    action_type = (
+                        data.get("action_type")
+                        or payload.get("action_type")
+                    )
 
                     response = prepare_attack_action(
                         match_id=match_id,
                         player_id=player_id,
                         target_territory_id=target_territory_id,
                         option_id=option_id,
-                        action_type=action_type
+                        action_type=action_type,
                     )
+
                     if response["result"].get("skipped_player_id"):
-                        skipped_player_id=response["result"]["skipped_player_id"]
+                        skipped_player_id = (
+                            response["result"]["skipped_player_id"]
+                        )
+                        updated_match = response["match"]
+
                         await manager.send_to_all(
                             match_id,
                             lambda recipient_id: {
@@ -151,16 +175,17 @@ async def match_websocket(
                                     recipient_id,
                                     skipped_player_id,
                                 ),
-                                
                             },
                         )
+
                     if response["result"]["type"] == "attack_question":
                         await manager.send_to_player(
                             match_id=match_id,
                             player_id=player_id,
                             message=response["result"],
                         )
-                    elif response['result']['type'] == "attack_no_question":
+
+                    elif response["result"]["type"] == "attack_no_question":
                         updated_match = response["match"]
 
                         await manager.send_to_all(
@@ -179,18 +204,24 @@ async def match_websocket(
                         data.get("territory_id")
                         or payload.get("territory_id")
                     )
+
                     match = match_gateway.get_match(match_id)
                     match = match_validator.match_exist(match)
+
                     territory = match_gateway.get_territory_by_id(
                         match,
                         territory_id,
                     )
-                    territory = territory_validator.territory_exist(territory)
+                    territory = territory_validator.territory_exist(
+                        territory
+                    )
 
                     owner_id = territory["owner_id"]
                     is_my_territory = owner_id == player_id
 
-                    action_type = "defense" if is_my_territory else "attack"
+                    action_type = (
+                        "defense" if is_my_territory else "attack"
+                    )
                     actions_key = f"round_{action_type}_actions"
 
                     available_actions = match.get(actions_key, [])
@@ -204,8 +235,9 @@ async def match_websocket(
 
                         available_actions = list(available_actions)
                         random.shuffle(available_actions)
-
-                        available_actions = distribute_actions(available_actions)
+                        available_actions = distribute_actions(
+                            available_actions
+                        )
 
                         match[actions_key] = available_actions
                         match_factory.update_match(match)
@@ -239,20 +271,20 @@ async def match_websocket(
 
                     await manager.send_to_all(
                         match_id,
-                        lambda player_id: {
+                        lambda recipient_id: {
                             "type": "match_state",
                             "payload": prepare_match_for_player(
                                 updated_match,
-                                player_id,
+                                recipient_id,
                             ),
                         },
                     )
+
                 elif event_type == "distribute_influence":
                     updated_match = distribute_match_influence(
                         match_id=match_id,
                         player_id=player_id,
-                        distributed_influence=payload.get("amount"),
-                        territory_id=payload.get("territory_id"),
+                        distributions=payload.get("distributions"),
                     )
 
                     await manager.send_to_all(
@@ -280,7 +312,7 @@ async def match_websocket(
                             },
                         },
                     )
-    
+
             except Exception as error:
                 logger.exception(
                     "Erro no WebSocket da partida %s, jogador %s",
@@ -298,6 +330,7 @@ async def match_websocket(
                         },
                     },
                 )
+
     except WebSocketDisconnect:
         manager.disconnect(
             match_id=match_id,
