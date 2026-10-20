@@ -84,11 +84,13 @@ export default function DemoGameScreen({
     (territory) => territory.owner_id === matchState?.your_player_id
   );
 
-  const distributionTerritory = myTerritories.find(
-    (territory) =>
-      String(territory.territory_id) === String(distributionTerritoryId)
-  ) ?? null;
-
+  const distributionTerritory =
+    myTerritories.find(
+        (territory) =>
+            String(territory.territory_id) ===
+            String(distributionTerritoryId)
+    ) ?? myTerritories[0] ?? null;
+    
   useEffect(() => {
     if (!diceAnimation?.rolling) return undefined;
 
