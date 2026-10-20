@@ -524,6 +524,13 @@ export default function DemoGameScreen({
 
       if (data.type === "match_state") {
         const newMatchState = data.payload;
+        if (newMatchState?.must_distribute === false) {
+            setShowInitialDistribution(false);
+            setDistributionConfirmed(true);
+            setPendingDistributions({});
+            setDistributionAmount(0);
+            setDistributionTerritoryId("");
+        }
         const newRound = newMatchState?.round;
 
         if (newRound != null) {
@@ -836,12 +843,24 @@ export default function DemoGameScreen({
       0
     );
 
-    if (totalDistributed > Number(me?.match_influence ?? 0)) {
+    const availableInfluence = Number(me?.match_influence ?? 0);
+
+    if (totalDistributed > availableInfluence) {
       showGameNotice(
         "error",
         "A distribuição ultrapassa sua influência disponível."
       );
       return;
+    }
+
+    if (totalDistributed !== availableInfluence) {
+        showGameNotice(
+            "error",
+            `Você precisa distribuir toda a influência disponível. Faltam ${
+                availableInfluence - totalDistributed
+            } pontos para distribuir.`
+        );
+        return;
     }
 
     wsRef.current.send(

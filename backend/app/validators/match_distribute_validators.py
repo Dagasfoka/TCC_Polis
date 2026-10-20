@@ -1,5 +1,8 @@
-from backend.app.validators.match_territory_validator import MatchTerritoryValidator
+from backend.app.validators.match_territory_validator import (
+    MatchTerritoryValidator,
+)
 from backend.app.gateways.match_gateways import MatchGateway
+
 
 class MatchDistributeValidator:
 
@@ -35,7 +38,10 @@ class MatchDistributeValidator:
             player_id,
         )
 
-        return distributed_influence
+        return {
+            "territory": territory,
+            "distributed_influence": distributed_influence,
+        }
 
     def distributions_are_valid(
         self,
@@ -47,16 +53,17 @@ class MatchDistributeValidator:
         self.distributions_exist(distributions)
 
         territory_ids = set()
+        validated_distributions = []
         total_distributed_influence = 0
 
         for distribution in distributions:
-            distributed_influence = self.distribution_is_valid(
+            validated_distribution = self.distribution_is_valid(
                 distribution,
                 player_id,
                 match_dict,
             )
 
-            territory_id = distribution["territory_id"]
+            territory_id = str(distribution["territory_id"])
 
             self.territory_is_not_repeated(
                 territory_id,
@@ -64,12 +71,20 @@ class MatchDistributeValidator:
             )
 
             territory_ids.add(territory_id)
+
+            distributed_influence = (
+                validated_distribution["distributed_influence"]
+            )
+
             total_distributed_influence += distributed_influence
+            validated_distributions.append(validated_distribution)
 
         self.total_distributed_influence_is_on_limit(
             match_influence,
             total_distributed_influence,
         )
+
+        return validated_distributions
 
     def distributions_exist(self, distributions):
         if not isinstance(distributions, list) or not distributions:
@@ -103,6 +118,16 @@ class MatchDistributeValidator:
         if total_distributed_influence > match_influence:
             raise ValueError(
                 "Você não possui influência suficiente para essa distribuição."
+            )
+
+        if total_distributed_influence < match_influence:
+            missing_influence = (
+                match_influence - total_distributed_influence
+            )
+
+            raise ValueError(
+                "Você precisa gastar toda sua influência na distribuição. "
+                f"Faltam {missing_influence} pontos para distribuir."
             )
 
     def territory_is_not_repeated(self, territory_id, territory_ids):
