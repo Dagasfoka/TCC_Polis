@@ -536,18 +536,39 @@ export default function DemoGameScreen({
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log("WebSocket conectado.");
+  // Ignora conexões antigas
+  if (wsRef.current !== ws) {
+    ws.close();
+    return;
+  }
 
-      setConnected(true);
+  console.log("WebSocket conectado.");
 
-      if (reconnectTimerRef.current) {
-        clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = null;
-      }
-    };
+  setConnected(true);
+
+  if (reconnectTimerRef.current) {
+    clearTimeout(reconnectTimerRef.current);
+    reconnectTimerRef.current = null;
+  }
+};
 
     ws.onmessage = (event) => {
-      let data;
+      if (wsRef.current !== ws) {
+    return;
+  }
+
+  let data;
+
+  try {
+    data = JSON.parse(event.data);
+  } catch (error) {
+    console.error(
+      "Erro ao interpretar mensagem WebSocket:",
+      error
+    );
+
+    return;
+  }
 
       try {
         data = JSON.parse(event.data);
@@ -743,30 +764,37 @@ export default function DemoGameScreen({
       // Deixamos o navegador disparar onclose caso a conexão caia.
     };
 
-    ws.onclose = (event) => {
-      console.log(
-        "WebSocket fechado:",
-        event.code,
-        event.reason
-      );
+  ws.onclose = (event) => {
+  console.log(
+    "WebSocket fechado:",
+    event.code,
+    event.reason
+  );
 
-      setConnected(false);
+  // Não permite que conexões antigas afetem a atual
+  if (wsRef.current !== ws) {
+    return;
+  }
 
-      if (wsRef.current === ws) {
-        wsRef.current = null;
-      }
+  wsRef.current = null;
+  setConnected(false);
 
-      if (
-        shouldReconnectRef.current &&
-        !isUnmountingRef.current
-      ) {
-        console.log("Tentando reconectar em 2 segundos...");
+  if (
+    shouldReconnectRef.current &&
+    !isUnmountingRef.current
+  ) {
+    console.log("Tentando reconectar em 2 segundos...");
 
-        reconnectTimerRef.current = setTimeout(() => {
-          connect();
-        }, 2000);
-      }
-    };
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+    }
+
+    reconnectTimerRef.current = setTimeout(() => {
+      reconnectTimerRef.current = null;
+      connect();
+    }, 2000);
+  }
+};
   }
 
   function handleTerritorySelection(territory) {
