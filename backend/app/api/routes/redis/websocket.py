@@ -83,14 +83,10 @@ async def match_websocket(
             )
             return
 
-        await manager.send_to_player(
-            match_id=match_id,
-            player_id=player_id,
-            message={
-                "type": "match_state",
-                "payload": prepare_match_for_player(match, player_id),
-            },
-        )
+        await websocket.send_json({
+            "type": "match_state",
+            "payload": prepare_match_for_player(match, player_id),
+            })
 
         while True:
             match = match_gateway.get_match(match_id)
@@ -332,7 +328,15 @@ async def match_websocket(
                 )
 
     except WebSocketDisconnect:
+        logger.info(
+        "Jogador %s desconectou da partida %s",
+        player_id,
+        match_id,
+    )
+
+    finally:
         manager.disconnect(
-            match_id=match_id,
-            player_id=player_id,
-        )
+        match_id=match_id,
+        player_id=player_id,
+        websocket=websocket,
+    )
