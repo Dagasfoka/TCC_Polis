@@ -11,6 +11,7 @@ export default function GameNotice({ notice }) {
         key={notice.id}
         className={`polis-game-notice polis-game-notice-${notice.kind}`}
         role="status"
+        style={{ "--notice-duration": `${notice.duration ?? 2200}ms` }}
       >
         {notice.message}
       </p>

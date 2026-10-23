@@ -11,7 +11,6 @@ import TerritoryActions from "../components/TerritoryActions.jsx";
 import GameNotice from "../components/GameNotice.jsx";
 import MissionModal from "../components/MissionModal.jsx";
 import LastActionResult from "../components/LastActionResult.jsx";
-import TutorialBook from "../components/TutorialBook.jsx";
 
 const PARTY_COLORS = {
   PR: "#DA3A3C",
@@ -64,7 +63,6 @@ export default function DemoGameScreen({
   const [showVictoryScreen, setShowVictoryScreen] = useState(false);
   const [showQuestionPreview, setShowQuestionPreview] = useState(false);
   const [showActionResultDemo, setShowActionResultDemo] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(false);
   const [previewQuestion, setPreviewQuestion] = useState(null);
   const [availableActions, setAvailableActions] = useState([]);
   const [actionType, setActionType] = useState(null);
@@ -208,8 +206,8 @@ export default function DemoGameScreen({
     setQueuedActionResult(null);
   }, [queuedActionResult, diceAnimation, questionFeedback]);
 
-  function showGameNotice(kind, message) {
-    showGameNotices([{ kind, message }]);
+  function showGameNotice(kind, message, duration = 2200) {
+    showGameNotices([{ kind, message, duration }]);
   }
 
   function handleSelectDistributionTerritory(territoryId) {
@@ -254,7 +252,8 @@ export default function DemoGameScreen({
 
     showGameNotice(
       "success",
-      "Distribuição do território salva."
+      "Distribuição do território salva.",
+      1000
     );
   }
 
@@ -294,7 +293,7 @@ export default function DemoGameScreen({
           setGameNotice(null);
           gameNoticeTimerRef.current = null;
         }
-      }, 2200);
+      }, notices[noticeIndex].duration ?? 2200);
     };
 
     showNextNotice();
@@ -1024,20 +1023,6 @@ export default function DemoGameScreen({
         showVictoryScreen ? " polis-victory-opened" : ""
       }`}
     >
-      {!showVictoryScreen && (
-        <button
-          type="button"
-          className="polis-tutorial-open"
-          onClick={() => setShowTutorial(true)}
-          aria-label="Abrir tutorial de como jogar"
-          aria-haspopup="dialog"
-        >
-          <img className="polis-tutorial-open-icon" src="/livro.png" alt="" aria-hidden="true" />
-        </button>
-      )}
-
-      {showTutorial && <TutorialBook onClose={() => setShowTutorial(false)} />}
-
       {matchState?.status === "running" && matchState?.your_mission && !isMissionReveal && (
         <button
           type="button"

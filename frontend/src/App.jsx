@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 
 import DemoGameScreen from "./screens/DemoGameScreen.jsx";
 import LoginScreen from "./screens/Login.jsx";
 import MenuScreen from "./screens/Menu.jsx";
 import LobbyScreen from "./screens/Lobby.jsx";
+import TutorialBook from "./components/TutorialBook.jsx";
 
 import {
   saveRoomCode,
@@ -38,6 +39,33 @@ export default function App() {
   const [player, setPlayer] = useState(null);
   const [room, setRoom] = useState(null);
   const [matchId, setMatchId] = useState(null);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialLeft, setTutorialLeft] = useState(null);
+  const [tutorialTop, setTutorialTop] = useState(null);
+
+  useLayoutEffect(() => {
+    if (screen !== "menu" && screen !== "lobby") {
+      setTutorialLeft(null);
+      setTutorialTop(null);
+      return undefined;
+    }
+
+    const alignWithCard = () => {
+      const card = document.querySelector(".non-game-screen-zoom .main-card");
+      const exitButton = document.querySelector(
+        ".non-game-screen-zoom .top-login-link-btn, .non-game-screen-zoom .lobby-exit-btn"
+      );
+      if (card) {
+        const cardBounds = card.getBoundingClientRect();
+        setTutorialLeft(cardBounds.left);
+        setTutorialTop(exitButton?.getBoundingClientRect().top ?? cardBounds.top);
+      }
+    };
+
+    alignWithCard();
+    window.addEventListener("resize", alignWithCard);
+    return () => window.removeEventListener("resize", alignWithCard);
+  }, [screen]);
 
 
   // ==============================
@@ -296,6 +324,26 @@ export default function App() {
           />
 
         )}
+
+      {(screen === "menu" || screen === "lobby" || screen === "game") && (
+        <button
+          type="button"
+          className={`polis-tutorial-open${screen === "game" ? " is-game" : " is-non-game"}`}
+          onClick={() => setShowTutorial(true)}
+          aria-label="Abrir tutorial de como jogar"
+          aria-haspopup="dialog"
+          style={screen !== "game" && tutorialLeft !== null
+            ? { left: `${tutorialLeft}px`, top: `${tutorialTop}px` }
+            : undefined}
+        >
+          <span>Como jogar?</span>
+          {screen === "game" && (
+            <img className="polis-tutorial-open-icon" src="/livro.png" alt="" aria-hidden="true" />
+          )}
+        </button>
+      )}
+
+      {showTutorial && <TutorialBook onClose={() => setShowTutorial(false)} />}
 
     </>
   );
