@@ -66,13 +66,6 @@ export default function MissionModal({
                         <img src="/missaosecreta.png" alt="" />
                         <div className="polis-mission-reveal-copy">
                             <p>{missionText}</p>
-                            {isRevealing && (
-                                <p className="polis-mission-countdown">
-                                    {remainingSeconds > 0
-                                        ? `Leia sua missão: ${remainingSeconds}s`
-                                        : "Preparando a partida…"}
-                                </p>
-                            )}
                         </div>
                         {showLargeMission && !isRevealing && (
                             <button
@@ -84,6 +77,13 @@ export default function MissionModal({
                             </button>
                         )}
                     </div>
+                    {isRevealing && (
+                        <p className="polis-mission-countdown polis-mission-reveal-countdown">
+                            {remainingSeconds > 0
+                                ? `Leia sua missão: ${remainingSeconds}s`
+                                : "Preparando a partida…"}
+                        </p>
+                    )}
                 </div>
             )}
         </>

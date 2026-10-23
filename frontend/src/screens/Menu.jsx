@@ -154,23 +154,16 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate}) {
         .top-login-link-btn {
           position: absolute;
           right: 0;
-          top: 50%;
+          top: calc(50% + 20px);
           transform: translateY(-50%);
-          background: none;
+          background: transparent;
           border: none;
           cursor: pointer;
           padding: 0;
-        }
-
-        .top-login-link-btn img {
-          height: 28px;
-          width: auto;
-          display: block;
-          transition: transform 0.15s ease;
-        }
-
-        .top-login-link-btn:hover img {
-          transform: scale(1.05);
+          color: #ffffff;
+          font-family: "Coolvetica", sans-serif;
+          font-size: 26.4px;
+          font-weight: 400;
         }
 
         .main-card {
@@ -236,20 +229,21 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate}) {
           left: 50%;
           transform: translateX(-50%);
           display: inline-block;
-          padding: 2px 12px 4px;
+          max-width: 260px;
+          box-sizing: border-box;
+          padding: 3px 14px 5px;
+          overflow: hidden;
+          border: 2px solid #151515;
+          border-radius: 4px;
+          background: #050505;
           color: #ffffff;
           font-family: "Coolvetica", sans-serif;
           font-weight: 800;
           font-size: 28px;
           letter-spacing: calc(0.04em + 1px);
           white-space: nowrap;
-          -webkit-text-stroke: 5.5px #000;
-          paint-order: stroke fill;
-          text-shadow:
-            4px 4px 0 #000,
-            5px 4px 0 #000,
-            4px 5px 0 #000,
-            5px 5px 0 #000;
+          text-overflow: ellipsis;
+          box-shadow: 0 4px 0 #1b1b1b;
         }
 
         .actions-section {
@@ -558,7 +552,7 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate}) {
     className="top-login-link-btn"
     title="Sair"
   >
-    <img src="/sair.png" alt="Sair" />
+    Sair
   </button>
 </div>
 

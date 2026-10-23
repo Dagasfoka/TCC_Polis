@@ -877,7 +877,7 @@ html,
   z-index: 500;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 14px;
   padding: 24px;
@@ -3785,6 +3785,7 @@ html,
   overflow: auto;
   padding: 20px;
   background: rgba(0, 0, 0, .75);
+  animation: polis-victory-darken .9s ease-out both;
 }
 
 .polis-victory-screen {
@@ -3792,6 +3793,29 @@ html,
   flex: 0 0 auto;
   width: min(1400px, 99vw, 160vh);
   aspect-ratio: 1585 / 891;
+  opacity: 0;
+  animation: polis-victory-reveal .9s ease-out .9s both;
+}
+
+@keyframes polis-victory-darken {
+  from { background-color: rgba(0, 0, 0, 0); }
+  to { background-color: rgba(0, 0, 0, .75); }
+}
+
+@keyframes polis-victory-reveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .polis-victory-overlay,
+  .polis-victory-screen {
+    animation: none;
+  }
+
+  .polis-victory-screen {
+    opacity: 1;
+  }
 }
 
 .polis-victory-background {
@@ -4317,8 +4341,10 @@ html,
   inset: 0;
   z-index: 15500;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   padding: 18px;
   background: rgba(0, 0, 0, 0.84);
 }
@@ -4364,9 +4390,11 @@ html,
   text-align: center;
 }
 
-.polis-mission-reveal-copy .polis-mission-countdown {
-  margin-top: 16px;
+.polis-mission-reveal-countdown {
+  margin: 0;
+  color: #ffffff;
   font-size: clamp(14px, 1.5vw, 20px);
+  text-align: center;
 }
 
 .polis-mission-reveal-close {
@@ -4498,5 +4526,181 @@ html,
 
 .polis-mission-preview-open {
   top: calc(50% + 190px);
+}
+
+.polis-tutorial-open {
+  position: fixed;
+  top: 50%;
+  left: 16px;
+  z-index: 13000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #fff4d6;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.polis-tutorial-open:hover { color: #f4d486; }
+.polis-tutorial-open-icon { width: 76px; height: 76px; object-fit: contain; flex: 0 0 auto; }
+
+.polis-tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 16000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(4, 8, 16, .84);
+  backdrop-filter: blur(4px);
+}
+
+.polis-tutorial-book {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: min(760px, calc(100vh - 40px));
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  padding: clamp(22px, 5vw, 48px);
+  border: 1px solid #d7b86a;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(80, 53, 30, .08), transparent 5%, transparent 95%, rgba(80, 53, 30, .08)), #f1e4c8;
+  color: #25211c;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .6), inset 0 0 0 7px rgba(118, 82, 43, .08);
+}
+
+.polis-tutorial-book,
+.polis-tutorial-book * {
+  font-family: "Coolvetica", sans-serif !important;
+}
+
+.polis-tutorial-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 1;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(55, 43, 27, .3);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .48);
+  color: #25211c;
+  font-size: 27px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.polis-tutorial-header {
+  padding: 0 24px 20px;
+  border-bottom: 1px solid rgba(81, 61, 36, .25);
+  text-align: center;
+}
+
+.polis-tutorial-kicker,
+.polis-tutorial-chapter {
+  color: #89672e;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.polis-tutorial-chapter {
+  font-weight: 400;
+  font-synthesis: none;
+}
+
+.polis-tutorial-header h1 {
+  margin: 5px 0;
+  color: #28231c;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(26px, 4vw, 38px);
+}
+
+.polis-tutorial-header p { margin: 0; color: #615746; font-size: 15px; }
+
+.polis-tutorial-page {
+  flex: 1;
+  padding: clamp(24px, 5vw, 42px) clamp(2px, 3vw, 26px) 24px;
+  animation: polisTutorialPageIn .22s ease-out;
+}
+
+.polis-tutorial-page-top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+
+.polis-tutorial-page h2 {
+  margin: 0 0 18px;
+  color: #25211c;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(24px, 3.7vw, 34px);
+}
+
+.polis-tutorial-page > p {
+  margin: 0 0 15px;
+  color: #403a30;
+  font-size: clamp(15px, 2vw, 18px);
+  line-height: 1.65;
+}
+
+.polis-tutorial-note {
+  margin-top: 24px;
+  padding: 14px 17px;
+  border-left: 4px solid #b48a3a;
+  background: rgba(180, 138, 58, .12);
+  color: #4b3b20;
+  font-size: 15px;
+  font-weight: 400;
+  font-synthesis: none;
+  line-height: 1.5;
+}
+
+.polis-tutorial-footer {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(81, 61, 36, .25);
+}
+
+.polis-tutorial-page-count { position: relative; top: 5px; color: #685b45; font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 700; }
+
+.polis-tutorial-nav {
+  justify-self: start;
+  padding: 10px 14px;
+  border: 1px solid #7c6948;
+  border-radius: 6px;
+  background: transparent;
+  color: #332b1e;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  font-synthesis: none;
+  cursor: pointer;
+}
+
+.polis-tutorial-nav.is-next { justify-self: end; border-color: #26344d; background: #26344d; color: #fff4d6; }
+.polis-tutorial-nav:disabled { opacity: .4; cursor: default; }
+
+@keyframes polisTutorialPageIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 600px) {
+  .polis-tutorial-open { gap: 5px; padding: 10px 9px 10px 7px; font-size: 12px; }
+  .polis-tutorial-book { max-height: calc(100vh - 24px); padding: 24px 20px 20px; }
+  .polis-tutorial-page { padding: 24px 0 20px; }
+  .polis-tutorial-footer { gap: 6px; }
+  .polis-tutorial-nav { padding: 9px 8px; font-size: 12px; }
 }
 
