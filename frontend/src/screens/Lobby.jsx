@@ -339,6 +339,16 @@ const activePartiesList = parties.map((party) => ({
 
   return (
     <div className="lobby-body">
+      <svg aria-hidden="true" width="0" height="0" style={{ position: "absolute" }}>
+        <defs>
+          <filter id="room-lock-green" colorInterpolationFilters="sRGB">
+            <feColorMatrix type="matrix" values="0.08 0 0 0 0  0 0.82 0 0 0  0 0 0.22 0 0  0 0 0 1 0" />
+          </filter>
+          <filter id="room-lock-red" colorInterpolationFilters="sRGB">
+            <feColorMatrix type="matrix" values="0.9 0 0 0 0  0 0.12 0 0 0  0 0 0.12 0 0  0 0 0 1 0" />
+          </filter>
+        </defs>
+      </svg>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700;800&display=swap');
 
@@ -1011,6 +1021,7 @@ const activePartiesList = parties.map((party) => ({
                     src={isPrivate ? "/closelock.png" : "/openlock.png"}
                     alt=""
                     className="code-lock-art"
+                    style={{ filter: isPrivate ? "url(#room-lock-red)" : "url(#room-lock-green)" }}
                   />
                 </button>
                 <button
