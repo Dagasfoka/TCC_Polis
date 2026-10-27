@@ -454,11 +454,8 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate}) {
   width: 140px;
   height: 170px;
 
-  appearance: none;
-  outline: none;
-  border: none;
+  border: 2px solid #2e3e6e;
   border-radius: 14px;
-  box-shadow: none !important;
 
   background: rgba(13, 18, 29, 0.75);
 
@@ -477,16 +474,16 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate}) {
     background 0.15s ease;
 }
 
-.avatar-option::before,
-.avatar-option::after {
-  display: none;
-  content: none;
-}
-
 .avatar-option:hover:not(:disabled) {
   transform: translateY(-5px) scale(1.04);
 
+  border-color: #4c6ef5;
+
   background: rgba(27, 38, 71, 0.95);
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.5),
+    0 0 15px rgba(76, 110, 245, 0.35);
 }
 
 .avatar-option:disabled {
@@ -495,7 +492,13 @@ export default function Menu({ player, onEnterRoom, onLogout, onPlayerUpdate}) {
 }
 
 .avatar-option.selected {
+  border-color: #6d8cff;
+
   background: rgba(59, 91, 219, 0.25);
+
+  box-shadow:
+    0 0 0 3px rgba(76, 110, 245, 0.2),
+    0 10px 25px rgba(0, 0, 0, 0.5);
 }
 
 .avatar-option img {
