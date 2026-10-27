@@ -8,6 +8,7 @@ export default function MissionModal({
     isOpen = false,
     isRevealing = false,
     showLargeMission = false,
+    isDistributionOpen = false,
     onClose,
     onCloseLarge,
     onOpen,
@@ -40,7 +41,7 @@ export default function MissionModal({
     return (
         <>
             <aside
-                className={`polis-mission-card polis-mission-right polis-mission-consult${isOpen ? " is-open" : ""}${revealVisible ? " is-locked" : ""}`}
+                className={`polis-mission-card polis-mission-right polis-mission-consult${isOpen ? " is-open" : ""}${revealVisible ? " is-locked" : ""}${isDistributionOpen ? " is-distributing" : ""}`}
                 aria-label="Sua missão secreta"
                 aria-expanded={isOpen}
                 aria-disabled={revealVisible}

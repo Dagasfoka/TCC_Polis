@@ -196,6 +196,13 @@ export default function Login({ onLogin }) {
         }
 
         /* INÍCIO / GUEST */
+        .guest-screen-wrapper {
+          position: relative;
+          width: 100%;
+          max-width: 1020px;
+          margin-top: -10px;
+        }
+
         .main-card-inicio {
           width: 100%;
           max-width: 1020px;
@@ -208,7 +215,7 @@ export default function Login({ onLogin }) {
           background-image: url('/fundoinicio.png');
           background-size: cover;
           background-position: center;
-          margin-top: -10px;
+          margin-top: 0;
         }
 
         .btn-login-container,
@@ -322,7 +329,7 @@ export default function Login({ onLogin }) {
           position: relative;
           width: 320px;
           background: rgba(13, 18, 29, 0.88);
-          border: 2px solid #2e3e6e;
+          border: none;
           border-radius: 14px;
           padding: 40px 24px 20px 24px;
           z-index: 2;
@@ -339,7 +346,7 @@ export default function Login({ onLogin }) {
         }
 
         .form-title-banner img {
-          height: 70px;
+          height: 80px;
           width: auto;
           display: block;
           filter: drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.6));
@@ -429,6 +436,20 @@ export default function Login({ onLogin }) {
           text-align: center;
           margin-top: 10px;
         }
+
+        .guest-error-msg {
+          position: absolute;
+          top: calc(100% + 8px);
+          left: 50%;
+          width: min(90vw, 500px);
+          z-index: 10;
+          margin: 0;
+          transform: translateX(-50%);
+        }
+
+        .form-box .error-msg {
+          text-align: left;
+        }
       `}</style>
 
       {/* Header Comum */}
@@ -440,7 +461,8 @@ export default function Login({ onLogin }) {
 
       {/* TELA 1: GUEST / INÍCIO */}
       {mode === "guest" && (
-        <div className="main-card-inicio">
+        <div className="guest-screen-wrapper">
+          <div className="main-card-inicio">
           <button
             type="button"
             className="btn-login-container"
@@ -478,6 +500,8 @@ export default function Login({ onLogin }) {
           >
             <img src="/botaocadastro.png" alt="Criar uma Conta" />
           </button>
+          </div>
+          {error && <p className="error-msg guest-error-msg" role="alert">{error}</p>}
         </div>
       )}
 
@@ -524,6 +548,8 @@ export default function Login({ onLogin }) {
               >
                 {loading ? "Entrando..." : "ENTRAR"}
               </button>
+
+              {error && <p className="error-msg" role="alert">{error}</p>}
 
               <div className="login-links">
                 <button
@@ -593,6 +619,8 @@ export default function Login({ onLogin }) {
                 {loading ? "Criando conta..." : "CADASTRAR"}
               </button>
 
+              {error && <p className="error-msg" role="alert">{error}</p>}
+
               <div className="form-links">
                 <button
                   type="button"
@@ -617,11 +645,6 @@ export default function Login({ onLogin }) {
         </div>
       )}
 
-      {error && (
-        <p className="error-msg" role="alert">
-          {error}
-        </p>
-      )}
     </div>
   );
 }

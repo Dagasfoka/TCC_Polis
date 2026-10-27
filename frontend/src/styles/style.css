@@ -602,7 +602,7 @@ html,
 
   justify-content: center;
 
-  gap: 4px;
+  gap: 3px;
 }
 
 .polis-stat {
@@ -877,7 +877,7 @@ html,
   z-index: 500;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   gap: 14px;
   padding: 24px;
@@ -1934,6 +1934,13 @@ html,
   font-weight: 800;
 }
 
+.polis-action-result-action-section .polis-action-result-section-heading {
+  font-weight: 400;
+  font-synthesis: none;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+
 .polis-action-result-territory {
   display: block;
   margin-bottom: 4px;
@@ -1988,13 +1995,14 @@ html,
 
 .polis-action-result-influence-value {
   margin-bottom: -5px;
-  color: #fff;
+  color: #000;
   font-size: 30px;
   font-weight: 400;
   line-height: 1;
   text-align: center;
-  -webkit-text-stroke: 8px #000;
+  -webkit-text-stroke: 0;
   paint-order: stroke fill;
+  text-shadow: none;
 }
 
 .polis-action-result-state-shape {
@@ -2371,7 +2379,7 @@ html,
 }
 
 .polis-game-page.polis-victory-opened {
-  background: transparent;
+  background: #0b1120 url("/image 2(1).png") center / cover no-repeat;
 }
 
 .polis-game-screen {
@@ -2472,7 +2480,7 @@ html,
 
 .polis-player-stats {
   flex: 0 0 140px;
-  gap: 10px;
+  gap: 4px;
   transform: translateY(-8px);
 }
 
@@ -3779,27 +3787,41 @@ html,
   position: fixed;
   inset: 0;
   z-index: 16000;
+  isolation: isolate;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: auto;
   padding: 20px;
-  background: rgba(0, 0, 0, .75);
+  background: #000;
   animation: polis-victory-darken .9s ease-out both;
 }
 
+.polis-victory-overlay::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url("/fundo.png") center / cover no-repeat;
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  animation: polis-victory-reveal .9s ease-out .9s both;
+}
+
 .polis-victory-screen {
+  z-index: 1;
   position: relative;
   flex: 0 0 auto;
   width: min(1400px, 99vw, 160vh);
   aspect-ratio: 1585 / 891;
+  background: #2b3969 url("/fundovitoria.png") center / 100% 100% no-repeat;
   opacity: 0;
   animation: polis-victory-reveal .9s ease-out .9s both;
 }
 
 @keyframes polis-victory-darken {
   from { background-color: rgba(0, 0, 0, 0); }
-  to { background-color: rgba(0, 0, 0, .75); }
+  to { background-color: #000; }
 }
 
 @keyframes polis-victory-reveal {
@@ -3816,13 +3838,6 @@ html,
   .polis-victory-screen {
     opacity: 1;
   }
-}
-
-.polis-victory-background {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: fill;
 }
 
 .polis-victory-title {
@@ -3886,7 +3901,7 @@ html,
   position: absolute;
   bottom: -2%;
   left: 10%;
-  z-index: 2;
+  z-index: 3;
   display: block;
   width: 80%;
   height: 54%;
@@ -3905,10 +3920,23 @@ html,
   transform: translateX(-50%);
 }
 
+.polis-victory-winner-sash {
+  position: absolute;
+  top: calc(10% - 12px);
+  left: calc(50% - 1px);
+  z-index: 2;
+  display: block;
+  width: 64%;
+  height: 59%;
+  object-fit: contain;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
 .polis-victory-winner-label {
   position: absolute;
   bottom: calc(36% - 14px);
-  left: 50%;
+  left: 100%;
   z-index: 3;
   display: flex;
   flex-direction: row;
@@ -3932,7 +3960,7 @@ html,
 }
 
 .polis-victory-winner-name {
-  transform: translateY(-77px);
+  transform: translateY(-76px);
   display: flex;
   align-items: center;
   flex: 0 1 auto;
@@ -4427,6 +4455,10 @@ html,
   transform: translateY(-50%);
   transition: right .4s cubic-bezier(.2,.7,.2,1);
   cursor: pointer;
+}
+
+.polis-mission-consult.is-distributing {
+  z-index: 12010;
 }
 
 .polis-mission-consult::before {

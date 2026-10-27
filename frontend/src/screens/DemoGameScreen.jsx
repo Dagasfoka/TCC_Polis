@@ -61,6 +61,7 @@ export default function DemoGameScreen({
   const [distributionTerritoryId, setDistributionTerritoryId] = useState("");
   const [distributionAmount, setDistributionAmount] = useState(0);
   const [showVictoryScreen, setShowVictoryScreen] = useState(false);
+  const [pendingVictory, setPendingVictory] = useState(false);
   const [showQuestionPreview, setShowQuestionPreview] = useState(false);
   const [showActionResultDemo, setShowActionResultDemo] = useState(false);
   const [previewQuestion, setPreviewQuestion] = useState(null);
@@ -178,11 +179,6 @@ export default function DemoGameScreen({
 
     const timeoutId = window.setTimeout(() => {
       setDiceAnimation(null);
-
-      if (pendingCompletionNoticesRef.current.length > 0) {
-        showGameNotices(pendingCompletionNoticesRef.current);
-        pendingCompletionNoticesRef.current = [];
-      }
     }, 1800);
 
     return () => window.clearTimeout(timeoutId);
@@ -200,11 +196,28 @@ export default function DemoGameScreen({
   }, [questionFeedback]);
 
   useEffect(() => {
+    if (!pendingVictory || diceAnimation || questionFeedback) return;
+
+    setQueuedActionResult(null);
+    setLastActionResult(null);
+    setShowActionResultDemo(false);
+    pendingCompletionNoticesRef.current = [];
+    setGameNotice(null);
+    setShowVictoryScreen(true);
+    setPendingVictory(false);
+  }, [pendingVictory, diceAnimation, questionFeedback]);
+
+  useEffect(() => {
     if (!queuedActionResult || diceAnimation || questionFeedback) return;
+
+    if (pendingVictory || (matchState?.status === "finished" && matchState?.winner_id)) {
+      setQueuedActionResult(null);
+      return;
+    }
 
     setLastActionResult(queuedActionResult.result);
     setQueuedActionResult(null);
-  }, [queuedActionResult, diceAnimation, questionFeedback]);
+  }, [queuedActionResult, diceAnimation, questionFeedback, pendingVictory, matchState?.status, matchState?.winner_id]);
 
   function showGameNotice(kind, message, duration = 2200) {
     showGameNotices([{ kind, message, duration }]);
@@ -373,11 +386,24 @@ export default function DemoGameScreen({
           ? result.success
           : Number(result.roll) >= threshold;
 
-      pendingCompletionNoticesRef.current = [
-        actionSucceeded
-          ? { kind: "success", message: "Ação concluída!" }
-          : { kind: "error", message: "Ação fracassada!" },
-      ];
+      const generatedMoney = Number(result.money_generated ?? 0);
+      if (generatedMoney > 0) {
+        pendingCompletionNoticesRef.current = [{
+          kind: "success",
+          message: `Vocês ganharam R$ ${generatedMoney.toLocaleString("pt-BR")}!`,
+        }];
+      } else if (generatedMoney < 0) {
+        pendingCompletionNoticesRef.current = [{
+          kind: "error",
+          message: `Vocês perderam R$ ${Math.abs(generatedMoney).toLocaleString("pt-BR")}!`,
+        }];
+      } else {
+        pendingCompletionNoticesRef.current = [
+          actionSucceeded
+            ? { kind: "success", message: "Ação concluída!" }
+            : { kind: "error", message: "Ação fracassada!" },
+        ];
+      }
 
       localActionPendingRef.current = false;
     }
@@ -501,7 +527,7 @@ export default function DemoGameScreen({
       !winnerAlertShownRef.current
     ) {
       winnerAlertShownRef.current = true;
-      setShowVictoryScreen(true);
+      setPendingVictory(true);
     }
   }
 
@@ -1018,11 +1044,12 @@ export default function DemoGameScreen({
   };
 
   return (
-    <div
-      className={`polis-game-page${
+    <>
+      <div
+        className={`polis-game-page${
         showVictoryScreen ? " polis-victory-opened" : ""
       }`}
-    >
+      >
       {matchState?.status === "running" && matchState?.your_mission && !isMissionReveal && (
         <button
           type="button"
@@ -1046,6 +1073,7 @@ export default function DemoGameScreen({
           isOpen={showMission && !isMissionReveal}
           isRevealing={isMissionReveal}
           showLargeMission={showLargeMission}
+          isDistributionOpen={showInitialDistribution || matchState?.must_distribute}
           onOpen={() => setShowMission(true)}
           onClose={() => setShowMission(false)}
           onCloseLarge={() => setShowLargeMission(false)}
@@ -1060,18 +1088,6 @@ export default function DemoGameScreen({
         >
           {skipTurnMessage}
         </div>
-      )}
-
-      {!showVictoryScreen && (
-        <button
-          type="button"
-          className="polis-victory-open"
-          onClick={() => setShowVictoryScreen(true)}
-          aria-label="Abrir tela de vitória"
-        >
-          <img src="/coroa.png" alt="" />
-          Vitória
-        </button>
       )}
 
       {!showInitialDistribution && !showVictoryScreen && (
@@ -1317,6 +1333,10 @@ export default function DemoGameScreen({
               setShowActionResultDemo(false);
             } else {
               setLastActionResult(null);
+              if (pendingCompletionNoticesRef.current.length > 0) {
+                showGameNotices(pendingCompletionNoticesRef.current);
+                pendingCompletionNoticesRef.current = [];
+              }
             }
           }}
         />
@@ -1336,6 +1356,7 @@ export default function DemoGameScreen({
 
       <DiceAnimation diceAnimation={diceAnimation} />
 
-    </div>
+      </div>
+    </>
   );
 }

@@ -14,7 +14,6 @@ export default function VictoryScreen({
     return (
         <div className="polis-victory-overlay" role="dialog" aria-modal="true" aria-label="Tela de vitória">
             <section className="polis-victory-screen">
-                <img className="polis-victory-background" src="/fundovitoria.png" alt="" />
                 <img className="polis-victory-title" src="/vencedor.png" alt="Vencedor" />
 
                 <div className="polis-victory-winner-area">
@@ -27,6 +26,7 @@ export default function VictoryScreen({
                                 event.currentTarget.src = getAvatarImage("avatar_3");
                             }}
                         />
+                        <img className="polis-victory-winner-sash" src="/faixa.png" alt="" />
                         <img className="polis-victory-winner-podium" src="/podio.png" alt="" />
                         <div className="polis-victory-winner-label">
                             <span className="polis-victory-winner-name">
