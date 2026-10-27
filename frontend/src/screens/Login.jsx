@@ -329,7 +329,7 @@ export default function Login({ onLogin }) {
           position: relative;
           width: 320px;
           background: rgba(13, 18, 29, 0.88);
-          border: none;
+          border: 2px solid #2e3e6e;
           border-radius: 14px;
           padding: 40px 24px 20px 24px;
           z-index: 2;
